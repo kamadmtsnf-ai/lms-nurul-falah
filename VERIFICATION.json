@@ -1,20 +1,20 @@
 {
-  "stage": 6,
-  "status": "executed_with_open_gates_not_approved_for_mass_rollout",
+  "stage": 8,
+  "status": "advanced_modules_implemented_operational_acceptance_pending",
   "date": "2026-10-18",
   "timezone": "Asia/Jakarta",
   "production_build": "passed",
   "typecheck": "passed",
   "automated_tests": {
-    "passed": 92,
+    "passed": 106,
     "failed": 0
   },
   "http_scenarios": {
-    "passed": 12,
+    "passed": 14,
     "failed": 0,
     "scope": "local_no_database_config"
   },
-  "cloud_database": "15_migrations_applied_quiz_manager_flow_rollback_verified",
+  "cloud_database": "19_migrations_applied_stage8_rollback_integration_passed",
   "migration_versions": [
     "20261017152937",
     "20261017152957",
@@ -30,7 +30,11 @@
     "20261017201119",
     "20261017201211",
     "20261017201219",
-    "20261017201226"
+    "20261017201226",
+    "20261017234442",
+    "20261017234455",
+    "20261017234701",
+    "20261017234942"
   ],
   "external_email": "user_confirmed_activation_success_not_retested_in_stage_3",
   "deployment": "inspect_current_commit_in_vercel",
@@ -41,12 +45,12 @@
   "supabase_project_ref": "slppnagegknxsjhfqthm",
   "github_write": "connector",
   "production_url": "https://lms-nurul-falah.vercel.app",
-  "guide": "docs/09-Tahap-6-Kelayakan-Uji-Coba.md",
+  "guide": "docs/11-Tahap-8-Cakupan-Penuh.md",
   "weekly_duty_schedule": "semester_and_one_or_more_weekdays",
   "browser_teacher_student_flow": "not_automated",
-  "hosted_storage_roundtrip": "not_automated",
+  "hosted_storage_roundtrip": "not_run",
   "pdf_render_qa": "first_and_last_pages_checked_132_row_fixture",
-  "quiz_browser_flow": "not_automated",
+  "quiz_browser_flow": "public_home_only_private_flow_pending_login",
   "real_network_disconnection": "pending_browser_verification",
   "supabase_security_advisors": "no_errors_preexisting_leaked_password_warning_and_expected_rpc_table_infos",
   "supabase_performance_advisors": "unused_indexes_info_only",
@@ -58,6 +62,9 @@
     "auth_sessions_deleted": true
   },
   "function_region": "sin1",
-  "runtime_commit": "f4b126d660e9f557522d178d48a15a06aeaa1c9b",
-  "hosted_report": "docs/verification/stage6-hosted-results.json"
+  "runtime_commit": "inspect_current_stage8_commit_in_vercel",
+  "hosted_report": "docs/verification/stage6-hosted-results.json",
+  "stage8_load_test": "not_run_stage6_latency_gate_remains_open",
+  "stage8_activity_email": "implemented_not_sent_to_real_recipients",
+  "stage8_retention": "tested_synthetic_local_no_real_alumni_deleted"
 }

@@ -1,0 +1,61 @@
+{
+  "stage": 8,
+  "date": "2026-10-18",
+  "timezone": "Asia/Jakarta",
+  "status": "implementation_complete_operational_acceptance_pending",
+  "automated_tests": {
+    "passed": 106,
+    "failed": 0
+  },
+  "http_local_groups": 14,
+  "typecheck": "passed",
+  "production_build": "passed",
+  "migrations_applied": 19,
+  "hosted_database_integration": {
+    "result": "passed_rolled_back",
+    "synthetic_identities": 4,
+    "authentication_scope": "database_claims_not_HTTP_Auth_login",
+    "schools_remaining": 0,
+    "profiles_remaining": 0
+  },
+  "pdf_qa": {
+    "synthetic_rows": 132,
+    "pages": 9,
+    "checked_pages": [
+      1,
+      9
+    ]
+  },
+  "browser": "public_home_verified_private_flows_not_verified",
+  "new_features": [
+    "seven_question_kinds",
+    "question_bank_and_xlsx_preview",
+    "essay_grading",
+    "randomization_and_retakes",
+    "tab_visibility_events",
+    "material_prerequisites_and_progress",
+    "explicit_same_grade_material_sharing",
+    "moderated_discussion",
+    "groups_and_revision_limits",
+    "rubric_grading",
+    "late_submission_window",
+    "weighted_grades_and_exports",
+    "principal_dashboard_and_guardian_portal",
+    "in_app_activity_messages_and_manual_smtp_batches",
+    "calendar_based_alumni_retention_workflow"
+  ],
+  "open_gates": [
+    "stage6_client_p95_latency",
+    "private_browser_and_device_acceptance",
+    "real_network_disconnect",
+    "production_backup_and_storage_restore",
+    "stage7_real_class_pilot",
+    "stage8_hosted_storage_copy_delete_roundtrip",
+    "activity_email_real_delivery_acceptance",
+    "stage8_hosted_load"
+  ],
+  "real_activity_emails_sent": 0,
+  "real_student_data_deleted": 0,
+  "security_advisors": "no_errors_preexisting_leaked_password_warning_expected_RLS_closed_tables",
+  "performance_advisors": "unused_index_info_only"
+}

@@ -1,12 +1,12 @@
 # LMS Nurul Falah
 
-LMS sampai Tahap 6 mencakup materi, absensi, tugas, kuis dan laporan Excel/PDF, disertai pengujian serta perbaikan sinkronisasi. Gerbang kelayakan yang belum lulus dicatat pada dokumentasi Tahap 6. Frontend/backend di Vercel; Supabase menangani PostgreSQL, Auth dan Storage.
+LMS sampai Tahap 8 mencakup materi, absensi, tugas, kuis dan laporan Excel/PDF, disertai pengujian serta perbaikan sinkronisasi. Gerbang kelayakan yang belum lulus dicatat pada dokumentasi Tahap 6. Frontend/backend di Vercel; Supabase menangani PostgreSQL, Auth dan Storage.
 
 ## Status terbaru
 
 - Source: https://github.com/kamadmtsnf-ai/lms-nurul-falah
 - Aplikasi: https://lms-nurul-falah.vercel.app
-- Sebelas migrasi diterapkan pada Supabase `slppnagegknxsjhfqthm`.
+- Sembilan belas migrasi diterapkan pada Supabase `slppnagegknxsjhfqthm`.
 - Form login, wajib ganti password lalu login ulang, email per akun, pemulihan berbasis token sekali pakai, multi-peran dan manajemen akun tersedia.
 - Aktivasi telah dikonfirmasi berhasil oleh pengguna. Email menggunakan konfigurasi SMTP; tidak ada bypass aktivasi.
 - Master akademik, tujuh template/impor Excel serta materi, tugas dan dua sumber absensi tersedia. Kuis/laporan V1 mengikuti Tahap 5.
@@ -65,3 +65,7 @@ Perbaikan sinkronisasi kuis, pengujian antrean/sesi, laporan beban dan drill cad
 ## Tahap 7 — Persiapan peluncuran terbatas
 
 Panduan migrasi data, aktivasi bertahap dan pendampingan: [docs/10-Tahap-7-Peluncuran-Terbatas.md](docs/10-Tahap-7-Peluncuran-Terbatas.md). Jalankan `node scripts/check-rollout.mjs` untuk laporan kesiapan (kode 2 menandakan peluncuran belum dimulai). Kendala Tahap 6 dan data nyata yang belum tersedia dicatat terbuka.
+
+## Tahap 8 — Modul cakupan penuh
+
+Jenis soal lengkap, bank/impor soal, koreksi esai, kelompok/rubrik, prasyarat/diskusi, dashboard/portal wali, nilai berbobot, email kegiatan dan retensi alumni tersedia. Panduan penggunaan serta batas penerimaan: [docs/11-Tahap-8-Cakupan-Penuh.md](docs/11-Tahap-8-Cakupan-Penuh.md). Status implementasi dan penerimaan operasional dibedakan.

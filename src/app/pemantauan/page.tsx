@@ -1,0 +1,3 @@
+import Link from 'next/link';import {requireAccount} from '@/lib/auth/page-context';import {MonitoringDashboard} from '@/components/monitoring-dashboard';import {LogoutButton} from '@/components/auth-form';
+export const dynamic='force-dynamic';
+export default async function Page(){await requireAccount(true);return <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6"><header className="mb-7 flex items-center justify-between"><Link href="/ruang-belajar" className="text-sm text-emerald-800 underline">← Ruang akun</Link><LogoutButton/></header><h1 className="mb-3 text-3xl font-semibold">Pemantauan pembelajaran</h1><p className="mb-7 text-sm text-stone-600">Dashboard kelas, portal orang tua dan notifikasi sesuai hak akses Anda.</p><MonitoringDashboard/></main>;}

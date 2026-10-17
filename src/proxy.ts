@@ -17,4 +17,4 @@ export async function proxy(request: NextRequest) {
  response.headers.set("Cache-Control", "private, no-store");
  return response;
 }
-export const config = { matcher: ["/ruang-belajar/:path*", "/admin/:path*", "/ganti-password", "/verifikasi", "/api/identitas/:path*", "/akademik/:path*", "/api/akademik/:path*", "/pembelajaran/:path*", "/absensi-harian", "/api/pembelajaran/:path*", "/kuis/:path*", "/laporan/:path*", "/api/kuis/:path*", "/api/laporan/:path*"] };
+export const config = { matcher: ["/pemantauan", "/api/lanjutan/:path*", "/ruang-belajar/:path*", "/admin/:path*", "/ganti-password", "/verifikasi", "/api/identitas/:path*", "/akademik/:path*", "/api/akademik/:path*", "/pembelajaran/:path*", "/absensi-harian", "/api/pembelajaran/:path*", "/kuis/:path*", "/laporan/:path*", "/api/kuis/:path*", "/api/laporan/:path*"] };
