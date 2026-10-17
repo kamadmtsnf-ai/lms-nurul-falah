@@ -1,5 +1,5 @@
 import {z} from 'zod';
-export type Field={key:string;label:string;type?:'text'|'date'|'number'|'select';source?:string;choices?:readonly string[];optional?:boolean;role?:string;max?:number};
+export type Field={key:string;label:string;type?:'text'|'date'|'number'|'select'|'weekdays';source?:string;choices?:readonly string[];optional?:boolean;role?:string;max?:number};
 export type Entity={key:string;label:string;singular:string;description:string;fields:Field[]};
 const field=(key:string,label:string,source?:string,role?:string):Field=>({key,label,type:source?'select':'text',source,role});
 const status:Field={key:'status',label:'Status',type:'select',choices:['draft','active','archived']};
@@ -17,7 +17,7 @@ export const entities:Entity[]=[
  {key:'teaching_classes',label:'Guru pengampu',singular:'penugasan pengampu',description:'Satu guru untuk satu mata pelajaran per rombel. Pilih kurikulum yang berlaku pada kelas ini.',fields:[field('classroom_id','Rombel','classrooms'),field('subject_id','Mata pelajaran','subjects'),field('curriculum_version_id','Kurikulum','curriculum_versions'),field('teacher_id','Guru','users','teacher'),enabled]},
  {key:'student_enrollments',label:'Anggota kelas',singular:'keanggotaan siswa',description:'Satu rombel aktif per siswa dalam satu semester. Untuk pindah kelas, nonaktifkan keanggotaan lama lalu tambahkan yang baru.',fields:[field('semester_id','Semester','semesters'),field('classroom_id','Rombel','classrooms'),field('student_id','Siswa','users','student'),{key:'status',label:'Status keanggotaan',type:'select',choices:['active','inactive']}]},
  {key:'homeroom_assignments',label:'Wali kelas',singular:'penugasan wali kelas',description:'Satu wali kelas per rombel. Pengguna harus memiliki peran Wali Kelas.',fields:[field('classroom_id','Rombel','classrooms'),field('teacher_id','Wali kelas','users','homeroom_teacher'),enabled]},
- {key:'duty_assignments',label:'Guru piket',singular:'penugasan piket',description:'Tentukan rentang tanggal penugasan. Pencatatan absensi harian tersedia pada Tahap 4.',fields:[field('teacher_id','Guru piket','users','duty_teacher'),...dates,enabled]},
+ {key:'duty_assignments',label:'Guru piket',singular:'penugasan piket',description:'Pilih semester dan satu atau beberapa hari piket. Jadwal berulang setiap pekan selama semester tersebut. Pencatatan absensi harian tersedia pada Tahap 4.',fields:[field('semester_id','Semester','semesters'),field('teacher_id','Guru piket','users','duty_teacher'),{key:'weekdays',label:'Hari piket setiap pekan',type:'weekdays'},enabled]},
  {key:'guardian_students',label:'Orang tua / wali',singular:'tautan wali–siswa',description:'Satu wali dapat ditautkan ke beberapa anak, dan seorang siswa dapat memiliki beberapa wali.',fields:[field('guardian_id','Orang tua / wali','users','guardian'),field('student_id','Siswa','users','student'),field('relationship','Hubungan (mis. Ibu, Ayah, Wali)'),enabled]},
 ];
 const text=(max=100)=>z.string().trim().min(1,'Wajib diisi.').max(max,'Isian terlalu panjang.');
@@ -37,7 +37,7 @@ const schemas:Record<string,z.ZodType>={
  teaching_classes:z.object({...base,active:z.boolean().default(true),classroom_id:z.uuid(),subject_id:z.uuid(),curriculum_version_id:z.uuid(),teacher_id:z.uuid()}).strict(),
  student_enrollments:z.object({...base,classroom_id:z.uuid(),semester_id:z.uuid(),student_id:z.uuid(),status:z.enum(['active','inactive'])}).strict(),
  homeroom_assignments:z.object({...base,active:z.boolean().default(true),classroom_id:z.uuid(),teacher_id:z.uuid()}).strict(),
- duty_assignments:z.object({...base,active:z.boolean().default(true),teacher_id:z.uuid(),...range}).strict(),
+ duty_assignments:z.object({...base,active:z.boolean().default(true),teacher_id:z.uuid(),semester_id:z.uuid(),weekdays:z.array(z.number().int().min(1).max(7)).min(1,'Pilih minimal satu hari piket.').max(7).refine(v=>new Set(v).size===v.length,'Hari piket tidak boleh ganda.')}).strict(),
  guardian_students:z.object({...base,active:z.boolean().default(true),guardian_id:z.uuid(),student_id:z.uuid(),relationship:text(50)}).strict(),
 };
 export function parseEntity(entity:string,input:unknown){
@@ -58,3 +58,5 @@ export function rowLabel(state:AcademicState,key:string,row:DataRow):string{
  if(key==='curriculum_versions')return `${row.name} · ${row.version}`;
  return String(row.name??row.code??row.id);
 }
+
+export const weekdayLabels:Record<number,string>={1:'Senin',2:'Selasa',3:'Rabu',4:'Kamis',5:'Jumat',6:'Sabtu',7:'Minggu'};

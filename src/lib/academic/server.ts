@@ -5,6 +5,7 @@ export async function academicCommand<T=Record<string,unknown>>(context:AccountC
  const {data,error}=await context.client.rpc('academic_command',{cmd,p});
  if(error){
   if(error.code==='42501')throw new IdentityError('Anda tidak memiliki akses untuk tindakan ini.',403);
+  if(error.code==='23505' && p.entity==='duty_assignments')throw new IdentityError('Guru ini sudah memiliki jadwal piket pada semester tersebut. Ubah jadwal yang sudah ada.',409);
   if(error.code==='23505')throw new IdentityError('Data duplikat atau siswa sudah memiliki rombel aktif pada semester ini.',409);
   if(error.code==='23503')throw new IdentityError('Referensi tidak ditemukan atau berasal dari sekolah lain.',409);
   if(['23514','23502','22P02'].includes(error.code))throw new IdentityError('Isian tidak sesuai aturan data. Periksa kembali form.',400);

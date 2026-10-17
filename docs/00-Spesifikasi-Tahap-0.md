@@ -175,7 +175,7 @@ Konvensi: UUID untuk primary key, timestamptz untuk waktu, date lokal untuk tang
 | teaching_assignments | teaching_class_id, teacher_id, is_primary; V1 hanya satu pengampu aktif |
 | student_enrollments | student_id, classroom_id, semester_id, status; satu rombel aktif per siswa/semester |
 | homeroom_assignments | classroom_id, teacher_id, masa penugasan |
-| duty_assignments | user_id, tanggal/rentang, sekolah; lingkup guru piket |
+| duty_assignments | user_id, semester_id, weekdays, sekolah; jadwal satu/beberapa hari setiap pekan selama semester |
 | guardian_students | guardian_id, student_id, relationship, linked_by; unik pasangan |
 | learning_units / meetings | teaching_class_id, judul, urutan; pertemuan dengan waktu dan topik |
 | materials | unit_id, content, status, publish_at, source_material_id |

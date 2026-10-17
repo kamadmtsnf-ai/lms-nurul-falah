@@ -101,7 +101,7 @@ test('akademik: transaksi, arsip, impor dan RLS',async t=>{
    await save('teaching_classes',{classroom_id:room2,subject_id:extra,curriculum_version_id:curriculum,teacher_id:other});
    await as(teacher);assert.equal((await db.query('select * from teaching_classes')).rows.length,1);
    await as();await db.exec('reset role');const gm=await db.query<{id:string}>('select id from school_memberships where school_id=$1 and user_id=$2',[school,guardian]);await db.query("insert into membership_roles values($1,$2,'duty_teacher')",[school,gm.rows[0].id]);await as();
-   const duty=await save('duty_assignments',{teacher_id:guardian,starts_on:'2026-01-01',ends_on:'2027-12-31',active:true});
+   const duty=await save('duty_assignments',{teacher_id:guardian,semester_id:sem,weekdays:[1,2,3,4,5,6,7],active:true});
    await as(guardian);assert.equal((await db.query('select * from classrooms')).rows.length,2);assert.equal((await db.query('select * from teaching_classes')).rows.length,2);
    await as();const d=await row('duty_assignments',duty);await save('duty_assignments',{...d,active:false,expected_updated_at:d.updated_at});
   });
@@ -115,11 +115,32 @@ test('akademik: transaksi, arsip, impor dan RLS',async t=>{
    await db.exec('reset role');await db.query("update profiles set must_change_password=false,credentials_changed_at=now()+interval '1 second' where id=$1",[admin]);await as();await assert.rejects(()=>command('state'),/Sesi/);
    await db.exec('reset role');await db.query("update profiles set credentials_changed_at='-infinity' where id=$1",[admin]);await as();
   });
+  await t.test('piket mingguan: satu atau beberapa hari dalam satu semester',async()=>{
+   const duties=(await command('state')).duty_assignments as Record<string,unknown>[];const old=duties[0];
+   await save('duty_assignments',{...old,active:true,weekdays:[1,4],expected_updated_at:old.updated_at});
+   await as(guardian);
+   async function scheduled(date:string){return (await db.query<{allowed:boolean}>('select private.duty_scheduled($1,$2::date) allowed',[school,date])).rows[0].allowed;}
+   assert.equal(await scheduled('2026-10-19'),true);assert.equal(await scheduled('2026-10-22'),true);assert.equal(await scheduled('2026-10-20'),false);
+   assert.equal(await scheduled('2027-01-04'),false);await as();
+   const current=await row('duty_assignments',String(old.id));await save('duty_assignments',{...current,weekdays:[3],expected_updated_at:current.updated_at});
+   await as(guardian);assert.equal(await scheduled('2026-10-21'),true);assert.equal(await scheduled('2026-10-19'),false);await as();
+  });
+  await t.test('piket menolak hari kosong, ganda, tidak valid, duplikasi guru dan semester lintas sekolah',async()=>{
+   const valid={teacher_id:guardian,semester_id:sem,active:true};
+   for(const weekdays of [[],[0],[8],[1,1]])await assert.rejects(()=>save('duty_assignments',{...valid,weekdays}),/hari|Hari/);
+   await assert.rejects(()=>save('duty_assignments',{...valid,weekdays:[2]}),/duplicate key/);
+   await assert.rejects(()=>save('duty_assignments',{...valid,semester_id:'00000000-0000-4000-8000-000000000099',weekdays:[1]}),/Semester/);
+   assert.throws(()=>parseEntity('duty_assignments',{...valid,weekdays:[]}));
+   assert.throws(()=>parseEntity('duty_assignments',{...valid,weekdays:[1,1]}));
+  });
   await t.test('arsip menutup mutasi tanpa menghapus anggota masa lalu',async()=>{
    const old=await row('semesters',sem);await save('semesters',{...old,status:'archived',expected_updated_at:old.updated_at});
    await assert.rejects(()=>save('classrooms',{semester_id:sem,grade_level_id:grade,name:'7C'}),/diarsipkan/);
    const e=await row('student_enrollments',enrollment);await assert.rejects(()=>save('student_enrollments',{...e,status:'inactive',expected_updated_at:e.updated_at}),/diarsipkan/);
    assert.equal(((await command('state')).student_enrollments as unknown[]).length,2);
+   const duties=(await command('state')).duty_assignments as Record<string,unknown>[];const duty=duties[0];
+   await assert.rejects(()=>save('duty_assignments',{...duty,weekdays:[2],expected_updated_at:duty.updated_at}),/diarsipkan/);
+   await as(guardian);assert.equal((await db.query<{allowed:boolean}>('select private.duty_scheduled($1,$2::date) allowed',[school,'2026-10-21'])).rows[0].allowed,false);await as();
   });
  }finally{await db.close();}
 });

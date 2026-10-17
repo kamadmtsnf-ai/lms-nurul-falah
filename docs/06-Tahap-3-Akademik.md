@@ -20,7 +20,7 @@ Navigasi di samping pada laptop dan dapat digeser mendatar pada ponsel. Form, pe
 4. Buat kurikulum dan versi, tingkat (MTs: 7, 8, 9), serta mapel dengan kode unik.
 5. Buat rombel per semester (mis. 7A). Rombel semester baru dibuat sebagai data baru.
 6. Lengkapi identitas guru/siswa, lalu tautkan anggota kelas. Satu rombel aktif per siswa per semester.
-7. Tugaskan pengampu (satu guru per mapel per rombel), wali kelas, dan guru piket beserta rentang tanggalnya.
+7. Tugaskan pengampu (satu guru per mapel per rombel), wali kelas, dan guru piket beserta semester dan satu atau beberapa hari piket setiap pekan.
 8. Tautkan username orang tua dan siswa. Satu wali dapat mempunyai beberapa anak; satu anak dapat mempunyai beberapa wali.
 
 Guru/piket/wali kelas harus memiliki peran yang sesuai sebelum dipilih. Penugasan dan tautan wali dapat dinonaktifkan tanpa dihapus. Izin membaca diperiksa kembali dari database, sehingga tautan yang nonaktif langsung menutup akses anak tersebut melalui peran wali.
@@ -74,3 +74,13 @@ Impor akademik dijalankan dalam transaksi PostgreSQL. Impor akun melibatkan Supa
 Migrasi hosted: `20261017174710_academic_management` dan `20261017174825_academic_foreign_key_indexes`.
 
 Tahap berikutnya: **Tahap 4 — Pembelajaran** (materi, penyimpanan privat, absensi pertemuan/harian, tugas, pengumpulan dan penilaian).
+
+## Revisi penugasan piket — 18 Oktober 2026
+
+Penugasan piket memakai **semester + guru + satu atau beberapa hari dalam sepekan**, bukan input tanggal mulai/selesai. Contoh: Ibu A piket Senin dan Kamis setiap pekan sepanjang semester Ganjil 2026/2027. Setiap guru memiliki satu jadwal per semester; untuk menambah/mengurangi hari gunakan Ubah. Beberapa guru boleh piket pada hari yang sama.
+
+Admin memilih hari melalui kotak centang Senin–Minggu; minimal satu hari wajib dipilih. Daftar menampilkan semester, guru dan hari, dilengkapi filter semester. Tanggal efektif mengikuti kalender semester, sehingga perubahan tanggal semester tidak memerlukan perubahan manual jadwal piket. Jadwal semester arsip menjadi baca-saja.
+
+Izin piket memeriksa status aktif penugasan/semester, tanggal dalam semester, dan kecocokan hari berdasarkan Asia/Jakarta. Di luar hari piket atau semester yang berlaku, peran piket tidak memberikan akses pencatatan harian. Penugasan semester baru dibuat sebagai baris baru agar jadwal semester lama tetap tersimpan.
+
+Migrasi `20261017184407_weekly_duty_schedule` diterapkan ketika belum ada penugasan piket lama. Kolom tanggal lama dipertahankan sebagai snapshot kompatibilitas, tetapi tidak dipakai sebagai masukan atau sumber otorisasi. Total 58 tes otomatis lulus, termasuk satu/beberapa hari, hari salah, di luar semester, arsip, duplikasi dan validasi backend. Validasi hosted dalam transaksi rollback juga lulus untuk jadwal Senin/Kamis, penolakan hari lain dan batas semester; tidak ada penugasan uji yang tersimpan.
