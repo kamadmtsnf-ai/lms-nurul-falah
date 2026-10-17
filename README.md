@@ -1,15 +1,15 @@
 # LMS Nurul Falah
 
-Tahap 3 melengkapi akun/aktivasi dengan master akademik, penugasan, anggota kelas dan impor Excel. Frontend/backend di Vercel; Supabase menangani PostgreSQL, Auth dan Storage.
+Tahap 4 menambahkan materi, absensi harian/pertemuan, tugas, pengumpulan berversi dan penilaian pada fondasi akademik. Frontend/backend di Vercel; Supabase menangani PostgreSQL, Auth dan Storage.
 
 ## Status terbaru
 
 - Source: https://github.com/kamadmtsnf-ai/lms-nurul-falah
 - Aplikasi: https://lms-nurul-falah.vercel.app
-- Enam migrasi diterapkan pada Supabase `slppnagegknxsjhfqthm`.
+- Sebelas migrasi diterapkan pada Supabase `slppnagegknxsjhfqthm`.
 - Form login, wajib ganti password lalu login ulang, email per akun, pemulihan berbasis token sekali pakai, multi-peran dan manajemen akun tersedia.
 - Aktivasi telah dikonfirmasi berhasil oleh pengguna. Email menggunakan konfigurasi SMTP; tidak ada bypass aktivasi.
-- Master akademik dan tujuh template/impor Excel tersedia. Materi/tugas/kuis/absensi mengikuti Tahap 4.
+- Master akademik, tujuh template/impor Excel serta materi, tugas dan dua sumber absensi tersedia. Kuis/laporan V1 mengikuti Tahap 5.
 
 ## Menjalankan dan memeriksa
 
@@ -49,3 +49,7 @@ Laporan Tahap 1 dan status cloud sebelumnya disimpan sebagai riwayat; status pad
 ## Tahap 3 — Akademik
 
 Pusat akademik tersedia pada `/admin/akademik`; kelas sesuai hak akses pada `/akademik`. Panduan konfigurasi, tujuh template Excel dan batas impor: [docs/06-Tahap-3-Akademik.md](docs/06-Tahap-3-Akademik.md).
+
+## Tahap 4 — Pembelajaran
+
+Buka `/akademik` lalu pilih mata pelajaran. Absensi piket/rekap ada di `/absensi-harian`. Alur guru, siswa, lampiran privat dan batas verifikasi: [docs/07-Tahap-4-Pembelajaran.md](docs/07-Tahap-4-Pembelajaran.md).

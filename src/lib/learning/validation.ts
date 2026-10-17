@@ -1,0 +1,14 @@
+import {z} from 'zod';
+export const linksSchema=z.array(z.url().max(2000).refine(v=>new URL(v).protocol==='https:','Tautan harus menggunakan HTTPS.')).max(10);
+const title=z.string().trim().min(2).max(150);const optionalTime=z.union([z.iso.datetime({offset:true}),z.literal('')]).nullable().optional();
+const publication={status:z.enum(['draft','scheduled','published','archived']),publish_at:optionalTime};
+const expected={expected_updated_at:z.string().max(50).optional()};
+export const meetingSchema=z.object({title,starts_at:z.iso.datetime({offset:true}),...expected}).strict();
+export const materialSchema=z.object({title,meeting_id:z.uuid(),body:z.string().max(30000),links:linksSchema,...publication,...expected}).strict().refine(v=>v.status!=='scheduled'||!!v.publish_at,'Isi jadwal publikasi.');
+export const assignmentSchema=z.object({title,instructions:z.string().max(30000),formats:z.array(z.enum(['text','file','link'])).min(1).max(3),due_at:z.iso.datetime({offset:true}),accept_late:z.boolean(),max_score:z.number().positive().max(10000),...publication,...expected}).strict().refine(v=>v.status!=='scheduled'||!!v.publish_at,'Isi jadwal publikasi.');
+export const submissionSchema=z.object({request_id:z.uuid(),revision:z.number().int().min(0),body:z.string().max(30000),links:linksSchema,asset_ids:z.array(z.uuid()).max(5)}).strict();
+export const gradeSchema=z.object({score:z.number().min(0).max(10000),feedback:z.string().max(5000),reason:z.string().max(1000).optional(),...expected}).strict();
+export const entriesSchema=z.array(z.object({student:z.uuid(),status:z.enum(['present','sick','excused','absent']),revision:z.number().int().min(0),reason:z.string().max(1000).optional()}).strict()).min(1).max(300);
+export const assetSchema=z.object({target_type:z.enum(['material','assignment','submission']),target_id:z.uuid(),name:z.string().min(1).max(150).regex(/^[^\x00-\x1f\x7f/\\]+$/,'Nama berkas tidak valid.'),kind:z.enum(['image','document','audio','video']),mime:z.string().min(1).max(150),bytes:z.number().int().positive().max(5000000)}).strict();
+export const attendanceLabels:Record<string,string>={present:'Hadir',sick:'Sakit',excused:'Izin',absent:'Alpa'};
+export const publicationLabels:Record<string,string>={draft:'Draf',scheduled:'Terjadwal',published:'Terbit',archived:'Arsip'};

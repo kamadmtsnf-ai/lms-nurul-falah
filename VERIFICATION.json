@@ -1,20 +1,20 @@
 {
-  "stage": 3,
-  "status": "academic_implemented_and_tested",
+  "stage": 4,
+  "status": "learning_implemented_and_tested",
   "date": "2026-10-18",
   "timezone": "Asia/Jakarta",
   "production_build": "passed",
   "typecheck": "passed",
   "automated_tests": {
-    "passed": 58,
+    "passed": 75,
     "failed": 0
   },
   "http_scenarios": {
-    "passed": 9,
+    "passed": 10,
     "failed": 0,
     "scope": "local_no_database_config"
   },
-  "cloud_database": "applied_and_transaction_rollback_verified",
+  "cloud_database": "applied_and_full_learning_transaction_rollback_verified",
   "migration_versions": [
     "20261017152937",
     "20261017152957",
@@ -22,7 +22,11 @@
     "20261017163436",
     "20261017174710",
     "20261017174825",
-    "20261017184407"
+    "20261017184407",
+    "20261017192300",
+    "20261017193910",
+    "20261017194327",
+    "20261017194359"
   ],
   "external_email": "user_confirmed_activation_success_not_retested_in_stage_3",
   "deployment": "inspect_current_commit_in_vercel",
@@ -33,6 +37,8 @@
   "supabase_project_ref": "slppnagegknxsjhfqthm",
   "github_write": "connector",
   "production_url": "https://lms-nurul-falah.vercel.app",
-  "guide": "docs/06-Tahap-3-Akademik.md",
-  "weekly_duty_schedule": "semester_and_one_or_more_weekdays"
+  "guide": "docs/07-Tahap-4-Pembelajaran.md",
+  "weekly_duty_schedule": "semester_and_one_or_more_weekdays",
+  "browser_teacher_student_flow": "not_automated",
+  "hosted_storage_roundtrip": "not_automated"
 }
