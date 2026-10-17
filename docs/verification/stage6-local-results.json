@@ -1,0 +1,269 @@
+{
+  "recorded_at": "2026-10-17T21:19:58.461Z",
+  "environment": {
+    "engine": "PGlite 0.5.10 / PostgreSQL WASM",
+    "node": "v24.19.0",
+    "connection_model": "single connection; transactions serialized; virtual clients enqueue concurrently",
+    "production": false,
+    "http_auth_or_browser_included": false
+  },
+  "status": "local_queue_and_fixture_restore_passed_production_gate_pending",
+  "rounds": [
+    {
+      "virtual_clients": 60,
+      "questions": 30,
+      "phases": {
+        "start": {
+          "samples": 60,
+          "p50_ms": 109.01,
+          "p95_ms": 176.28,
+          "max_ms": 184.6,
+          "errors": 0
+        },
+        "autosave_1": {
+          "samples": 60,
+          "p50_ms": 77.2,
+          "p95_ms": 140.41,
+          "max_ms": 147.82,
+          "errors": 0
+        },
+        "autosave_2": {
+          "samples": 60,
+          "p50_ms": 72.81,
+          "p95_ms": 139.04,
+          "max_ms": 146.32,
+          "errors": 0
+        },
+        "autosave_3": {
+          "samples": 60,
+          "p50_ms": 71.49,
+          "p95_ms": 134.63,
+          "max_ms": 142.04,
+          "errors": 0
+        },
+        "autosave_4": {
+          "samples": 60,
+          "p50_ms": 68.9,
+          "p95_ms": 131.11,
+          "max_ms": 137.74,
+          "errors": 0
+        },
+        "autosave_5": {
+          "samples": 60,
+          "p50_ms": 67.93,
+          "p95_ms": 128.97,
+          "max_ms": 138.17,
+          "errors": 0
+        },
+        "retry_once": {
+          "samples": 60,
+          "p50_ms": 62.13,
+          "p95_ms": 120.96,
+          "max_ms": 127.49,
+          "errors": 0
+        },
+        "retry_duplicate": {
+          "samples": 60,
+          "p50_ms": 60.82,
+          "p95_ms": 114.22,
+          "max_ms": 119.97,
+          "errors": 0
+        },
+        "finish": {
+          "samples": 60,
+          "p50_ms": 63.62,
+          "p95_ms": 124.54,
+          "max_ms": 131.24,
+          "errors": 0
+        },
+        "finish_duplicate": {
+          "samples": 60,
+          "p50_ms": 57.01,
+          "p95_ms": 112.01,
+          "max_ms": 117.77,
+          "errors": 0
+        }
+      },
+      "acknowledged_answers_preserved": true,
+      "duplicate_finalizations": 0,
+      "identity_isolation": true
+    },
+    {
+      "virtual_clients": 100,
+      "questions": 30,
+      "phases": {
+        "start": {
+          "samples": 100,
+          "p50_ms": 116.22,
+          "p95_ms": 220.97,
+          "max_ms": 233.97,
+          "errors": 0
+        },
+        "autosave_1": {
+          "samples": 100,
+          "p50_ms": 111.3,
+          "p95_ms": 210.76,
+          "max_ms": 223.99,
+          "errors": 0
+        },
+        "autosave_2": {
+          "samples": 100,
+          "p50_ms": 108.05,
+          "p95_ms": 211.93,
+          "max_ms": 223.38,
+          "errors": 0
+        },
+        "autosave_3": {
+          "samples": 100,
+          "p50_ms": 110.09,
+          "p95_ms": 215.27,
+          "max_ms": 226.6,
+          "errors": 0
+        },
+        "autosave_4": {
+          "samples": 100,
+          "p50_ms": 109.62,
+          "p95_ms": 221.74,
+          "max_ms": 233.92,
+          "errors": 0
+        },
+        "autosave_5": {
+          "samples": 100,
+          "p50_ms": 121.73,
+          "p95_ms": 235.09,
+          "max_ms": 247.93,
+          "errors": 0
+        },
+        "retry_once": {
+          "samples": 100,
+          "p50_ms": 112.68,
+          "p95_ms": 211.62,
+          "max_ms": 221.94,
+          "errors": 0
+        },
+        "retry_duplicate": {
+          "samples": 100,
+          "p50_ms": 98.04,
+          "p95_ms": 189.29,
+          "max_ms": 199.27,
+          "errors": 0
+        },
+        "finish": {
+          "samples": 100,
+          "p50_ms": 109.01,
+          "p95_ms": 206.28,
+          "max_ms": 218.9,
+          "errors": 0
+        },
+        "finish_duplicate": {
+          "samples": 100,
+          "p50_ms": 98.47,
+          "p95_ms": 191.42,
+          "max_ms": 201.29,
+          "errors": 0
+        }
+      },
+      "acknowledged_answers_preserved": true,
+      "duplicate_finalizations": 0,
+      "identity_isolation": true
+    },
+    {
+      "virtual_clients": 132,
+      "questions": 30,
+      "phases": {
+        "start": {
+          "samples": 132,
+          "p50_ms": 151.59,
+          "p95_ms": 299.05,
+          "max_ms": 314.2,
+          "errors": 0
+        },
+        "autosave_1": {
+          "samples": 132,
+          "p50_ms": 146.83,
+          "p95_ms": 296.09,
+          "max_ms": 310.09,
+          "errors": 0
+        },
+        "autosave_2": {
+          "samples": 132,
+          "p50_ms": 147.94,
+          "p95_ms": 287.79,
+          "max_ms": 301.91,
+          "errors": 0
+        },
+        "autosave_3": {
+          "samples": 132,
+          "p50_ms": 148.83,
+          "p95_ms": 284.78,
+          "max_ms": 298.08,
+          "errors": 0
+        },
+        "autosave_4": {
+          "samples": 132,
+          "p50_ms": 143.18,
+          "p95_ms": 284.38,
+          "max_ms": 297.93,
+          "errors": 0
+        },
+        "autosave_5": {
+          "samples": 132,
+          "p50_ms": 149.63,
+          "p95_ms": 290.45,
+          "max_ms": 304.85,
+          "errors": 0
+        },
+        "retry_once": {
+          "samples": 132,
+          "p50_ms": 141.25,
+          "p95_ms": 283.13,
+          "max_ms": 299.72,
+          "errors": 0
+        },
+        "retry_duplicate": {
+          "samples": 132,
+          "p50_ms": 152.68,
+          "p95_ms": 295.76,
+          "max_ms": 311.78,
+          "errors": 0
+        },
+        "finish": {
+          "samples": 132,
+          "p50_ms": 133.18,
+          "p95_ms": 263.11,
+          "max_ms": 276.44,
+          "errors": 0
+        },
+        "finish_duplicate": {
+          "samples": 132,
+          "p50_ms": 134.93,
+          "p95_ms": 251.96,
+          "max_ms": 266.54,
+          "errors": 0
+        }
+      },
+      "acknowledged_answers_preserved": true,
+      "duplicate_finalizations": 0,
+      "identity_isolation": true
+    }
+  ],
+  "backup_restore": {
+    "format": "PGlite gzip data directory",
+    "encryption": "AES-256-GCM",
+    "authenticated_student_scope_preserved": true,
+    "synthetic_only": true,
+    "bytes": 6304813,
+    "roundtrip_ms": 1311,
+    "attempts": 292,
+    "answers": 8760,
+    "hash_equal": true,
+    "rls_denial_preserved": true,
+    "production_pg_dump_restore_tested": false
+  },
+  "limits": [
+    "Not a Vercel/Supabase production load test",
+    "Not 132 independent PostgreSQL connections",
+    "Browser unavailable; authenticated browser/device/offline scenarios remain pending",
+    "Storage objects and hosted Auth restoration not tested"
+  ]
+}

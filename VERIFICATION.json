@@ -1,12 +1,12 @@
 {
-  "stage": 5,
-  "status": "quiz_and_reports_implemented_and_tested",
+  "stage": 6,
+  "status": "executed_with_open_gates_not_approved_for_mass_rollout",
   "date": "2026-10-18",
   "timezone": "Asia/Jakarta",
   "production_build": "passed",
   "typecheck": "passed",
   "automated_tests": {
-    "passed": 86,
+    "passed": 92,
     "failed": 0
   },
   "http_scenarios": {
@@ -36,18 +36,28 @@
   "deployment": "inspect_current_commit_in_vercel",
   "admin_browser_flow": "not_automated",
   "hosted_auth_user_import": "not_automated",
-  "load_132_users": "not_tested_stage_6",
+  "load_132_users": "hosted_authenticated_API_60_100_132_completed_zero_request_errors_no_acknowledged_answer_loss",
   "no_credentials_included": true,
   "supabase_project_ref": "slppnagegknxsjhfqthm",
   "github_write": "connector",
   "production_url": "https://lms-nurul-falah.vercel.app",
-  "guide": "docs/08-Tahap-5-Kuis-Laporan.md",
+  "guide": "docs/09-Tahap-6-Kelayakan-Uji-Coba.md",
   "weekly_duty_schedule": "semester_and_one_or_more_weekdays",
   "browser_teacher_student_flow": "not_automated",
   "hosted_storage_roundtrip": "not_automated",
   "pdf_render_qa": "first_and_last_pages_checked_132_row_fixture",
   "quiz_browser_flow": "not_automated",
-  "real_network_disconnection": "not_tested_stage_6",
+  "real_network_disconnection": "pending_browser_verification",
   "supabase_security_advisors": "no_errors_preexisting_leaked_password_warning_and_expected_rpc_table_infos",
-  "supabase_performance_advisors": "unused_indexes_info_only"
+  "supabase_performance_advisors": "unused_indexes_info_only",
+  "client_latency_gate": "failed_target_p95_below_2000ms",
+  "production_backup_restore": "not_executed_native_postgres_and_storage_restore_pending",
+  "fixture_cleanup": {
+    "school_remaining": 0,
+    "users_remaining": 0,
+    "auth_sessions_deleted": true
+  },
+  "function_region": "sin1",
+  "runtime_commit": "f4b126d660e9f557522d178d48a15a06aeaa1c9b",
+  "hosted_report": "docs/verification/stage6-hosted-results.json"
 }

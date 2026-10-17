@@ -1,0 +1,20 @@
+{
+  "scope": "five concurrent GET /api/health requests; no application database access",
+  "edge_observed": "cle1",
+  "function_region": "sin1",
+  "client_duration_ms": [
+    6238,
+    5012,
+    6226,
+    6226,
+    5117
+  ],
+  "statuses": [
+    200,
+    200,
+    200,
+    200,
+    200
+  ],
+  "conclusion": "These client measurements include time outside the quiz handler; exact network/middleware/platform contribution is not isolated."
+}

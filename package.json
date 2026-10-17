@@ -1,7 +1,7 @@
 {
   "name": "lms-nurul-falah",
   "version": "0.1.0",
-  "description": "Fondasi LMS Nurul Falah — Tahap 1",
+  "description": "Fondasi LMS Nurul Falah \u2014 Tahap 1",
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
@@ -10,7 +10,10 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "check:services": "node --env-file-if-exists=.env.local --import tsx scripts/check-services.ts",
     "bootstrap:admin": "node --env-file-if-exists=.env.local --import tsx scripts/bootstrap-admin.ts",
-    "test:http": "node scripts/smoke-test.mjs"
+    "test:http": "node scripts/smoke-test.mjs",
+    "verify:stage6": "node --import tsx scripts/verify-stage6.ts",
+    "backup:db": "node scripts/backup-db.mjs",
+    "restore:db:test": "node scripts/restore-db-test.mjs"
   },
   "keywords": [],
   "author": "",

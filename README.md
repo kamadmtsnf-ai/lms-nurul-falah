@@ -1,6 +1,6 @@
 # LMS Nurul Falah
 
-Tahap 5 menambahkan kuis dengan autosave, koreksi otomatis dan laporan Excel/PDF pada modul materi, absensi dan tugas. Frontend/backend di Vercel; Supabase menangani PostgreSQL, Auth dan Storage.
+LMS sampai Tahap 6 mencakup materi, absensi, tugas, kuis dan laporan Excel/PDF, disertai pengujian serta perbaikan sinkronisasi. Gerbang kelayakan yang belum lulus dicatat pada dokumentasi Tahap 6. Frontend/backend di Vercel; Supabase menangani PostgreSQL, Auth dan Storage.
 
 ## Status terbaru
 
@@ -57,3 +57,7 @@ Buka `/akademik` lalu pilih mata pelajaran. Absensi piket/rekap ada di `/absensi
 ## Tahap 5 — Kuis dan laporan
 
 Tab **Kuis** dan **Laporan** ada di setiap ruang pembelajaran. V1 mencakup pilihan ganda/benar-salah, satu percobaan dengan autosave, batas waktu server, koreksi otomatis, rilis nilai/pembahasan oleh guru, serta laporan Excel/PDF. Panduan dan batas verifikasi: [docs/08-Tahap-5-Kuis-Laporan.md](docs/08-Tahap-5-Kuis-Laporan.md).
+
+## Tahap 6 — Kelayakan uji coba
+
+Perbaikan sinkronisasi kuis, pengujian antrean/sesi, laporan beban dan drill cadangan tersedia. Hasil lokal dipisahkan dari produksi dan browser. Panduan operator serta gerbang penerimaan yang masih terbuka: [docs/09-Tahap-6-Kelayakan-Uji-Coba.md](docs/09-Tahap-6-Kelayakan-Uji-Coba.md).

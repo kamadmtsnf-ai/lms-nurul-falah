@@ -1,0 +1,62 @@
+{
+  "assessed_at": "2026-10-17T21:42:13.804Z",
+  "status": "not_approved_for_mass_rollout_pending_gates",
+  "target": "https://lms-nurul-falah.vercel.app",
+  "function_region": "sin1",
+  "tested_commit": "f4b126d660e9f557522d178d48a15a06aeaa1c9b",
+  "table_metric": "Maximum of each answer-wave p95, including retry; not a pooled percentile",
+  "rows": [
+    {
+      "sessions": 60,
+      "requests": 600,
+      "request_errors": 0,
+      "worst_burst_answer_client_p95_ms": 16089.93,
+      "worst_burst_answer_handler_p95_ms": 6059.2,
+      "acknowledged_answers_preserved": true,
+      "duplicate_finalizations": 0,
+      "cross_student_access_denied": true,
+      "teacher_grading_correct": true,
+      "keys_hidden": true
+    },
+    {
+      "sessions": 100,
+      "requests": 1000,
+      "request_errors": 0,
+      "worst_burst_answer_client_p95_ms": 18968.04,
+      "worst_burst_answer_handler_p95_ms": 1164.8,
+      "acknowledged_answers_preserved": true,
+      "duplicate_finalizations": 0,
+      "cross_student_access_denied": true,
+      "teacher_grading_correct": true,
+      "keys_hidden": true
+    },
+    {
+      "sessions": 132,
+      "requests": 1320,
+      "request_errors": 0,
+      "worst_burst_answer_client_p95_ms": 23221.34,
+      "worst_burst_answer_handler_p95_ms": 1651.1,
+      "acknowledged_answers_preserved": true,
+      "duplicate_finalizations": 0,
+      "cross_student_access_denied": true,
+      "teacher_grading_correct": true,
+      "keys_hidden": true
+    }
+  ],
+  "gates": {
+    "all_three_auth_session_bursts_complete": true,
+    "quiz_request_error_rate_below_one_percent": true,
+    "acknowledged_answer_integrity_and_authorization": true,
+    "real_deadline_and_release": true,
+    "client_p95_answer_under_two_seconds": false,
+    "browser_and_real_device_acceptance": "pending_browser_unavailable",
+    "actual_network_disconnect_browser": "pending_browser_unavailable",
+    "production_backup_and_storage_restore": "pending_operator_credentials_and_tools"
+  },
+  "limits": [
+    "No unconditional capacity or SLA claim",
+    "Client latency and handler timings are separate",
+    "Synthetic school and sessions are removed after verification; provider audit logs follow provider retention",
+    "Production data backup and hosted Storage restoration were not performed"
+  ]
+}

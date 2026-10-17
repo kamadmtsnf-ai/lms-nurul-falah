@@ -1,0 +1,937 @@
+{
+  "started_at": "2026-10-17T21:32:02.792Z",
+  "finished_at": "2026-10-17T21:41:59.785Z",
+  "target": "https://lms-nurul-falah.vercel.app",
+  "scope": "synthetic school in production project; actual Supabase Auth sessions and Vercel API",
+  "browser_included": false,
+  "client_runtime": "v24.19.0",
+  "function_region": "sin1",
+  "deployment_commit": "f4b126d660e9f557522d178d48a15a06aeaa1c9b",
+  "latency_gate": "client p95 < 2000ms; a false result is not waived by completing functional tests",
+  "excludes": "TLS/HTTP headers, request bytes, Auth and internal provider traffic",
+  "rounds": [
+    {
+      "sessions": 60,
+      "questions": 30,
+      "phases": {
+        "start": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 59.3,
+              "p95_ms": 119.2,
+              "samples": 60
+            },
+            "rate": {
+              "p50_ms": 51.6,
+              "p95_ms": 85.4,
+              "samples": 60
+            },
+            "data": {
+              "p50_ms": 37.6,
+              "p95_ms": 80.3,
+              "samples": 60
+            },
+            "total": {
+              "p50_ms": 147.4,
+              "p95_ms": 285.3,
+              "samples": 60
+            }
+          },
+          "samples": 60,
+          "p50_ms": 12383.37,
+          "p95_ms": 14848.69,
+          "max_ms": 14998.58,
+          "errors": 0
+        },
+        "autosave_1": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 48.6,
+              "p95_ms": 128,
+              "samples": 60
+            },
+            "rate": {
+              "p50_ms": 50.5,
+              "p95_ms": 108.1,
+              "samples": 60
+            },
+            "data": {
+              "p50_ms": 39.3,
+              "p95_ms": 108.1,
+              "samples": 60
+            },
+            "total": {
+              "p50_ms": 140.7,
+              "p95_ms": 340.6,
+              "samples": 60
+            }
+          },
+          "samples": 60,
+          "p50_ms": 12269.77,
+          "p95_ms": 15163.28,
+          "max_ms": 15396.59,
+          "errors": 0
+        },
+        "autosave_2": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 47,
+              "p95_ms": 100.2,
+              "samples": 60
+            },
+            "rate": {
+              "p50_ms": 47.1,
+              "p95_ms": 148.9,
+              "samples": 60
+            },
+            "data": {
+              "p50_ms": 34,
+              "p95_ms": 68.2,
+              "samples": 60
+            },
+            "total": {
+              "p50_ms": 133.1,
+              "p95_ms": 270.8,
+              "samples": 60
+            }
+          },
+          "samples": 60,
+          "p50_ms": 11419.09,
+          "p95_ms": 14119.94,
+          "max_ms": 14204.21,
+          "errors": 0
+        },
+        "autosave_3": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 174,
+              "p95_ms": 782.2,
+              "samples": 60
+            },
+            "rate": {
+              "p50_ms": 223.6,
+              "p95_ms": 535.1,
+              "samples": 60
+            },
+            "data": {
+              "p50_ms": 107.3,
+              "p95_ms": 312,
+              "samples": 60
+            },
+            "total": {
+              "p50_ms": 704.6,
+              "p95_ms": 1203.7,
+              "samples": 60
+            }
+          },
+          "samples": 60,
+          "p50_ms": 1755.29,
+          "p95_ms": 10005.98,
+          "max_ms": 10196.05,
+          "errors": 0
+        },
+        "autosave_4": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 58.6,
+              "p95_ms": 95,
+              "samples": 60
+            },
+            "rate": {
+              "p50_ms": 52.7,
+              "p95_ms": 96.6,
+              "samples": 60
+            },
+            "data": {
+              "p50_ms": 42.2,
+              "p95_ms": 67.1,
+              "samples": 60
+            },
+            "total": {
+              "p50_ms": 161.4,
+              "p95_ms": 239.7,
+              "samples": 60
+            }
+          },
+          "samples": 60,
+          "p50_ms": 12743.03,
+          "p95_ms": 15567.09,
+          "max_ms": 15706.61,
+          "errors": 0
+        },
+        "autosave_5": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 273.1,
+              "p95_ms": 1207.5,
+              "samples": 60
+            },
+            "rate": {
+              "p50_ms": 570.2,
+              "p95_ms": 1417.5,
+              "samples": 60
+            },
+            "data": {
+              "p50_ms": 245.8,
+              "p95_ms": 712.6,
+              "samples": 60
+            },
+            "total": {
+              "p50_ms": 1355.1,
+              "p95_ms": 2191.7,
+              "samples": 60
+            }
+          },
+          "samples": 60,
+          "p50_ms": 2910.53,
+          "p95_ms": 10351.71,
+          "max_ms": 10431.88,
+          "errors": 0
+        },
+        "retry_once": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 1296.2,
+              "p95_ms": 3098.5,
+              "samples": 60
+            },
+            "rate": {
+              "p50_ms": 939.2,
+              "p95_ms": 3447.6,
+              "samples": 60
+            },
+            "data": {
+              "p50_ms": 370.9,
+              "p95_ms": 3360.9,
+              "samples": 60
+            },
+            "total": {
+              "p50_ms": 4116,
+              "p95_ms": 6059.2,
+              "samples": 60
+            }
+          },
+          "samples": 60,
+          "p50_ms": 15539.39,
+          "p95_ms": 16089.93,
+          "max_ms": 16122.66,
+          "errors": 0
+        },
+        "retry_duplicate": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 365.4,
+              "p95_ms": 641,
+              "samples": 60
+            },
+            "rate": {
+              "p50_ms": 776.8,
+              "p95_ms": 1149.6,
+              "samples": 60
+            },
+            "data": {
+              "p50_ms": 219.5,
+              "p95_ms": 723.7,
+              "samples": 60
+            },
+            "total": {
+              "p50_ms": 1658.9,
+              "p95_ms": 1908.5,
+              "samples": 60
+            }
+          },
+          "samples": 60,
+          "p50_ms": 2413.48,
+          "p95_ms": 2670.1,
+          "max_ms": 2673.18,
+          "errors": 0
+        },
+        "finish": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 1241.6,
+              "p95_ms": 1471.1,
+              "samples": 60
+            },
+            "rate": {
+              "p50_ms": 2334.1,
+              "p95_ms": 3995.1,
+              "samples": 60
+            },
+            "data": {
+              "p50_ms": 1377.8,
+              "p95_ms": 2269,
+              "samples": 60
+            },
+            "total": {
+              "p50_ms": 5150.9,
+              "p95_ms": 5551.2,
+              "samples": 60
+            }
+          },
+          "samples": 60,
+          "p50_ms": 5839.24,
+          "p95_ms": 6109.94,
+          "max_ms": 6148.29,
+          "errors": 0
+        },
+        "finish_duplicate": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 1316,
+              "p95_ms": 1756.8,
+              "samples": 60
+            },
+            "rate": {
+              "p50_ms": 1554.5,
+              "p95_ms": 1986.8,
+              "samples": 60
+            },
+            "data": {
+              "p50_ms": 520.4,
+              "p95_ms": 1291.7,
+              "samples": 60
+            },
+            "total": {
+              "p50_ms": 3425,
+              "p95_ms": 3604.8,
+              "samples": 60
+            }
+          },
+          "samples": 60,
+          "p50_ms": 4092.38,
+          "p95_ms": 4262.99,
+          "max_ms": 4302.66,
+          "errors": 0
+        }
+      },
+      "cross_student_access_denied": true,
+      "server_p95_autosave_under_2_seconds": false,
+      "all_acknowledged_answers_preserved": true,
+      "duplicate_finalizations": 0,
+      "keys_hidden": true,
+      "teacher_grading_correct": true,
+      "p95_autosave_under_2_seconds": false
+    },
+    {
+      "sessions": 100,
+      "questions": 30,
+      "phases": {
+        "start": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 959.9,
+              "p95_ms": 1607.9,
+              "samples": 100
+            },
+            "rate": {
+              "p50_ms": 741.7,
+              "p95_ms": 1519.4,
+              "samples": 100
+            },
+            "data": {
+              "p50_ms": 426.3,
+              "p95_ms": 1502.3,
+              "samples": 100
+            },
+            "total": {
+              "p50_ms": 2293.4,
+              "p95_ms": 3945.3,
+              "samples": 100
+            }
+          },
+          "samples": 100,
+          "p50_ms": 3461.34,
+          "p95_ms": 14184.45,
+          "max_ms": 14336.39,
+          "errors": 0
+        },
+        "autosave_1": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 50.8,
+              "p95_ms": 93.6,
+              "samples": 100
+            },
+            "rate": {
+              "p50_ms": 45.6,
+              "p95_ms": 77.9,
+              "samples": 100
+            },
+            "data": {
+              "p50_ms": 38.2,
+              "p95_ms": 75.2,
+              "samples": 100
+            },
+            "total": {
+              "p50_ms": 138.9,
+              "p95_ms": 212.6,
+              "samples": 100
+            }
+          },
+          "samples": 100,
+          "p50_ms": 13936.79,
+          "p95_ms": 18235.53,
+          "max_ms": 18612.15,
+          "errors": 0
+        },
+        "autosave_2": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 54.8,
+              "p95_ms": 111,
+              "samples": 100
+            },
+            "rate": {
+              "p50_ms": 50.8,
+              "p95_ms": 93.4,
+              "samples": 100
+            },
+            "data": {
+              "p50_ms": 36.7,
+              "p95_ms": 65.8,
+              "samples": 100
+            },
+            "total": {
+              "p50_ms": 146.7,
+              "p95_ms": 288.6,
+              "samples": 100
+            }
+          },
+          "samples": 100,
+          "p50_ms": 13754.73,
+          "p95_ms": 18021.19,
+          "max_ms": 18333.31,
+          "errors": 0
+        },
+        "autosave_3": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 63.8,
+              "p95_ms": 316.7,
+              "samples": 100
+            },
+            "rate": {
+              "p50_ms": 54.4,
+              "p95_ms": 630.7,
+              "samples": 100
+            },
+            "data": {
+              "p50_ms": 51.1,
+              "p95_ms": 362.1,
+              "samples": 100
+            },
+            "total": {
+              "p50_ms": 168.7,
+              "p95_ms": 1043.3,
+              "samples": 100
+            }
+          },
+          "samples": 100,
+          "p50_ms": 7895.32,
+          "p95_ms": 11982.99,
+          "max_ms": 12415.73,
+          "errors": 0
+        },
+        "autosave_4": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 49.9,
+              "p95_ms": 80.1,
+              "samples": 100
+            },
+            "rate": {
+              "p50_ms": 45.7,
+              "p95_ms": 69.8,
+              "samples": 100
+            },
+            "data": {
+              "p50_ms": 39.2,
+              "p95_ms": 65.7,
+              "samples": 100
+            },
+            "total": {
+              "p50_ms": 137.6,
+              "p95_ms": 196.5,
+              "samples": 100
+            }
+          },
+          "samples": 100,
+          "p50_ms": 14562.47,
+          "p95_ms": 18968.04,
+          "max_ms": 19234.48,
+          "errors": 0
+        },
+        "autosave_5": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 81.6,
+              "p95_ms": 706.8,
+              "samples": 100
+            },
+            "rate": {
+              "p50_ms": 90.3,
+              "p95_ms": 791.9,
+              "samples": 100
+            },
+            "data": {
+              "p50_ms": 63.6,
+              "p95_ms": 263,
+              "samples": 100
+            },
+            "total": {
+              "p50_ms": 226,
+              "p95_ms": 1164.8,
+              "samples": 100
+            }
+          },
+          "samples": 100,
+          "p50_ms": 10320.17,
+          "p95_ms": 14164.37,
+          "max_ms": 14455.51,
+          "errors": 0
+        },
+        "retry_once": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 43.2,
+              "p95_ms": 140.1,
+              "samples": 100
+            },
+            "rate": {
+              "p50_ms": 44.4,
+              "p95_ms": 144.3,
+              "samples": 100
+            },
+            "data": {
+              "p50_ms": 33,
+              "p95_ms": 82.4,
+              "samples": 100
+            },
+            "total": {
+              "p50_ms": 126.2,
+              "p95_ms": 297,
+              "samples": 100
+            }
+          },
+          "samples": 100,
+          "p50_ms": 13614.79,
+          "p95_ms": 17955.48,
+          "max_ms": 18412.56,
+          "errors": 0
+        },
+        "retry_duplicate": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 59.9,
+              "p95_ms": 289.6,
+              "samples": 100
+            },
+            "rate": {
+              "p50_ms": 66.4,
+              "p95_ms": 650.8,
+              "samples": 100
+            },
+            "data": {
+              "p50_ms": 51.8,
+              "p95_ms": 367.9,
+              "samples": 100
+            },
+            "total": {
+              "p50_ms": 167,
+              "p95_ms": 1016.7,
+              "samples": 100
+            }
+          },
+          "samples": 100,
+          "p50_ms": 9639.37,
+          "p95_ms": 13931.88,
+          "max_ms": 14084.89,
+          "errors": 0
+        },
+        "finish": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 47.1,
+              "p95_ms": 92.7,
+              "samples": 100
+            },
+            "rate": {
+              "p50_ms": 43.4,
+              "p95_ms": 83.3,
+              "samples": 100
+            },
+            "data": {
+              "p50_ms": 35.7,
+              "p95_ms": 71.5,
+              "samples": 100
+            },
+            "total": {
+              "p50_ms": 131.5,
+              "p95_ms": 250.8,
+              "samples": 100
+            }
+          },
+          "samples": 100,
+          "p50_ms": 14956.34,
+          "p95_ms": 20477.77,
+          "max_ms": 20779.8,
+          "errors": 0
+        },
+        "finish_duplicate": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 60.8,
+              "p95_ms": 386,
+              "samples": 100
+            },
+            "rate": {
+              "p50_ms": 62.9,
+              "p95_ms": 380.3,
+              "samples": 100
+            },
+            "data": {
+              "p50_ms": 39.7,
+              "p95_ms": 208,
+              "samples": 100
+            },
+            "total": {
+              "p50_ms": 157.3,
+              "p95_ms": 816,
+              "samples": 100
+            }
+          },
+          "samples": 100,
+          "p50_ms": 11524.62,
+          "p95_ms": 16038.26,
+          "max_ms": 16291.81,
+          "errors": 0
+        }
+      },
+      "cross_student_access_denied": true,
+      "server_p95_autosave_under_2_seconds": true,
+      "all_acknowledged_answers_preserved": true,
+      "duplicate_finalizations": 0,
+      "keys_hidden": true,
+      "teacher_grading_correct": true,
+      "p95_autosave_under_2_seconds": false
+    },
+    {
+      "sessions": 132,
+      "questions": 30,
+      "phases": {
+        "start": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 50.9,
+              "p95_ms": 86,
+              "samples": 132
+            },
+            "rate": {
+              "p50_ms": 50.1,
+              "p95_ms": 76.8,
+              "samples": 132
+            },
+            "data": {
+              "p50_ms": 35.8,
+              "p95_ms": 98.6,
+              "samples": 132
+            },
+            "total": {
+              "p50_ms": 138,
+              "p95_ms": 273,
+              "samples": 132
+            }
+          },
+          "samples": 132,
+          "p50_ms": 15459.24,
+          "p95_ms": 21859.56,
+          "max_ms": 22224.49,
+          "errors": 0
+        },
+        "autosave_1": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 48.4,
+              "p95_ms": 82.5,
+              "samples": 132
+            },
+            "rate": {
+              "p50_ms": 44.9,
+              "p95_ms": 89.2,
+              "samples": 132
+            },
+            "data": {
+              "p50_ms": 36.4,
+              "p95_ms": 66.5,
+              "samples": 132
+            },
+            "total": {
+              "p50_ms": 132.4,
+              "p95_ms": 230.2,
+              "samples": 132
+            }
+          },
+          "samples": 132,
+          "p50_ms": 16190.82,
+          "p95_ms": 23058.77,
+          "max_ms": 23715.18,
+          "errors": 0
+        },
+        "autosave_2": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 43.5,
+              "p95_ms": 80.1,
+              "samples": 132
+            },
+            "rate": {
+              "p50_ms": 44.4,
+              "p95_ms": 76.3,
+              "samples": 132
+            },
+            "data": {
+              "p50_ms": 39.5,
+              "p95_ms": 62.3,
+              "samples": 132
+            },
+            "total": {
+              "p50_ms": 131.3,
+              "p95_ms": 192.4,
+              "samples": 132
+            }
+          },
+          "samples": 132,
+          "p50_ms": 16895.21,
+          "p95_ms": 23221.34,
+          "max_ms": 24249.43,
+          "errors": 0
+        },
+        "autosave_3": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 57.8,
+              "p95_ms": 171.6,
+              "samples": 132
+            },
+            "rate": {
+              "p50_ms": 54.2,
+              "p95_ms": 328.3,
+              "samples": 132
+            },
+            "data": {
+              "p50_ms": 39.1,
+              "p95_ms": 163.5,
+              "samples": 132
+            },
+            "total": {
+              "p50_ms": 151.7,
+              "p95_ms": 589.7,
+              "samples": 132
+            }
+          },
+          "samples": 132,
+          "p50_ms": 10507.46,
+          "p95_ms": 17140.36,
+          "max_ms": 17555.5,
+          "errors": 0
+        },
+        "autosave_4": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 43.8,
+              "p95_ms": 64.2,
+              "samples": 132
+            },
+            "rate": {
+              "p50_ms": 41.4,
+              "p95_ms": 59.5,
+              "samples": 132
+            },
+            "data": {
+              "p50_ms": 33.4,
+              "p95_ms": 56.9,
+              "samples": 132
+            },
+            "total": {
+              "p50_ms": 123.3,
+              "p95_ms": 163.5,
+              "samples": 132
+            }
+          },
+          "samples": 132,
+          "p50_ms": 16251.15,
+          "p95_ms": 22195.71,
+          "max_ms": 22626.08,
+          "errors": 0
+        },
+        "autosave_5": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 62.8,
+              "p95_ms": 336.4,
+              "samples": 132
+            },
+            "rate": {
+              "p50_ms": 58.9,
+              "p95_ms": 537.6,
+              "samples": 132
+            },
+            "data": {
+              "p50_ms": 44.6,
+              "p95_ms": 224.7,
+              "samples": 132
+            },
+            "total": {
+              "p50_ms": 161.4,
+              "p95_ms": 1055.5,
+              "samples": 132
+            }
+          },
+          "samples": 132,
+          "p50_ms": 14559.31,
+          "p95_ms": 20882.09,
+          "max_ms": 21295.42,
+          "errors": 0
+        },
+        "retry_once": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 56.2,
+              "p95_ms": 128,
+              "samples": 132
+            },
+            "rate": {
+              "p50_ms": 50.7,
+              "p95_ms": 75,
+              "samples": 132
+            },
+            "data": {
+              "p50_ms": 36.1,
+              "p95_ms": 60.4,
+              "samples": 132
+            },
+            "total": {
+              "p50_ms": 144.8,
+              "p95_ms": 228.2,
+              "samples": 132
+            }
+          },
+          "samples": 132,
+          "p50_ms": 15259.66,
+          "p95_ms": 21571.31,
+          "max_ms": 22069.65,
+          "errors": 0
+        },
+        "retry_duplicate": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 54.3,
+              "p95_ms": 900.4,
+              "samples": 132
+            },
+            "rate": {
+              "p50_ms": 54.4,
+              "p95_ms": 1017.9,
+              "samples": 132
+            },
+            "data": {
+              "p50_ms": 39,
+              "p95_ms": 380.1,
+              "samples": 132
+            },
+            "total": {
+              "p50_ms": 146.8,
+              "p95_ms": 1651.1,
+              "samples": 132
+            }
+          },
+          "samples": 132,
+          "p50_ms": 11177.75,
+          "p95_ms": 17066.12,
+          "max_ms": 17609.54,
+          "errors": 0
+        },
+        "finish": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 50.6,
+              "p95_ms": 78.3,
+              "samples": 132
+            },
+            "rate": {
+              "p50_ms": 48.3,
+              "p95_ms": 72.2,
+              "samples": 132
+            },
+            "data": {
+              "p50_ms": 34.3,
+              "p95_ms": 60.4,
+              "samples": 132
+            },
+            "total": {
+              "p50_ms": 137.5,
+              "p95_ms": 201.8,
+              "samples": 132
+            }
+          },
+          "samples": 132,
+          "p50_ms": 16322.42,
+          "p95_ms": 22654.67,
+          "max_ms": 23263.7,
+          "errors": 0
+        },
+        "finish_duplicate": {
+          "server_timing": {
+            "auth": {
+              "p50_ms": 58.8,
+              "p95_ms": 324.4,
+              "samples": 132
+            },
+            "rate": {
+              "p50_ms": 56.5,
+              "p95_ms": 904.8,
+              "samples": 132
+            },
+            "data": {
+              "p50_ms": 43.3,
+              "p95_ms": 383.9,
+              "samples": 132
+            },
+            "total": {
+              "p50_ms": 159.7,
+              "p95_ms": 1299.4,
+              "samples": 132
+            }
+          },
+          "samples": 132,
+          "p50_ms": 11721.61,
+          "p95_ms": 17568.76,
+          "max_ms": 17955.89,
+          "errors": 0
+        }
+      },
+      "cross_student_access_denied": true,
+      "server_p95_autosave_under_2_seconds": true,
+      "all_acknowledged_answers_preserved": true,
+      "duplicate_finalizations": 0,
+      "keys_hidden": true,
+      "teacher_grading_correct": true,
+      "p95_autosave_under_2_seconds": false
+    },
+    {
+      "hosted_deadline_passed": true,
+      "late_answer_rejected": true,
+      "acknowledged_answer_retained": true,
+      "teacher_release_and_reclose_passed": true
+    }
+  ],
+  "measured_burst_response_json_bytes": 11826543,
+  "authentication_preparation": {
+    "synthetic_accounts": 133,
+    "burst_rate_limit_observed": true,
+    "preparation_staggered_ms": 2200,
+    "security_limits_changed": false
+  },
+  "percentile_definition": "nearest rank within each burst; answer summaries include autosave and retry"
+}

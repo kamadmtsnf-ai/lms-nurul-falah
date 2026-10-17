@@ -33,5 +33,7 @@
     }
   ],
   "threshold_p95_autosave_ms": 2000,
-  "integrity_finalization_test_complete": false
+  "integrity_finalization_test_complete": false,
+  "capacity_gate_evidence": false,
+  "note": "Diagnostic observations only. Later runs overlapped; excluded from final capacity assessment. No causal before/after latency claim."
 }
