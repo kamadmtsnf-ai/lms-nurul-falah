@@ -1,20 +1,20 @@
 {
-  "stage": 4,
-  "status": "learning_implemented_and_tested",
+  "stage": 5,
+  "status": "quiz_and_reports_implemented_and_tested",
   "date": "2026-10-18",
   "timezone": "Asia/Jakarta",
   "production_build": "passed",
   "typecheck": "passed",
   "automated_tests": {
-    "passed": 75,
+    "passed": 86,
     "failed": 0
   },
   "http_scenarios": {
-    "passed": 10,
+    "passed": 12,
     "failed": 0,
     "scope": "local_no_database_config"
   },
-  "cloud_database": "applied_and_full_learning_transaction_rollback_verified",
+  "cloud_database": "15_migrations_applied_quiz_manager_flow_rollback_verified",
   "migration_versions": [
     "20261017152937",
     "20261017152957",
@@ -26,7 +26,11 @@
     "20261017192300",
     "20261017193910",
     "20261017194327",
-    "20261017194359"
+    "20261017194359",
+    "20261017201119",
+    "20261017201211",
+    "20261017201219",
+    "20261017201226"
   ],
   "external_email": "user_confirmed_activation_success_not_retested_in_stage_3",
   "deployment": "inspect_current_commit_in_vercel",
@@ -37,8 +41,13 @@
   "supabase_project_ref": "slppnagegknxsjhfqthm",
   "github_write": "connector",
   "production_url": "https://lms-nurul-falah.vercel.app",
-  "guide": "docs/07-Tahap-4-Pembelajaran.md",
+  "guide": "docs/08-Tahap-5-Kuis-Laporan.md",
   "weekly_duty_schedule": "semester_and_one_or_more_weekdays",
   "browser_teacher_student_flow": "not_automated",
-  "hosted_storage_roundtrip": "not_automated"
+  "hosted_storage_roundtrip": "not_automated",
+  "pdf_render_qa": "first_and_last_pages_checked_132_row_fixture",
+  "quiz_browser_flow": "not_automated",
+  "real_network_disconnection": "not_tested_stage_6",
+  "supabase_security_advisors": "no_errors_preexisting_leaked_password_warning_and_expected_rpc_table_infos",
+  "supabase_performance_advisors": "unused_indexes_info_only"
 }

@@ -1,6 +1,6 @@
 # LMS Nurul Falah
 
-Tahap 4 menambahkan materi, absensi harian/pertemuan, tugas, pengumpulan berversi dan penilaian pada fondasi akademik. Frontend/backend di Vercel; Supabase menangani PostgreSQL, Auth dan Storage.
+Tahap 5 menambahkan kuis dengan autosave, koreksi otomatis dan laporan Excel/PDF pada modul materi, absensi dan tugas. Frontend/backend di Vercel; Supabase menangani PostgreSQL, Auth dan Storage.
 
 ## Status terbaru
 
@@ -53,3 +53,7 @@ Pusat akademik tersedia pada `/admin/akademik`; kelas sesuai hak akses pada `/ak
 ## Tahap 4 — Pembelajaran
 
 Buka `/akademik` lalu pilih mata pelajaran. Absensi piket/rekap ada di `/absensi-harian`. Alur guru, siswa, lampiran privat dan batas verifikasi: [docs/07-Tahap-4-Pembelajaran.md](docs/07-Tahap-4-Pembelajaran.md).
+
+## Tahap 5 — Kuis dan laporan
+
+Tab **Kuis** dan **Laporan** ada di setiap ruang pembelajaran. V1 mencakup pilihan ganda/benar-salah, satu percobaan dengan autosave, batas waktu server, koreksi otomatis, rilis nilai/pembahasan oleh guru, serta laporan Excel/PDF. Panduan dan batas verifikasi: [docs/08-Tahap-5-Kuis-Laporan.md](docs/08-Tahap-5-Kuis-Laporan.md).
