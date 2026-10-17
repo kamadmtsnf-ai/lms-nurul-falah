@@ -1,0 +1,37 @@
+{
+  "status": "stopped_before_escalation_due_to_autosave_latency",
+  "function_region": "iad1",
+  "database_region": "Singapore",
+  "authenticated_sessions_prepared": 133,
+  "measurements": [
+    {
+      "sessions": 60,
+      "phase": "start",
+      "samples": 60,
+      "p50_ms": 14051.36,
+      "p95_ms": 16375.31,
+      "max_ms": 17088.4,
+      "errors": 0
+    },
+    {
+      "sessions": 60,
+      "phase": "autosave_1",
+      "samples": 60,
+      "p50_ms": 13142.53,
+      "p95_ms": 15890.27,
+      "max_ms": 17244.97,
+      "errors": 0
+    },
+    {
+      "sessions": 60,
+      "phase": "autosave_2",
+      "samples": 60,
+      "p50_ms": 14727.05,
+      "p95_ms": 17348.33,
+      "max_ms": 17506.64,
+      "errors": 0
+    }
+  ],
+  "threshold_p95_autosave_ms": 2000,
+  "integrity_finalization_test_complete": false
+}

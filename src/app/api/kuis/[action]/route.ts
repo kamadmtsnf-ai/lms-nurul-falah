@@ -19,7 +19,7 @@ export async function POST(request:Request,{params}:{params:Promise<{action:stri
   if(action==='release')input.data=releaseSchema.parse(input.data);
   if(action==='answers'){input.answers=answerSchema.parse(input.answers);if(!input.request_id||input.revision===undefined)throw new IdentityError('Identitas simpan dan versi diperlukan.');}
   if(action==='finish'&&input.revision===undefined)throw new IdentityError('Versi jawaban diperlukan.');
-  const ctx=await accountContext(true);await limit('quiz.'+action,ctx.actor,action==='answers'?240:action==='attempt'?180:120,900);
-  return output({ok:true,result:await quizCommand(ctx,action,input)});
+  const began=performance.now();const ctx=await accountContext(true);const authenticated=performance.now();await limit('quiz.'+action,ctx.actor,action==='answers'?240:action==='attempt'?180:120,900);
+  const limited=performance.now();const result=await quizCommand(ctx,action,input);const ended=performance.now();const response=output({ok:true,result});response.headers.set('Server-Timing',`auth;dur=${(authenticated-began).toFixed(1)}, rate;dur=${(limited-authenticated).toFixed(1)}, data;dur=${(ended-limited).toFixed(1)}, total;dur=${(ended-began).toFixed(1)}`);return response;
  }catch(e){if(e instanceof z.ZodError)return output({ok:false,message:e.issues[0]?.message??'Isian tidak valid.'},400);if(e instanceof IdentityError)return output({ok:false,message:e.message},e.status);console.error('Operasi kuis gagal');return output({ok:false,message:'Layanan kuis belum dapat dihubungi.'},503);}
 }
