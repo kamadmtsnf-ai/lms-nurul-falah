@@ -29,7 +29,7 @@ export async function limit(action:string,identifier:string,max=6,seconds=900){
 export async function revokeAll(accessToken?:string){
  if(!accessToken)throw new IdentityError("Sesi tidak tersedia. Login kembali.",401);
  const {error}=await createSupabaseAdminClient().auth.admin.signOut(accessToken,"global");
- if(error && ![401,403,404].includes(error.status??0))throw new IdentityError("Pemutusan sesi belum berhasil. Gunakan pemulihan password atau coba lagi.",503);
+ if(error)throw new IdentityError("Pemutusan sesi belum berhasil. Gunakan pemulihan password atau coba lagi.",503);
 }
 export async function provePassword(userId:string,password:string){
  const temp=transientClient();const {data,error}=await temp.auth.signInWithPassword({email:`${userId}@accounts.lms.invalid`,password});
@@ -37,4 +37,13 @@ export async function provePassword(userId:string,password:string){
  const token=data.session?.access_token;
  await temp.auth.signOut({scope:"local"});
  return token;
+}
+
+// Pembaruan password dapat menghapus sesi lama. Gunakan sesi baru untuk logout global.
+export async function revokeWithPassword(userId:string,password:string){
+ const proof=transientClient();
+ const {data,error}=await proof.auth.signInWithPassword({email:`${userId}@accounts.lms.invalid`,password});
+ if(error || data.user?.id!==userId || !data.session?.access_token)throw new IdentityError("Password diubah tetapi sesi belum dapat diputus. Login kembali atau hubungi admin.",503);
+ try {await revokeAll(data.session.access_token);}
+ finally {await proof.auth.signOut({scope:"local"});}
 }

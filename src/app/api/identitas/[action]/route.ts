@@ -4,7 +4,7 @@ import {randomUUID} from "node:crypto";
 import {cookies} from "next/headers";
 import {createSupabaseServerClient} from "@/lib/supabase/server";
 import {createSupabaseAdminClient} from "@/lib/supabase/admin";
-import {accountContext,identity,IdentityError,limit,provePassword,revokeAll,transientClient} from "@/lib/auth/identity";
+import {accountContext,identity,IdentityError,limit,provePassword,revokeWithPassword} from "@/lib/auth/identity";
 import {DEFAULT_PASSWORD,usernameSchema,passwordPair,emailSchema,tokenSchema,createUserSchema,rolesSchema,nextFor} from "@/lib/auth/validation";
 import {hashToken,makeToken,sameSecret,validOrigin} from "@/lib/auth/security";
 import {passwordFlow} from "@/lib/auth/password-flow";
@@ -66,11 +66,7 @@ export async function POST(request:Request,{params}:{params:Promise<{action:stri
    await passwordFlow({
     begin:()=>identity<{target:string;nonce:string}>("reset_claim",{hash:hashToken(token)}),
     update:async(ticket)=>{const {error}=await admin.auth.admin.updateUserById(ticket.target,{password:pair.password});if(error)throw new IdentityError("Password belum dapat diubah. Minta tautan pemulihan baru.",409);},
-    revoke:async(ticket)=>{
-     const proof=transientClient();const signed=await proof.auth.signInWithPassword({email:`${ticket.target}@accounts.lms.invalid`,password:pair.password});
-     if(signed.error)throw new IdentityError("Password diubah tetapi sesi belum dapat diputus. Login kembali atau hubungi admin.",503);
-     await revokeAll(signed.data.session?.access_token);
-    },finish:async(ticket)=>{await identity("password_finish",ticket);
+    revoke:ticket=>revokeWithPassword(ticket.target,pair.password),finish:async(ticket)=>{await identity("password_finish",ticket);
     },clear:async()=>{const client=await createSupabaseServerClient();await client.auth.signOut({scope:"local"});}
    });return ok({next:"/masuk?selesai=password",message:"Password berhasil diperbarui. Silakan login ulang."});
   }
@@ -81,7 +77,7 @@ export async function POST(request:Request,{params}:{params:Promise<{action:stri
    await provePassword(ctx.actor,current);
    await passwordFlow({begin:()=>identity<{target:string;nonce:string}>("password_begin",actor),
     update:async()=>{const {error}=await createSupabaseAdminClient().auth.admin.updateUserById(ctx.actor,{password:pair.password});if(error)throw new IdentityError("Password belum dapat diperbarui. Coba login ulang atau gunakan pemulihan.",409);},
-    revoke:()=>revokeAll(ctx.accessToken),finish:ticket=>identity("password_finish",ticket).then(()=>{}),
+    revoke:()=>revokeWithPassword(ctx.actor,pair.password),finish:ticket=>identity("password_finish",ticket).then(()=>{}),
     clear:async()=>{await ctx.client.auth.signOut({scope:"local"});const store=await cookies();store.getAll().filter(c=>c.name.startsWith("sb-")).forEach(c=>store.delete(c.name));}
    });return ok({next:"/masuk?selesai=password"});
   }

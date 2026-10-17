@@ -95,3 +95,9 @@ test('perubahan password mewajibkan pemutusan sesi sebelum aktivasi dibuka',asyn
  const seen:string[]=[];await passwordFlow({begin:async()=>{seen.push('block');return 'nonce';},update:async()=>{seen.push('password');},revoke:async()=>{seen.push('revoke');},finish:async()=>{seen.push('finish');},clear:async()=>{seen.push('clear');}});assert.deepEqual(seen,['block','password','revoke','finish','clear']);
  const failed:string[]=[];await assert.rejects(()=>passwordFlow({begin:async()=>1,update:async()=>{throw Error('provider failed');},revoke:async()=>{failed.push('revoke');},finish:async()=>{failed.push('unsafe');},clear:async()=>{failed.push('clear');}}));assert.deepEqual(failed,['clear']);
 });
+
+test('kegagalan logout tidak membuka aktivasi dan tetap membersihkan cookie',async()=>{
+ const seen:string[]=[];
+ await assert.rejects(()=>passwordFlow({begin:async()=>({nonce:'ticket'}),update:async()=>{seen.push('updated');},revoke:async()=>{throw Error('logout unavailable');},finish:async()=>{seen.push('unsafe');},clear:async()=>{seen.push('clear');}}));
+ assert.deepEqual(seen,['updated','clear']);
+});
