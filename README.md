@@ -61,3 +61,7 @@ Tab **Kuis** dan **Laporan** ada di setiap ruang pembelajaran. V1 mencakup pilih
 ## Tahap 6 — Kelayakan uji coba
 
 Perbaikan sinkronisasi kuis, pengujian antrean/sesi, laporan beban dan drill cadangan tersedia. Hasil lokal dipisahkan dari produksi dan browser. Panduan operator serta gerbang penerimaan yang masih terbuka: [docs/09-Tahap-6-Kelayakan-Uji-Coba.md](docs/09-Tahap-6-Kelayakan-Uji-Coba.md).
+
+## Tahap 7 — Persiapan peluncuran terbatas
+
+Panduan migrasi data, aktivasi bertahap dan pendampingan: [docs/10-Tahap-7-Peluncuran-Terbatas.md](docs/10-Tahap-7-Peluncuran-Terbatas.md). Jalankan `node scripts/check-rollout.mjs` untuk laporan kesiapan (kode 2 menandakan peluncuran belum dimulai). Kendala Tahap 6 dan data nyata yang belum tersedia dicatat terbuka.

@@ -1,0 +1,35 @@
+{
+  "stage": 7,
+  "checked_at": "2026-10-17T23:22:11.907Z",
+  "status": "preparation_complete_rollout_not_started",
+  "stage6_status": "not_approved_for_mass_rollout_pending_gates",
+  "blockers": [
+    {
+      "gate": "client_p95_answer_under_two_seconds",
+      "result": false
+    },
+    {
+      "gate": "browser_and_real_device_acceptance",
+      "result": "pending_browser_unavailable"
+    },
+    {
+      "gate": "actual_network_disconnect_browser",
+      "result": "pending_browser_unavailable"
+    },
+    {
+      "gate": "production_backup_and_storage_restore",
+      "result": "pending_operator_credentials_and_tools"
+    }
+  ],
+  "prerequisites": {
+    "verified_initial_roster": "pending_school_data",
+    "browser_acceptance_record": "pending",
+    "restored_production_backup_and_storage": "pending",
+    "pilot_teacher_and_schedule": "pending_school_assignment"
+  },
+  "synthetic_fixture_cleanup_verified": true,
+  "live_accounts_imported_in_stage7": 0,
+  "students_activated_in_stage7": 0,
+  "actual_pilot_session": "not_started",
+  "note": "Document check only; this command does not inspect or modify hosted accounts, send mail, or approve rollout."
+}
