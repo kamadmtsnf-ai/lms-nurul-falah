@@ -57,3 +57,7 @@ Akun admin pertama telah dibuat dengan username admin. Password awal mengikuti k
 ## Pembaruan 18 Oktober 2026
 
 Akses tulis GitHub telah berhasil pada percobaan ulang. Source Tahap 2 disinkronkan ke branch main tanpa mengubah alur aktivasi atau database. Catatan penolakan 403 dan patch di atas merupakan riwayat percobaan sebelumnya. Deployment Git berikutnya memakai konfigurasi LMS_SETUP_TOKEN kosong; bootstrap tetap terkunci oleh database. SMTP nyata tetap belum dikonfigurasi.
+
+## Konfirmasi setelah perbaikan sesi
+
+Pengguna mengonfirmasi penggantian password, login ulang dan rangkaian aktivasi berhasil sebelum memulai Tahap 3 pada 18 Oktober 2026. Catatan SMTP belum dikonfigurasi di atas adalah status historis saat Tahap 2 pertama diterapkan. Uji inbox tidak diulang pada Tahap 3.
