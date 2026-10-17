@@ -1,26 +1,32 @@
 {
-  "stage": 1,
-  "status": "supabase_applied_vercel_permission_blocked",
+  "stage": 2,
+  "status": "identity_implemented_smtp_pending",
   "date": "2026-10-17",
   "production_build": "passed",
   "typecheck": "passed",
   "automated_tests": {
-    "passed": 21,
+    "passed": 35,
     "failed": 0
   },
   "http_scenarios": {
-    "passed": 5,
+    "passed": 7,
     "failed": 0
   },
   "cloud_database": "applied_and_sql_verified",
   "external_email": "not_configured",
-  "deployment": "blocked_vercel_403",
+  "deployment": "READY",
   "load_132_users": "not_tested",
   "no_credentials_included": true,
   "supabase_project_ref": "slppnagegknxsjhfqthm",
   "migration_versions": [
     "20261017152937",
     "20261017152957",
-    "20261017153203"
-  ]
+    "20261017153203",
+    "20261017163436"
+  ],
+  "deployment_id": "dpl_4GZ3iFpt5EBGudFPoT35W6Smu7Vc",
+  "github_write": "synchronized_on_retry",
+  "bootstrap_admin": "created_activation_required",
+  "live_login": "passed_redirects_to_password_change",
+  "source_sync_date": "2026-10-18"
 }

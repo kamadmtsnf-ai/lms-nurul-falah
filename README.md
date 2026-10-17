@@ -1,63 +1,47 @@
-# LMS Nurul Falah — Fondasi Tahap 1
+# LMS Nurul Falah
 
-Aplikasi Next.js yang disiapkan untuk Vercel dengan Supabase PostgreSQL/Auth/Storage. Paket ini adalah fondasi teknis; login dan modul pembelajaran belum diimplementasikan. Halaman awal tidak menggunakan data siswa contoh yang seolah nyata.
+Tahap 2 menambahkan akun, login username/password, aktivasi dan administrasi pengguna. Frontend/backend di Vercel; Supabase menangani PostgreSQL, Auth dan Storage.
 
 ## Status terbaru
 
-Supabase hosted telah dibuat, ketiga migrasi dan profil sekolah telah diterapkan serta diverifikasi. Pembuatan proyek Vercel ditolak 403; deployment dan email nyata belum tersedia. Lihat `docs/04-Status-Cloud.md` sebagai status terbaru. Pernyataan lokal pada laporan awal merujuk paket sebelum koneksi cloud.
+- Source: https://github.com/kamadmtsnf-ai/lms-nurul-falah
+- Aplikasi: https://lms-nurul-falah.vercel.app
+- Empat migrasi diterapkan pada Supabase `slppnagegknxsjhfqthm`.
+- Form login, wajib ganti password lalu login ulang, email per akun, pemulihan berbasis token sekali pakai, multi-peran dan manajemen akun tersedia.
+- Pengiriman email nyata memerlukan konfigurasi SMTP. Tanpa SMTP, pengguna tetap tertahan pada verifikasi; tidak ada bypass aktivasi.
+- Impor/template Excel mengikuti Tahap 3 bersama master akademik; materi/tugas/kuis/absensi mengikuti tahap pembelajaran.
 
-## Cakupan fondasi
+## Menjalankan dan memeriksa
 
-- Selesai lokal: proyek dan dependency terkunci, tampilan awal responsif, komponen UI dasar, konfigurasi Vercel, client Supabase server, penjagaan akun, dua migrasi, RLS, bucket privat, seed sekolah, skrip bootstrap admin dan pemeriksaan layanan, pengujian.
-- Belum diterapkan: email nyata, repositori GitHub dan deployment Vercel. Supabase serta migrasinya sudah diterapkan.
-- Belum termasuk: login, alur aktivasi lengkap, API pengelolaan akun, materi/tugas/kuis/absensi, impor/ekspor dan PWA. Fitur tersebut mengikuti tahap berikutnya.
-- Tahap 1 belum lulus seluruh kriteria layanan nyata sampai Supabase dan SMTP diperiksa serta deployment diverifikasi.
-
-## Menjalankan lokal
-
-Gunakan Node.js 24 dan npm. Ekstrak ZIP, lalu masuk ke folder `lms-nurul-falah` yang berisi package.json.
+Gunakan Node.js 24. Salin `.env.example` menjadi `.env.local`, isi konfigurasi langsung di lingkungan lokal/Vercel, lalu:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Buka http://localhost:3000. Tanpa konfigurasi layanan, halaman awal tetap dapat dibuka, sedangkan ruang belajar tertutup. Tidak ada mode demo yang melewati autentikasi.
-
-Untuk konfigurasi, salin `.env.example` menjadi `.env.local`. Di PowerShell:
-
-```powershell
-Copy-Item .env.example .env.local
-```
-
-Isi nilainya di editor lokal atau pengaturan Vercel; jangan mengirim secret melalui percakapan atau memasukkannya dalam repositori.
-
-## Pemeriksaan
+Pemeriksaan:
 
 ```sh
-npm run typecheck
 npm test
+npm run typecheck
 npm run build
 npm run test:http
 npm run check:services
 ```
 
-`test:http` membutuhkan build terlebih dahulu dan menggunakan port lokal 3217. `check:services` memerlukan konfigurasi nyata; ia memeriksa database, bucket, penolakan akses anonim dan koneksi SMTP. Skrip tidak mengirim email ke penerima nyata dan tidak membuktikan email masuk inbox.
+`test:http` membutuhkan build. Skrip tidak mengirim email ke penerima nyata. `check:services` memerlukan konfigurasi nyata dan memeriksa SMTP tanpa mengirim pesan.
 
-## Urutan konfigurasi cloud
+## Admin pertama
 
-Baca `docs/01-Panduan-Konfigurasi.md`, lalu `docs/02-Keamanan-dan-Database.md`. Jangan menjalankan bootstrap sebelum kedua migrasi dan seed sekolah diterapkan. Bootstrap membuat admin dengan password awal yang disepakati dan tetap mewajibkan aktivasi; login baru tersedia pada Tahap 2.
+Penyiapan memakai skrip `npm run bootstrap:admin` dengan environment lokal atau halaman `/pengaturan-awal` dengan LMS_SETUP_TOKEN yang ditetapkan pengelola secara aman. Bootstrap web hanya dapat selesai sekali dan menutup setelah admin tersedia. Password awal mengikuti ketentuan madrasah; wajib diganti sebelum verifikasi email.
 
-Paket tidak berisi credential, node_modules, .next, konfigurasi akun Vercel, atau repo .git. Tidak ada push ke GitHub yang dilakukan.
+Jangan menjalankan seed development pada proyek hosted: profil sekolah sudah ada. Gunakan UUID sekolah `dffb68f0-7a81-4047-bcf9-1870f1849112` untuk BOOTSTRAP_SCHOOL_ID. Tidak ada password baru, secret key, token verifikasi atau kode setup yang disimpan dalam source.
 
-## Struktur
+## Dokumentasi
 
-- `src/app`: halaman awal, informasi akses, ruang belajar terlindungi, liveness.
-- `src/lib`: konfigurasi, Supabase, penjagaan aktivasi, kebijakan unggahan, transport email.
-- `src/components/ui`: fondasi komponen kompatibel pola shadcn/ui.
-- `supabase/migrations`: schema, RLS, dan bucket privat.
-- `scripts`: pemeriksaan layanan, bootstrap lokal, smoke test HTTP.
-- `tests`: PostgreSQL tertanam, batas akses/unggahan dan email lokal.
-- `docs`: panduan, keputusan keamanan, status pengujian dan spesifikasi Tahap 0.
+- `docs/00-Spesifikasi-Tahap-0.md`: kebutuhan lengkap.
+- `docs/01-Panduan-Konfigurasi.md`: konfigurasi awal.
+- `docs/05-Tahap-2-Identitas.md`: alur akun, keamanan, penggunaan dan batas verifikasi terbaru.
 
-Sebelum melanjutkan modul akademik, buktikan prototipe autentikasi username, email wali bersama, pergantian password, logout paksa, login ulang, dan verifikasi email pada Tahap 2.
+Laporan Tahap 1 dan status cloud sebelumnya disimpan sebagai riwayat; status pada dokumen Tahap 2 menjadi rujukan terbaru.
