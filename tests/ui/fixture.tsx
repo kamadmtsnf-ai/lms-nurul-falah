@@ -86,7 +86,9 @@ const course: CourseState = {
   meetings: empty
     ? []
     : [{ id: "meeting", title: long, starts_at: now, updated_at: now }],
-  assignments: empty ? [] : [task],
+  assignments: empty
+    ? []
+    : [task, { ...task, id: "task-two", title: "Tugas pembanding" }],
   attendance: [],
   daily: [],
   meeting_roster: roster.map((s) => ({
@@ -114,6 +116,28 @@ const course: CourseState = {
   assets: empty
     ? []
     : [
+        ...(params.has("preview")
+          ? [
+              {
+                id: "preview-image",
+                target_id: "material",
+                target_type: "material",
+                name: "Gambar contoh.png",
+                bytes: 100,
+                owner_id: student,
+                status: "ready",
+              },
+              {
+                id: "preview-word",
+                target_id: "material",
+                target_type: "material",
+                name: "Dokumen Word.docx",
+                bytes: 100,
+                owner_id: student,
+                status: "ready",
+              },
+            ]
+          : []),
         {
           id: "asset-material",
           target_id: "material",
@@ -315,6 +339,20 @@ window.fetch = async (url, options) => {
     case "inbox":
       result = [];
       break;
+    case "file-preview":
+      if ((window as any).__previewFail)
+        return Response.json(
+          { message: "Berkas tidak dapat diakses." },
+          { status: 403 },
+        );
+      return Response.json({
+        ok: true,
+        url:
+          body.target === "preview-image"
+            ? "/preview-image.png"
+            : "/preview-file.pdf",
+        mime: body.target === "preview-image" ? "image/png" : "application/pdf",
+      });
     case "file-remove":
       if ((window as any).__removeFail)
         return Response.json(

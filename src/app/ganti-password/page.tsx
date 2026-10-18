@@ -1,9 +1,17 @@
+import { canReturnFromPassword } from "@/lib/auth/password-navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { AuthShell } from "@/components/auth-shell";
 import { AuthForm, LogoutButton } from "@/components/auth-form";
 import { requireAccount } from "@/lib/auth/page-context";
 export const dynamic = "force-dynamic";
-export default async function ChangePassword() {
-  await requireAccount();
+export default async function ChangePassword({
+  searchParams,
+}: {
+  searchParams: Promise<{ from?: string }>;
+}) {
+  const { profile } = await requireAccount();
+  const back = canReturnFromPassword(profile, (await searchParams).from);
   return (
     <AuthShell
       title="Ganti password akun"
@@ -35,6 +43,11 @@ export default async function ChangePassword() {
           },
         ]}
       />
+      {back && (
+        <Button asChild variant="outline" className="mt-5 w-full">
+          <Link href="/ruang-belajar">Kembali ke Ruang Belajar</Link>
+        </Button>
+      )}
       <div className="mt-5">
         <LogoutButton />
       </div>

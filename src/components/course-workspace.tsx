@@ -1402,6 +1402,9 @@ function Grading({
   );
 }
 function Grades({ state }: { state: CourseState }) {
+  const [taskId, setTaskId] = useState("");
+  const selected = state.assignments.some((t) => t.id === taskId) ? taskId : "";
+  const tasks = state.assignments.filter((t) => !selected || t.id === selected);
   return (
     <section className={panelClass}>
       <h2 className="text-xl font-semibold">Nilai tugas</h2>
@@ -1409,6 +1412,26 @@ function Grades({ state }: { state: CourseState }) {
         Nilai dinormalisasi ke skala 100 untuk informasi. Nilai kuis dan nilai
         akhir berbobot tersedia pada tab Lanjutan. Kiriman yang direvisi perlu
         dinilai kembali.
+      </p>
+      <label className="mt-5 block max-w-xl text-sm font-medium">
+        Filter judul tugas
+        <select
+          aria-label="Filter judul tugas"
+          className={fieldClass}
+          value={selected}
+          onChange={(e) => setTaskId(e.target.value)}
+          disabled={!state.assignments.length}
+        >
+          <option value="">Semua tugas</option>
+          {state.assignments.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.title}
+            </option>
+          ))}
+        </select>
+      </label>
+      <p role="status" className="mt-3 text-xs text-stone-500">
+        {tasks.length} tugas ditampilkan pada halaman ini.
       </p>
       <div className="mt-5 overflow-x-auto">
         <table className="w-full text-left text-sm">
@@ -1423,7 +1446,7 @@ function Grades({ state }: { state: CourseState }) {
           </thead>
           <tbody>
             {state.roster.flatMap((student) =>
-              state.assignments.map((task) => {
+              tasks.map((task) => {
                 const grade = state.grades.find(
                   (g) =>
                     g.student_id === student.id && g.assignment_id === task.id,

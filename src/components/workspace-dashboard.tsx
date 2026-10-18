@@ -148,7 +148,7 @@ export function WorkspaceDashboard({
         </div>
         <Link
           className="text-sm font-semibold text-emerald-800 underline"
-          href="/ganti-password"
+          href="/ganti-password?from=ruang-belajar"
         >
           Ubah password
           <ArrowRight className="ml-2 inline" size={14} aria-hidden />

@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 import { readFile, mkdir, readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import assert from "node:assert/strict";
+import { PDFDocument } from "pdf-lib";
 import { tmpdir } from "node:os";
 const output = join(tmpdir(), "lms-ui-audit");
 await mkdir(output, { recursive: true });
@@ -41,7 +42,25 @@ const css = (
     cssFiles.map((f) => readFile(join(".next/static/css", f), "utf8")),
   )
 ).join("\n");
+const pdfDoc = await PDFDocument.create();
+pdfDoc.addPage([300, 400]);
+const previewPdf = await pdfDoc.save();
 const server = createServer(async (req, res) => {
+  if (req.url === "/preview-file.pdf") {
+    res.setHeader("Content-Type", "application/pdf");
+    res.end(previewPdf);
+    return;
+  }
+  if (req.url === "/preview-image.png") {
+    res.setHeader("Content-Type", "image/png");
+    res.end(
+      Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jXioAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    );
+    return;
+  }
   res.setHeader(
     "Content-Type",
     req.url === "/fixture.js"
@@ -219,8 +238,97 @@ try {
     await page.close();
     results.push({ width, status: "passed" });
   }
+  for (const width of [320, 390, 768, 1440]) {
+    const previewPage = await browser.newPage({
+      viewport: { width, height: 844 },
+    });
+    previewPage.on("pageerror", (e) => errors.push(e.message));
+    await previewPage.goto(`${base}/?view=course&preview=1`);
+    assert.equal(
+      await previewPage
+        .getByRole("button", {
+          name: "Lihat lampiran Dokumen Word.docx",
+          exact: true,
+        })
+        .count(),
+      0,
+    );
+    await previewPage
+      .getByRole("button", {
+        name: "Lihat lampiran Gambar contoh.png",
+        exact: true,
+      })
+      .click();
+    await previewPage
+      .getByRole("dialog")
+      .getByRole("img", { name: "Gambar contoh.png", exact: true })
+      .waitFor();
+    await previewPage.waitForFunction(() => {
+      const img = document.querySelector("dialog[open] img");
+      return img?.complete && img.naturalWidth > 0;
+    });
+    await check(previewPage, `image-preview/${width}`);
+    await previewPage.keyboard.press("Escape");
+    await previewPage
+      .getByRole("button", { name: /^Lihat lampiran/ })
+      .last()
+      .click();
+    await previewPage.getByRole("dialog").locator("iframe").waitFor();
+    await check(previewPage, `pdf-preview/${width}`);
+    await previewPage
+      .getByRole("button", { name: "Tutup pratinjau", exact: true })
+      .click();
+    await previewPage
+      .getByRole("tab", { name: "Nilai tugas", exact: true })
+      .click();
+    const filter = previewPage.getByLabel("Filter judul tugas", {
+      exact: true,
+    });
+    assert.equal(await previewPage.locator("tbody tr").count(), 264);
+    await filter.selectOption("task-two");
+    assert.equal(await previewPage.locator("tbody tr").count(), 132);
+    assert.equal(
+      await previewPage
+        .locator("tbody tr")
+        .first()
+        .locator("td")
+        .nth(1)
+        .textContent(),
+      "Tugas pembanding",
+    );
+    await check(previewPage, `grade-title-filter/${width}`);
+    await filter.selectOption("");
+    assert.equal(await previewPage.locator("tbody tr").count(), 264);
+    await previewPage.close();
+  }
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto(`${base}/?view=course&preview=1`);
+  await page.evaluate(() => {
+    window.__previewFail = true;
+  });
+  await page
+    .getByRole("button", {
+      name: "Lihat lampiran Gambar contoh.png",
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("alert")
+    .filter({ hasText: "Berkas tidak dapat diakses" })
+    .waitFor();
+  await page.evaluate(() => {
+    window.__previewFail = false;
+  });
+  await page
+    .getByRole("button", { name: "Muat ulang pratinjau", exact: true })
+    .click();
+  await page.getByRole("dialog").getByRole("img").waitFor();
+  await page
+    .getByRole("button", { name: "Tutup pratinjau", exact: true })
+    .click();
+  checks++;
   await page.goto(`${base}/?view=auth`);
   await page.evaluate(() => {
     window.__fail = true;
@@ -403,6 +511,12 @@ try {
   );
   checks++;
   await page.goto(`${base}/?view=dashboard`);
+  assert.equal(
+    await page
+      .getByRole("link", { name: /Ubah password/ })
+      .getAttribute("href"),
+    "/ganti-password?from=ruang-belajar",
+  );
   await page.getByLabel("Sekolah aktif", { exact: true }).waitFor();
   assert.equal(
     await page

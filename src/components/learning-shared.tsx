@@ -1,6 +1,8 @@
 "use client";
 import { useRef, useState } from "react";
-import { FileText, UploadCloud, Trash2, Download } from "lucide-react";
+import { FileText, UploadCloud, Trash2, Download, Eye } from "lucide-react";
+import { FilePreview } from "./file-preview";
+import { previewKind } from "@/lib/learning/preview";
 import { ConfirmDialog } from "./confirm-dialog";
 import { validateUpload } from "@/lib/upload-policy";
 import { Button } from "@/components/ui/button";
@@ -34,11 +36,12 @@ export function Files({
   onRemove,
 }: {
   course: string;
-  assets: { id: string; name: string; bytes?: number }[];
+  assets: { id: string; name: string; bytes?: number; mime?: string }[];
   onRemove?: (id: string) => Promise<void>;
 }) {
   const [message, setMessage] = useState(""),
     [busy, setBusy] = useState(""),
+    [preview, setPreview] = useState<{ id: string; name: string } | null>(null),
     [removing, setRemoving] = useState<{ id: string; name: string } | null>(
       null,
     );
@@ -89,6 +92,17 @@ export function Files({
             )}
           </button>
           <Download aria-hidden size={16} className="shrink-0 text-stone-400" />
+          {previewKind(a.mime ?? mimeForName(a.name)) && (
+            <button
+              type="button"
+              aria-label={`Lihat lampiran ${a.name}`}
+              disabled={!!busy}
+              onClick={() => setPreview(a)}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-emerald-800 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-emerald-700"
+            >
+              <Eye size={19} />
+            </button>
+          )}
           {onRemove && (
             <button
               type="button"
@@ -105,6 +119,14 @@ export function Files({
           )}
         </div>
       ))}
+      {preview && (
+        <FilePreview
+          key={preview.id}
+          course={course}
+          file={preview}
+          onClose={() => setPreview(null)}
+        />
+      )}
       <ConfirmDialog
         open={!!removing}
         title="Hapus lampiran?"

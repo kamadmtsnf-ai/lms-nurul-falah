@@ -1,3 +1,4 @@
+import { previewKind } from "@/lib/learning/preview";
 import {
   removeTeachingFile,
   FileRemovalError,
@@ -105,6 +106,7 @@ export async function POST(
       "upload-start",
       "upload-complete",
       "file-url",
+      "file-preview",
       "file-remove",
     ];
     if (!allowed.includes(action))
@@ -152,6 +154,7 @@ export async function POST(
         "release-grades",
         "upload-complete",
         "file-url",
+        "file-preview",
         "file-remove",
       ].includes(action)
     )
@@ -304,15 +307,13 @@ export async function POST(
           return Boolean(data);
         },
         auditRequest: async (file) => {
-          const { error } = await admin
-            .from("audit_logs")
-            .insert({
-              school_id: file.school_id,
-              actor_id: ctx.actor,
-              action: "learning.file-remove-request",
-              entity: "learning_assets",
-              entity_id: id,
-            });
+          const { error } = await admin.from("audit_logs").insert({
+            school_id: file.school_id,
+            actor_id: ctx.actor,
+            action: "learning.file-remove-request",
+            entity: "learning_assets",
+            entity_id: id,
+          });
           if (error)
             throw new IdentityError(
               "Permintaan penghapusan belum dapat dicatat.",
@@ -347,17 +348,31 @@ export async function POST(
       });
       return output({ ok: true, message: "Lampiran berhasil dihapus." });
     }
-    if (action === "file-url") {
+    if (action === "file-url" || action === "file-preview") {
       const asset = await learningCommand<{
         object_path: string;
         name: string;
+        mime: string;
       }>(ctx, "asset-info", { course: input.course, target: input.target });
+      if (action === "file-preview" && !previewKind(asset.mime))
+        throw new IdentityError(
+          "Pratinjau hanya tersedia untuk gambar JPG/PNG/WebP dan PDF.",
+          415,
+        );
       const signed = await createSupabaseAdminClient()
         .storage.from("lms-private")
-        .createSignedUrl(asset.object_path, 120, { download: asset.name });
+        .createSignedUrl(
+          asset.object_path,
+          120,
+          action === "file-url" ? { download: asset.name } : undefined,
+        );
       if (signed.error)
         throw new IdentityError("Tautan unduh belum tersedia.", 503);
-      return output({ ok: true, url: signed.data.signedUrl });
+      return output({
+        ok: true,
+        url: signed.data.signedUrl,
+        ...(action === "file-preview" ? { mime: asset.mime } : {}),
+      });
     }
     const result = await learningCommand(ctx, action, {
       ...input,
