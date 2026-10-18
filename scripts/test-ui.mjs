@@ -112,6 +112,28 @@ try {
     ]) {
       await page.goto(`${base}/?view=${view}`);
       await check(page, `${view}/${width}`);
+      if (view === "auth") {
+        await page.getByRole("button", { name: "Keluar", exact: true }).click();
+        await page.getByRole("dialog", { name: "Keluar dari akun?" }).waitFor();
+        await check(page, `logout-modal/${width}`);
+        if (width === 320)
+          await page.screenshot({
+            path: join(output, "logout-modal-320.png"),
+            fullPage: true,
+          });
+        await page.keyboard.press("Escape");
+        await page.getByRole("dialog").waitFor({ state: "hidden" });
+        assert.equal(
+          await page.evaluate(
+            () =>
+              window.__requests.filter((r) =>
+                String(r.path).endsWith("/logout"),
+              ).length,
+          ),
+          0,
+        );
+      }
+
       if (view === "academic") {
         for (const name of [
           "Kelas / rombel",
@@ -204,10 +226,106 @@ try {
     window.__fail = true;
   });
   await page.getByRole("button", { name: "Keluar", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Keluar dari akun?" });
+  await dialog.waitFor();
+  assert.equal(
+    await page.evaluate(
+      () =>
+        window.__requests.filter((r) => String(r.path).endsWith("/logout"))
+          .length,
+    ),
+    0,
+  );
+  await page.keyboard.press("Escape");
+  await dialog.waitFor({ state: "hidden" });
+  assert.equal(
+    await page
+      .getByRole("button", { name: "Keluar", exact: true })
+      .evaluate((el) => el === document.activeElement),
+    true,
+  );
+  await page.getByRole("button", { name: "Keluar", exact: true }).click();
+  await page.getByRole("button", { name: "Ya, keluar", exact: true }).click();
   await page.getByRole("alert").waitFor();
   assert.match(
     await page.getByRole("alert").textContent(),
     /respons yang valid/,
+  );
+  checks++;
+  await page.getByRole("button", { name: "Batal", exact: true }).click();
+  await page.goto(`${base}/?view=course`);
+  await page
+    .getByRole("button", { name: /^Hapus lampiran/ })
+    .first()
+    .click();
+  await check(page, "attachment-confirm/390");
+  await page.getByRole("button", { name: "Batal", exact: true }).click();
+  assert.equal(
+    await page.evaluate(
+      () =>
+        window.__requests.filter((r) => String(r.path).endsWith("/file-remove"))
+          .length,
+    ),
+    0,
+  );
+  await page
+    .getByRole("button", { name: /^Hapus lampiran/ })
+    .first()
+    .click();
+  await page.evaluate(() => {
+    window.__removeFail = true;
+  });
+  await page
+    .getByRole("button", { name: "Hapus lampiran", exact: true })
+    .click();
+  await page.getByRole("dialog").getByRole("alert").waitFor();
+  await page.evaluate(() => {
+    window.__removeFail = false;
+  });
+  await page
+    .getByRole("button", { name: "Hapus lampiran", exact: true })
+    .click();
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  assert.equal(
+    await page.getByRole("button", { name: /^Hapus lampiran/ }).count(),
+    0,
+  );
+  checks++;
+  await page.getByRole("tab", { name: "Tugas", exact: true }).click();
+  await page
+    .getByRole("button", {
+      name: "Hapus lampiran Panduan tugas.pdf",
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole("button", { name: "Hapus lampiran", exact: true })
+    .click();
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  assert.equal(
+    await page.getByRole("button", { name: /^Hapus lampiran/ }).count(),
+    0,
+  );
+  await page.getByLabel("Pilih file lampiran", { exact: true }).setInputFiles({
+    name: "trop-grand.jpg",
+    mimeType: "image/jpeg",
+    buffer: Buffer.alloc(3000001),
+  });
+  await page.getByRole("alert").filter({ hasText: "melebihi batas" }).waitFor();
+  assert.equal(
+    await page.evaluate(
+      () =>
+        window.__requests.filter((r) =>
+          String(r.path).endsWith("/upload-start"),
+        ).length,
+    ),
+    0,
+  );
+  checks++;
+  await page.goto(`${base}/?view=course&student=1`);
+  assert.equal(
+    await page.getByRole("button", { name: /^Hapus lampiran/ }).count(),
+    0,
   );
   checks++;
   await page.goto(`${base}/?view=auth`);
@@ -225,6 +343,51 @@ try {
   assert.equal(
     await page.locator("input[name=password]").getAttribute("type"),
     "password",
+  );
+  checks++;
+  await page.goto(`${base}/?view=course&channels=1`);
+  await page.getByRole("tab", { name: "Pengembangan", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Antrekan ke kanal", exact: true })
+    .click();
+  await page
+    .getByText(
+      "Antrean berisi 3 tujuan. Pesan belum dikirim; gunakan tombol Kirim batch untuk melanjutkan.",
+      { exact: true },
+    )
+    .waitFor();
+  await page.getByRole("button", { name: "Kirim batch", exact: true }).click();
+  await page
+    .getByRole("dialog", { name: "Kirim notifikasi sekarang?" })
+    .waitFor();
+  assert.equal(
+    await page.evaluate(
+      () =>
+        window.__requests.filter((r) =>
+          String(r.path).endsWith("/channel-send"),
+        ).length,
+    ),
+    0,
+  );
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Batal", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Kirim batch", exact: true }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Kirim batch", exact: true })
+    .click();
+  await page
+    .getByRole("alert")
+    .filter({ hasText: "Diterima penyedia 2; tidak pasti 1" })
+    .waitFor();
+  await page.getByRole("dialog").waitFor({ state: "hidden" });
+  assert.equal(
+    await page
+      .getByRole("button", { name: "Kirim batch", exact: true })
+      .isDisabled(),
+    true,
   );
   checks++;
   await page.goto(`${base}/?view=dashboard&student=1`);
@@ -369,6 +532,21 @@ try {
     JSON.stringify(data, null, 2) + "\n",
   );
   console.log(JSON.stringify(data));
+} catch (e) {
+  for (const context of browser.contexts())
+    for (const page of context.pages()) {
+      console.error(
+        "UI failure",
+        page.url(),
+        errors,
+        (await page.locator("body").innerText()).slice(0, 2500),
+      );
+      await page.screenshot({
+        path: join(output, "failure.png"),
+        fullPage: true,
+      });
+    }
+  throw e;
 } finally {
   await browser.close();
   await new Promise((r) => server.close(r));

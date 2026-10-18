@@ -71,11 +71,16 @@ export function AdvancedPanel({ state }: { state: CourseState }) {
   ];
   return (
     <div className="space-y-5">
-      <nav aria-label="Fitur lanjutan" className="flex gap-2 overflow-auto">
+      <nav
+        aria-label="Fitur lanjutan"
+        className="grid grid-cols-2 gap-2 rounded-2xl border border-stone-200 bg-stone-50 p-2 sm:flex sm:flex-wrap"
+      >
         {tabs.map(([k, l]) => (
           <Button
             variant={tab === k ? "default" : "outline"}
             key={k}
+            aria-pressed={tab === k}
+            className="min-w-0 px-3 py-3 text-xs leading-5 sm:text-sm"
             onClick={() => setTab(k)}
           >
             {l}

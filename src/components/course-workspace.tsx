@@ -427,6 +427,17 @@ function MaterialPanel({
           <Links links={m.links} />
           <Files
             course={state.course.id}
+            onRemove={
+              manager
+                ? async (id) => {
+                    await learningRequest("file-remove", {
+                      course: state.course.id,
+                      target: id,
+                    });
+                    await reload();
+                  }
+                : undefined
+            }
             assets={state.assets.filter(
               (a) => a.target_type === "material" && a.target_id === m.id,
             )}
@@ -887,6 +898,17 @@ function AssignmentPanel({
             </p>
             <Files
               course={state.course.id}
+              onRemove={
+                manager
+                  ? async (id) => {
+                      await learningRequest("file-remove", {
+                        course: state.course.id,
+                        target: id,
+                      });
+                      await reload();
+                    }
+                  : undefined
+              }
               assets={state.assets.filter(
                 (a) =>
                   a.target_type === "assignment" && a.target_id === current.id,

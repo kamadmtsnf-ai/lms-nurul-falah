@@ -111,7 +111,28 @@ const course: CourseState = {
         },
       ],
   grades: [],
-  assets: [],
+  assets: empty
+    ? []
+    : [
+        {
+          id: "asset-material",
+          target_id: "material",
+          target_type: "material",
+          name: long + ".pdf",
+          bytes: 1200,
+          owner_id: student,
+          status: "ready",
+        },
+        {
+          id: "asset-task",
+          target_id: "task",
+          target_type: "assignment",
+          name: "Panduan tugas.pdf",
+          bytes: 2400,
+          owner_id: student,
+          status: "ready",
+        },
+      ],
 };
 const question = {
   kind: "choice" as const,
@@ -200,7 +221,7 @@ const dev = {
   features: {
     offline_enabled: false,
     team_enabled: false,
-    channels_enabled: false,
+    channels_enabled: params.has("channels"),
     acceptance_reference: "Test fixture",
     revision: 0,
   },
@@ -227,6 +248,15 @@ const dev = {
       request_id: id,
     },
   });
+let channelJobs: {
+  message_id: string;
+  channel: string;
+  subject: string;
+  total: number;
+  pending: number;
+  accepted: number;
+  uncertain: number;
+}[] = [];
 const requests: Record<string, unknown>[] = [];
 (window as any).__requests = requests;
 (window as any).__fail = false;
@@ -285,6 +315,49 @@ window.fetch = async (url, options) => {
     case "inbox":
       result = [];
       break;
+    case "file-remove":
+      if ((window as any).__removeFail)
+        return Response.json(
+          { message: "Penghapusan belum selesai. Coba lagi." },
+          { status: 503 },
+        );
+      course.assets = course.assets.filter((a) => a.id !== body.target);
+      break;
+    case "channel-readiness":
+      result = {
+        telegram: {
+          ready: params.has("channels"),
+          message: params.has("channels")
+            ? "Konfigurasi server tersedia."
+            : "Kredensial penyedia belum dikonfigurasi untuk sekolah ini.",
+        },
+        whatsapp: {
+          ready: params.has("channels"),
+          message: params.has("channels")
+            ? "Konfigurasi server tersedia."
+            : "Kredensial penyedia belum dikonfigurasi untuk sekolah ini.",
+        },
+      };
+      break;
+    case "channel-queue":
+      channelJobs = [
+        {
+          message_id: id,
+          channel: "telegram",
+          subject: "Kegiatan sekolah",
+          total: 3,
+          pending: 3,
+          accepted: 0,
+          uncertain: 0,
+        },
+      ];
+      break;
+    case "channel-send":
+      channelJobs = [
+        { ...channelJobs[0], pending: 0, accepted: 2, uncertain: 1 },
+      ];
+      result = { accepted: 2, uncertain: 1 };
+      break;
     case "settings":
       result = dev;
       break;
@@ -340,9 +413,15 @@ window.fetch = async (url, options) => {
     case "submission-detail":
       result = { body: long, links: [], assets: [], grade: null };
       break;
-    case "bank-list":
     case "message-status":
+      result = params.has("channels")
+        ? [{ id, subject: "Kegiatan sekolah" }]
+        : [];
+      break;
     case "channel-state":
+      result = channelJobs;
+      break;
+    case "bank-list":
     case "discussion-list":
     case "history":
       result = [];

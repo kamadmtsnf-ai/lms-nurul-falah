@@ -6,7 +6,7 @@
   "production_build": "passed",
   "typecheck": "passed",
   "automated_tests": {
-    "passed": 116,
+    "passed": 126,
     "failed": 0
   },
   "http_scenarios": {
@@ -193,5 +193,72 @@
       "hosted_private_storage_roundtrip"
     ],
     "report": "docs/15-Kelanjutan-Tahap-6.md"
+  },
+  "learning_improvements": {
+    "date": "2026-10-18",
+    "base_commit": "7fa074a7796765172250c2710f23fbfa13adbfc4",
+    "scope": [
+      "material_assignment_attachment_removal",
+      "attachment_upload_ui",
+      "mobile_advanced_subnavigation",
+      "controlled_offline",
+      "external_channel_readiness_and_delivery",
+      "logout_confirmation"
+    ],
+    "tests": {
+      "passed": 126,
+      "failed": 0
+    },
+    "typecheck": "passed",
+    "production_build": "passed",
+    "ui": {
+      "checks": 154,
+      "viewports": [
+        {
+          "width": 320,
+          "status": "passed"
+        },
+        {
+          "width": 390,
+          "status": "passed"
+        },
+        {
+          "width": 768,
+          "status": "passed"
+        },
+        {
+          "width": 1440,
+          "status": "passed"
+        }
+      ],
+      "javascriptErrors": [],
+      "scope": "Real React components with synthetic data and mocked API; does not replace authenticated live acceptance tests."
+    },
+    "offline_browser": {
+      "date": "2026-10-18T05:45:07.182Z",
+      "target": "http://127.0.0.1:3210",
+      "scope": "Real service worker, encrypted local store and actual Next.js offline shell; local server stopped during offline checks; synthetic local records, no authorized server submit or real provider messages",
+      "passed": [
+        "public_shell_install",
+        "material_read_without_network",
+        "draft_edit_save_and_reload_offline",
+        "offline_submit_disabled",
+        "protected_navigation_offline_fallback",
+        "cache_allowlist_no_private_pages_or_api",
+        "mobile_no_overflow",
+        "local_clear"
+      ],
+      "javascript_errors": []
+    },
+    "http_scenarios": {
+      "passed": 17,
+      "scope": "local_no_database_config"
+    },
+    "database_schema_changes": false,
+    "existing_server_grants_verified": true,
+    "authenticated_live_storage_removal": "not_exercised_real_school_files_untouched",
+    "external_provider_live_send": "not_run_requires_operator_credentials_and_authorized_test_recipient",
+    "feature_flags": "not_changed_automatically",
+    "report": "docs/16-Lampiran-Offline-Kanal-Logout.md"
   }
 }

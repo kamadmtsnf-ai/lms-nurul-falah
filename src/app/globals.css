@@ -806,3 +806,6 @@ button[data-variant="default"] {
   width: 100%;
   min-width: 0;
 }
+
+.confirm-dialog { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+.confirm-dialog::backdrop { background: rgb(15 23 42 / 55%); backdrop-filter: blur(4px); }

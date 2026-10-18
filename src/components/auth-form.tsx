@@ -1,4 +1,5 @@
 "use client";
+import { ConfirmDialog } from "./confirm-dialog";
 import { postJson } from "@/lib/http/client";
 import { clearOffline } from "@/lib/offline/store";
 import { Eye, EyeOff } from "lucide-react";
@@ -163,40 +164,52 @@ export function AuthForm({
   );
 }
 export function LogoutButton() {
-  const [busy, setBusy] = useState(false),
+  const [ready, setReady] = useState(false),
+    [busy, setBusy] = useState(false),
+    [open, setOpen] = useState(false),
     [message, setMessage] = useState("");
+  useEffect(() => setReady(true), []);
+  async function logout() {
+    if (busy) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      await clearOffline();
+      await postJson("/api/identitas/logout", {});
+      window.location.assign("/masuk");
+    } catch (e) {
+      setMessage(
+        e instanceof Error
+          ? e.message
+          : "Koneksi terputus. Coba keluar kembali.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <div className="flex max-w-full flex-col items-end gap-2">
       <Button
         type="button"
         variant="outline"
-        disabled={busy}
-        onClick={async () => {
-          if (busy) return;
-          setBusy(true);
+        disabled={!ready || busy}
+        onClick={() => {
           setMessage("");
-          try {
-            await clearOffline();
-            await postJson("/api/identitas/logout", {});
-            window.location.assign("/masuk");
-          } catch (e) {
-            setMessage(
-              e instanceof Error
-                ? e.message
-                : "Koneksi terputus. Coba keluar kembali.",
-            );
-          } finally {
-            setBusy(false);
-          }
+          setOpen(true);
         }}
       >
-        {busy ? "Keluar…" : "Keluar"}
+        Keluar
       </Button>
-      {message && (
-        <p role="alert" className="max-w-xs text-sm text-red-800">
-          {message}
-        </p>
-      )}
+      <ConfirmDialog
+        open={open}
+        busy={busy}
+        error={message}
+        title="Keluar dari akun?"
+        description="Pastikan pekerjaan Anda sudah tersimpan di server. Salinan materi dan draf offline pada perangkat ini akan dihapus saat keluar."
+        confirmLabel="Ya, keluar"
+        onCancel={() => setOpen(false)}
+        onConfirm={() => void logout()}
+      />
     </div>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ConfirmDialog } from "./confirm-dialog";
+import { devRequest } from "@/lib/development/client";
 import { Button } from "./ui/button";
 import { fieldClass, panelClass, Notice, Links } from "./learning-shared";
 import {
@@ -25,6 +27,9 @@ export function PwaRegistration() {
 export function OfflineWorkspace() {
   const [rows, setRows] = useState<OfflineRecord[]>([]),
     [message, setMessage] = useState(""),
+    [error, setError] = useState(false),
+    [online, setOnline] = useState(true),
+    [submitting, setSubmitting] = useState<OfflineRecord | null>(null),
     [busy, setBusy] = useState(false),
     [dirty, setDirty] = useState<Record<string, boolean>>({});
   const load = () =>
@@ -33,19 +38,85 @@ export function OfflineWorkspace() {
       .catch((e) => setMessage(e.message));
   useEffect(() => {
     void load();
+    const connection = () => setOnline(navigator.onLine);
+    connection();
+    window.addEventListener("online", connection);
+    window.addEventListener("offline", connection);
     const timer = setInterval(() => void load(), 15000);
     const clear = () => setRows([]);
     window.addEventListener("lms-offline-cleared", clear);
     const unwatch = watchOfflineClear();
     return () => {
       clearInterval(timer);
+      window.removeEventListener("online", connection);
+      window.removeEventListener("offline", connection);
       window.removeEventListener("lms-offline-cleared", clear);
       unwatch();
     };
   }, []);
+  async function submitDraft() {
+    if (!submitting || busy) return;
+    const row = submitting;
+    setBusy(true);
+    setMessage("");
+    setError(false);
+    try {
+      if (Date.parse(row.expires_at) <= Date.now())
+        throw new Error(
+          "Izin draf offline sudah berakhir. Siapkan kembali draf saat online.",
+        );
+      const ticket = await devRequest<Omit<OfflineRecord, "id">>(
+        "offline-draft-context",
+        { course: row.course, target: row.content.id },
+      );
+      if (ticket.owner !== row.owner || ticket.school !== row.school)
+        throw new Error("Akun/sekolah berbeda. Draf tidak dikirim.");
+      await learningRequest("submit", {
+        course: row.course,
+        target: row.content.id,
+        data: {
+          request_id: row.content.request_id,
+          revision: row.content.revision,
+          body: row.content.body ?? "",
+          links: row.content.links ?? [],
+          asset_ids: [],
+        },
+      });
+      await deleteOffline(row.id);
+      setMessage("Server mengonfirmasi kiriman. Draf lokal dihapus.");
+      await load();
+    } catch (e) {
+      setError(true);
+      setMessage(
+        e instanceof Error
+          ? e.message
+          : "Koneksi belum tersedia. Draf tetap disimpan sampai izin berakhir.",
+      );
+    } finally {
+      setBusy(false);
+      setSubmitting(null);
+    }
+  }
   return (
     <div className="space-y-5">
-      <Notice message={message} />
+      <Notice message={message} error={error} />
+      <p
+        role="status"
+        className={`rounded-xl border p-3 text-sm ${online ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}
+      >
+        {online
+          ? "Koneksi perangkat tersedia. Pengumpulan tetap memerlukan konfirmasi server."
+          : "Anda sedang offline. Materi dan draf lokal tetap dapat digunakan sampai izin berakhir."}
+      </p>
+      <ConfirmDialog
+        open={!!submitting}
+        busy={busy}
+        title="Kumpulkan draf ini?"
+        description="Server akan memeriksa akun, izin kelas, tenggat dan revisi. Draf lokal baru dihapus setelah server mengonfirmasi kiriman."
+        confirmLabel="Kumpulkan draf"
+        onCancel={() => setSubmitting(null)}
+        onConfirm={() => void submitDraft()}
+      />
       <p className="text-sm leading-6 text-stone-600">
         Hanya materi yang Anda pilih dan draf tugas individu disimpan di
         perangkat ini. Izin berlaku maksimal 30 menit. Kunci hanya berada pada
@@ -58,7 +129,7 @@ export function OfflineWorkspace() {
       {!rows.length && (
         <p className={panelClass}>
           Belum ada salinan yang dapat dibuka. Saat online, gunakan tombol
-          Simpan offline di tab Lanjutan kelas.
+          Simpan offline di tab Pengembangan kelas.
         </p>
       )}
       {rows.map((row) => (
@@ -88,6 +159,8 @@ export function OfflineWorkspace() {
                 e.preventDefault();
                 const d = new FormData(e.currentTarget);
                 setBusy(true);
+                setError(false);
+                setMessage("");
                 void saveOffline({
                   ...row,
                   content: {
@@ -105,7 +178,10 @@ export function OfflineWorkspace() {
                     setMessage("Draf disimpan lokal, belum dikumpulkan.");
                     return load();
                   })
-                  .catch((e) => setMessage(e.message))
+                  .catch((e) => {
+                    setError(true);
+                    setMessage(e.message);
+                  })
                   .finally(() => setBusy(false));
               }}
             >
@@ -143,58 +219,8 @@ export function OfflineWorkspace() {
           {row.kind === "draft" && (
             <Button
               className="mt-4"
-              disabled={busy || dirty[row.id]}
-              onClick={() => {
-                if (
-                  !window.confirm(
-                    "Kumpulkan draf ini ke server? Tenggat, keanggotaan dan revisi akan diperiksa ulang.",
-                  )
-                )
-                  return;
-                setBusy(true);
-                void fetch("/api/pengembangan/offline-draft-context", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    course: row.course,
-                    target: row.content.id,
-                  }),
-                })
-                  .then(async (r) => {
-                    const d = await r.json();
-                    if (!r.ok) throw new Error(d.message);
-                    if (
-                      d.result.owner !== row.owner ||
-                      d.result.school !== row.school
-                    )
-                      throw new Error(
-                        "Akun/sekolah berbeda. Draf tidak dikirim.",
-                      );
-                    await learningRequest("submit", {
-                      course: row.course,
-                      target: row.content.id,
-                      data: {
-                        request_id: row.content.request_id,
-                        revision: row.content.revision,
-                        body: row.content.body ?? "",
-                        links: row.content.links ?? [],
-                        asset_ids: [],
-                      },
-                    });
-                    await deleteOffline(row.id);
-                    setMessage(
-                      "Server mengonfirmasi kiriman. Draf lokal dihapus.",
-                    );
-                    await load();
-                  })
-                  .catch((e) =>
-                    setMessage(
-                      e.message ??
-                        "Koneksi belum tersedia. Draf tetap disimpan sampai izin berakhir.",
-                    ),
-                  )
-                  .finally(() => setBusy(false));
-              }}
+              disabled={busy || !online || dirty[row.id]}
+              onClick={() => setSubmitting(row)}
             >
               Kumpulkan saat online
             </Button>

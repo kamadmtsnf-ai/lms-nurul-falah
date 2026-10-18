@@ -1,7 +1,7 @@
 {
   "name": "lms-nurul-falah",
   "version": "0.1.0",
-  "description": "Fondasi LMS Nurul Falah — Tahap 1",
+  "description": "Fondasi LMS Nurul Falah \u2014 Tahap 1",
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",
@@ -18,7 +18,8 @@
     "backup:storage": "node scripts/backup-storage.mjs",
     "restore:storage:test": "node scripts/restore-storage-test.mjs",
     "test:browser:hosted": "node scripts/testing/browser-hosted.mjs",
-    "diagnose:hosted": "node scripts/testing/diagnose-hosted.mjs"
+    "diagnose:hosted": "node scripts/testing/diagnose-hosted.mjs",
+    "test:offline:browser": "node scripts/test-offline-browser.mjs"
   },
   "keywords": [],
   "author": "",

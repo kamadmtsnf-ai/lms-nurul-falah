@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { ConfirmDialog } from "./confirm-dialog";
 import { Button } from "./ui/button";
 import { fieldClass, panelClass, Notice } from "./learning-shared";
 import {
@@ -9,6 +10,7 @@ import {
   type SchoolList,
 } from "@/lib/development/client";
 import { advancedRequest } from "@/lib/advanced/client";
+import { ensureOfflineReady } from "@/lib/offline/readiness";
 import { saveOffline, listOffline, clearOffline } from "@/lib/offline/store";
 import type { OfflineRecord } from "@/lib/offline/crypto";
 import type { CourseState } from "@/lib/learning/types";
@@ -535,6 +537,19 @@ function PlatformPanel() {
 export function DevelopmentCourse({ state }: { state: CourseState }) {
   const course = state.course.id,
     school = state.context.school;
+  const alive = useRef(true),
+    generation = useRef(0);
+  const [error, setError] = useState(false),
+    [ready, setReady] = useState<Record<
+      string,
+      { ready: boolean; message: string }
+    > | null>(null),
+    [channel, setChannel] = useState("telegram"),
+    [sendJob, setSendJob] = useState<{
+      message_id: string;
+      channel: string;
+    } | null>(null),
+    [replaceDraft, setReplaceDraft] = useState<string | null>(null);
   const [settings, setSettings] = useState<DevelopmentState | null>(null),
     [optIn, setOptIn] = useState(false),
     [message, setMessage] = useState(""),
@@ -552,36 +567,64 @@ export function DevelopmentCourse({ state }: { state: CourseState }) {
       }[]
     >([]);
   async function load() {
-    setSettings(await devRequest("settings", { school }));
-    if (state.context.manager) {
-      const [m, j] = await Promise.all([
+    const request = ++generation.current;
+    const nextSettings = await devRequest<DevelopmentState>("settings", {
+      school,
+    });
+    if (!alive.current || request !== generation.current) return;
+    setSettings(nextSettings);
+    if (state.context.manager && state.context.writable) {
+      const [m, j, r] = await Promise.all([
         advancedRequest<typeof messages>("message-status", { course }),
         devRequest<typeof jobs>("channel-state", { course }),
+        devRequest<NonNullable<typeof ready>>("channel-readiness", { course }),
       ]);
+      if (!alive.current || request !== generation.current) return;
+      setReady(r);
       setMessages(m);
       setJobs(j);
+      return j;
     }
   }
   useEffect(() => {
-    void load().catch((e) => setMessage(e.message));
+    alive.current = true;
+    void load().catch((e) => {
+      if (alive.current) {
+        setError(true);
+        setMessage(e.message);
+      }
+    });
+    return () => {
+      alive.current = false;
+      generation.current++;
+    };
   }, [course, school]);
-  async function save(kind: "material" | "draft", target: string) {
+  async function save(
+    kind: "material" | "draft",
+    target: string,
+    replace = false,
+  ) {
     setBusy(true);
+    setMessage("");
+    setError(false);
     try {
+      await ensureOfflineReady();
       const ticket = await devRequest<Omit<OfflineRecord, "id">>(
         `offline-${kind === "material" ? "material" : "draft-context"}`,
         { course, target },
       );
       const localId = `${ticket.owner}:${course}:${kind}:${target}`;
       if (
+        !replace &&
         kind === "draft" &&
         (await listOffline()).some(
           (r) =>
             r.kind === kind && r.course === course && r.content.id === target,
-        ) &&
-        !window.confirm("Draf lokal sudah ada. Ganti dengan draf kosong baru?")
-      )
+        )
+      ) {
+        setReplaceDraft(target);
         return;
+      }
       await saveOffline({
         ...ticket,
         id: localId,
@@ -596,31 +639,109 @@ export function DevelopmentCourse({ state }: { state: CourseState }) {
         "Salinan disimpan lokal selama 30 menit. Buka Ruang offline untuk membaca atau mengubah draf.",
       );
     } catch (e) {
+      setError(true);
       setMessage(e instanceof Error ? e.message : "Gagal menyimpan lokal.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function sendBatch() {
+    if (!sendJob || busy) return;
+    setBusy(true);
+    setError(false);
+    setMessage("");
+    try {
+      const r = await devRequest<{ accepted: number; uncertain: number }>(
+        "channel-send",
+        {
+          course,
+          target: sendJob.message_id,
+          data: { channel: sendJob.channel },
+        },
+      );
+      setMessage(
+        `Diterima penyedia ${r.accepted}; tidak pasti ${r.uncertain}. Ini bukan bukti dibaca penerima.`,
+      );
+      setError(r.uncertain > 0);
+      await load();
+      setSendJob(null);
+    } catch (e) {
+      setError(true);
+      setMessage(e instanceof Error ? e.message : "Pengiriman belum berhasil.");
+      setSendJob(null);
+      await load().catch(() => {});
     } finally {
       setBusy(false);
     }
   }
   return (
     <div className="space-y-5">
-      <Notice message={message} />
+      <Notice message={message} error={error} />
+      <ConfirmDialog
+        open={!!replaceDraft}
+        title="Ganti draf offline?"
+        description="Draf lokal untuk tugas ini sudah ada. Menggantinya akan menghapus isi draf tersebut dan memulai draf kosong."
+        confirmLabel="Ganti draf"
+        busy={busy}
+        onCancel={() => setReplaceDraft(null)}
+        onConfirm={() => {
+          const target = replaceDraft;
+          setReplaceDraft(null);
+          if (target) void save("draft", target, true);
+        }}
+      />
+      <ConfirmDialog
+        open={!!sendJob}
+        title="Kirim notifikasi sekarang?"
+        description="Pesan akan dikirim ke maksimal tiga penerima terverifikasi melalui kanal yang dipilih. Periksa isi pesan dan persetujuan penerima sebelum melanjutkan."
+        confirmLabel="Kirim batch"
+        busy={busy}
+        onCancel={() => setSendJob(null)}
+        onConfirm={() => void sendBatch()}
+      />
       <section className={panelClass}>
         <h2 className="text-lg font-semibold">Offline terkontrol</h2>
         <p className="mt-3 text-sm text-stone-600">
-          Offline {settings?.features.offline_enabled ? "aktif" : "belum aktif"}
+          Offline{" "}
+          {settings
+            ? settings.features.offline_enabled
+              ? "aktif"
+              : "belum aktif"
+            : "sedang diperiksa"}
           . Materi teks dan draf individu berlaku maksimal 30 menit; tidak
           menyimpan kuis, nilai, sesi atau berkas privat. Draf tidak dikirim
           otomatis dan dapat kedaluwarsa jika tidak segera dikumpulkan saat
           online.
         </p>
+        {settings && !settings.features.offline_enabled && (
+          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
+            {state.context.admin ? (
+              <Link href="/pengembangan" className="font-medium underline">
+                Aktifkan offline melalui Pengaturan pengembangan →
+              </Link>
+            ) : (
+              "Hubungi admin sekolah untuk mengaktifkan fitur offline."
+            )}
+          </div>
+        )}
         <label className="mt-4 block text-sm">
           <input
+            disabled={
+              !settings?.features.offline_enabled ||
+              !state.context.writable ||
+              busy
+            }
             checked={optIn}
             onChange={(e) => setOptIn(e.target.checked)}
             type="checkbox"
           />{" "}
           Saya mengizinkan salinan sementara pada perangkat pribadi ini.
         </label>
+        {!state.materials.length && (
+          <p className="mt-4 text-sm text-stone-500">
+            Belum ada materi yang dapat disimpan.
+          </p>
+        )}
         {state.materials.map((m) => (
           <div
             className="mt-3 flex flex-wrap items-center justify-between gap-3"
@@ -629,7 +750,12 @@ export function DevelopmentCourse({ state }: { state: CourseState }) {
             <span className="text-sm">{m.title}</span>
             <Button
               variant="outline"
-              disabled={busy || !optIn || !settings?.features.offline_enabled}
+              disabled={
+                busy ||
+                !optIn ||
+                !state.context.writable ||
+                !settings?.features.offline_enabled
+              }
               onClick={() => void save("material", m.id)}
             >
               Simpan materi offline
@@ -637,36 +763,79 @@ export function DevelopmentCourse({ state }: { state: CourseState }) {
           </div>
         ))}
         {state.context.student_writable &&
-          state.assignments.map((a) => (
-            <div
-              key={a.id}
-              className="mt-3 flex flex-wrap items-center justify-between gap-3"
-            >
-              <span className="text-sm">{a.title}</span>
-              <Button
-                variant="outline"
-                disabled={busy || !optIn || !settings?.features.offline_enabled}
-                onClick={() => void save("draft", a.id)}
+          state.assignments
+            .filter((a) => a.formats.some((f) => f === "text" || f === "link"))
+            .map((a) => (
+              <div
+                key={a.id}
+                className="mt-3 flex flex-wrap items-center justify-between gap-3"
               >
-                Siapkan draf offline
-              </Button>
-            </div>
-          ))}
-        <Link
+                <span className="text-sm">{a.title}</span>
+                <Button
+                  variant="outline"
+                  disabled={
+                    busy ||
+                    !optIn ||
+                    !state.context.writable ||
+                    !settings?.features.offline_enabled
+                  }
+                  onClick={() => void save("draft", a.id)}
+                >
+                  Siapkan draf offline
+                </Button>
+              </div>
+            ))}
+        <a
           className="mt-5 inline-block text-sm text-emerald-800 underline"
           href="/offline"
         >
           Buka Ruang offline →
-        </Link>
+        </a>
       </section>
-      {state.context.manager && (
+      {state.context.manager && state.context.writable && (
         <section className={panelClass}>
           <h2 className="text-lg font-semibold">Kanal WhatsApp / Telegram</h2>
           <p className="mt-2 text-sm text-stone-600">
             Buat pesan melalui Lanjutan → Notifikasi kegiatan terlebih dahulu.
             Antrean tambahan hanya memakai tujuan siswa yang diverifikasi dan
-            disetujui. Kredensial penyedia harus tersedia pada environment.
+            disetujui. Notifikasi berisi ringkasan dan tautan ke pesan lengkap
+            di LMS. Kredensial penyedia diatur oleh admin server.
           </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {(["telegram", "whatsapp"] as const).map((k) => (
+              <div
+                key={k}
+                className="rounded-xl border border-stone-200 bg-stone-50 p-4"
+              >
+                <p className="text-sm font-semibold">
+                  {k === "telegram" ? "Telegram" : "WhatsApp"}
+                </p>
+                <p
+                  className={`mt-2 text-xs leading-5 ${ready?.[k].ready ? "text-emerald-800" : "text-amber-800"}`}
+                >
+                  {ready?.[k].message ?? "Memeriksa konfigurasi server…"}
+                </p>
+              </div>
+            ))}
+          </div>
+          {state.context.admin && (
+            <Link
+              href="/pengembangan"
+              className="mt-3 inline-block text-sm text-emerald-800 underline"
+            >
+              Atur fitur dan tujuan penerima →
+            </Link>
+          )}
+          {!settings?.features.channels_enabled && (
+            <p className="mt-3 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
+              Kanal belum diaktifkan oleh admin sekolah.
+            </p>
+          )}
+          {!messages.length && (
+            <p className="mt-3 text-sm text-stone-500">
+              Belum ada pesan. Buat pesan pada Lanjutan → Notifikasi kegiatan.
+            </p>
+          )}
           <form
             method="post"
             className="mt-4 space-y-3"
@@ -674,13 +843,30 @@ export function DevelopmentCourse({ state }: { state: CourseState }) {
               e.preventDefault();
               const d = new FormData(e.currentTarget);
               setBusy(true);
-              void devRequest("channel-queue", {
+              setMessage("");
+              setError(false);
+              void devRequest<{ queued: number }>("channel-queue", {
                 course,
                 target: String(d.get("message")),
                 data: { channel: String(d.get("channel")) },
               })
-                .then(() => load())
-                .catch((e) => setMessage(e.message))
+                .then(async () => {
+                  const next = await load();
+                  const job = next?.find(
+                    (j) =>
+                      j.message_id === d.get("message") &&
+                      j.channel === d.get("channel"),
+                  );
+                  setMessage(
+                    job
+                      ? `Antrean berisi ${job.total} tujuan. Pesan belum dikirim; gunakan tombol Kirim batch untuk melanjutkan.`
+                      : "Tidak ada tujuan siswa yang aktif, terverifikasi dan disetujui untuk pesan dan kanal ini. Minta admin memeriksa tujuan penerima.",
+                  );
+                })
+                .catch((e) => {
+                  setError(true);
+                  setMessage(e.message);
+                })
                 .finally(() => setBusy(false));
             }}
           >
@@ -696,18 +882,34 @@ export function DevelopmentCourse({ state }: { state: CourseState }) {
             </label>
             <label className="block text-sm">
               Kanal
-              <select name="channel" className={fieldClass}>
+              <select
+                name="channel"
+                value={channel}
+                onChange={(e) => setChannel(e.target.value)}
+                className={fieldClass}
+              >
                 <option value="telegram">Telegram</option>
                 <option value="whatsapp">WhatsApp</option>
               </select>
             </label>
             <Button
-              disabled={busy || !settings?.features.channels_enabled}
+              disabled={
+                busy ||
+                !messages.length ||
+                !ready?.[channel]?.ready ||
+                !settings?.features.channels_enabled
+              }
               type="submit"
             >
               Antrekan ke kanal
             </Button>
           </form>
+          {!!messages.length && !jobs.length && (
+            <p className="mt-4 text-sm text-stone-500">
+              Belum ada tujuan dalam antrean. Admin perlu menambahkan tujuan
+              penerima terverifikasi terlebih dahulu.
+            </p>
+          )}
           {jobs.map((j) => (
             <article
               className="mt-4 border-t pt-4"
@@ -720,37 +922,22 @@ export function DevelopmentCourse({ state }: { state: CourseState }) {
                 {j.total} tujuan · menunggu {j.pending} · diterima penyedia{" "}
                 {j.accepted} · tidak pasti {j.uncertain}
               </p>
+              {j.uncertain > 0 && (
+                <p className="mt-2 rounded-lg bg-amber-50 p-3 text-xs leading-5 text-amber-900">
+                  Pengiriman tidak pasti tidak diulang otomatis untuk mencegah
+                  pesan ganda. Operator perlu memeriksa riwayat penyedia.
+                </p>
+              )}
               <Button
                 className="mt-3"
                 variant="outline"
                 disabled={
-                  busy || !j.pending || !settings?.features.channels_enabled
+                  busy ||
+                  !j.pending ||
+                  !ready?.[j.channel]?.ready ||
+                  !settings?.features.channels_enabled
                 }
-                onClick={() => {
-                  if (
-                    !window.confirm(
-                      "Kirim pesan ini ke maksimal tiga penerima melalui kanal eksternal?",
-                    )
-                  )
-                    return;
-                  setBusy(true);
-                  void devRequest<{ accepted: number; uncertain: number }>(
-                    "channel-send",
-                    {
-                      course,
-                      target: j.message_id,
-                      data: { channel: j.channel },
-                    },
-                  )
-                    .then(async (r) => {
-                      setMessage(
-                        `Diterima penyedia ${r.accepted}; tidak pasti ${r.uncertain}. Ini bukan bukti dibaca penerima.`,
-                      );
-                      await load();
-                    })
-                    .catch((e) => setMessage(e.message))
-                    .finally(() => setBusy(false));
-                }}
+                onClick={() => setSendJob(j)}
               >
                 Kirim batch
               </Button>

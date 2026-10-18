@@ -90,7 +90,7 @@ Isi `LMS_CHANNEL_CONFIG_JSON` langsung pada environment server Vercel. Bentuknya
 }
 ```
 
-Telegram menggunakan Bot API sendMessage dengan teks biasa dan tanpa preview tautan. WhatsApp menggunakan Cloud API template dengan **satu parameter teks pada body** berisi judul dan isi pesan. Template dan bahasa harus sesuai yang disetujui penyedia. Versi Graph diisi secara eksplisit dalam format vN.N; tidak ada versi yang dipilih otomatis. Kombinasi judul/isi dibatasi 4.096 karakter untuk Telegram dan 1.024 untuk parameter WhatsApp. Adapter menolak data yang melewati batas sebelum memanggil penyedia.
+Telegram menggunakan Bot API sendMessage dengan teks biasa dan tanpa preview tautan. WhatsApp menggunakan Cloud API template dengan **satu parameter teks pada body** berisi ringkasan judul/isi serta tautan ke LMS. Pesan lengkap tetap dapat dibaca di LMS. Template dan bahasa harus sesuai yang disetujui penyedia. Versi Graph diisi secara eksplisit dalam format vN.N; tidak ada versi yang dipilih otomatis. Kombinasi judul/isi dibatasi 4.096 karakter untuk Telegram dan 1.024 untuk parameter WhatsApp. Notifikasi diringkas sesuai batas kanal tanpa memotong pasangan Unicode; adapter tetap menolak payload yang melewati batas sebelum memanggil penyedia.
 
 Konfigurasi diverifikasi sebelum klaim batch. Token tidak dikirim ke frontend dan error tidak memuat token/URL rahasia. Modul tidak membuat akun penyedia, bot, nomor WhatsApp, template, langganan atau komitmen biaya. Penggunaan nyata mengikuti izin/kuota penyedia dan perlu pemeriksaan operator sesuai syarat paket gratis.
 
@@ -108,3 +108,5 @@ Referensi: [Telegram Bot API](https://core.telegram.org/bots/api#sendmessage), [
 Sebelum aktivasi nyata, uji pemasangan PWA, pemuatan shell tanpa jaringan, expiry/pergantian akun/multi-tab, pengumpulan draf dengan jaringan putus dan konflik, pencabutan akses tim, isolasi dua sekolah melalui URL/API/Storage, pengiriman kanal ke tujuan uji yang disetujui, serta beban target setelah perubahan. Catat hasil dan referensinya di pengaturan; jangan menyatakan uji kapasitas lulus hanya dari keberhasilan build.
 
 Latensi kuis Tahap 6, penerimaan browser privat/perangkat, pemulihan cadangan produksi dan pelaksanaan kelas Tahap 7 tetap terbuka. Lihat [hasil Tahap 9](verification/stage9-results.json).
+
+Perbaikan kesiapan offline, kanal dan konfirmasi terbaru dijelaskan pada [pembaruan pembelajaran](16-Lampiran-Offline-Kanal-Logout.md).

@@ -1,8 +1,174 @@
-import {z} from 'zod';import {cookies} from 'next/headers';import {accountContext,IdentityError,limit} from '@/lib/auth/identity';import {validOrigin} from '@/lib/auth/security';import {developmentCommand} from '@/lib/development/server';import {devSchemas,devEnvelope} from '@/lib/development/validation';import {channelConfig,sendChannel} from '@/lib/development/channels';import {createSupabaseAdminClient} from '@/lib/supabase/admin';
-export const runtime='nodejs';export const dynamic='force-dynamic';export const maxDuration=60;
-const output=(value:unknown,status=200)=>Response.json(value,{status,headers:{'Cache-Control':'private, no-store'}});
-export async function POST(request:Request,{params}:{params:Promise<{action:string}>}){try{if(!validOrigin(request.headers.get('origin'),request.url,process.env.APP_URL))throw new IdentityError('Asal permintaan ditolak.',403);if(!request.headers.get('content-type')?.includes('application/json'))throw new IdentityError('Gunakan JSON.',415);const reader=request.body?.getReader();if(!reader)throw new IdentityError('Permintaan kosong.');let size=0;const chunks:Uint8Array[]=[];try{for(;;){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>50000){await reader.cancel();throw new IdentityError('Permintaan terlalu besar.',413);}chunks.push(value);}}finally{reader.releaseLock();}let raw;try{raw=JSON.parse(Buffer.concat(chunks).toString('utf8'));}catch{throw new IdentityError('JSON tidak valid.');}const {action}=await params;if(!devSchemas[action])throw new IdentityError('Tidak ditemukan.',404);const input=devEnvelope.parse(raw);input.data=devSchemas[action].parse(input.data??{});const ctx=await accountContext(true);await limit('development.'+action,ctx.actor,100,900);
- if(action==='select-school'){const result=await developmentCommand<{schools:{id:string}[]}>(ctx,'schools');const school=(input.data as {school:string}).school;if(!result.schools.some(s=>s.id===school))throw new IdentityError('Sekolah tidak dapat dipilih.',403);(await cookies()).set('lms-school',school,{httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'lax',path:'/',maxAge:86400});return output({ok:true,result:{school}});}
- if(action==='channel-send'){const kind=(input.data as {channel:'telegram'|'whatsapp'}).channel;const result=await developmentCommand<{school:string}>(ctx,'channel-check',input);channelConfig(result.school,kind);const admin=createSupabaseAdminClient();const claim=await admin.rpc('channel_claim',{message:input.target,course:input.course,actor:ctx.actor,kind});if(claim.error)throw new IdentityError('Antrean tidak dapat diklaim.',409);let accepted=0,uncertain=0;for(const job of claim.data??[]){let status='unknown';try{await sendChannel(result.school,kind,job.destination,`${job.subject}\n\n${job.body}`);status='accepted';accepted++;}catch{uncertain++;}const ack=await admin.rpc('channel_ack',{message:input.target,recipient:job.user_id,kind,result:status});if(ack.error)uncertain++;}return output({ok:true,result:{accepted,uncertain}});}
- return output({ok:true,result:await developmentCommand(ctx,action,input)});
- }catch(e){return output({ok:false,message:e instanceof IdentityError?e.message:e instanceof z.ZodError?e.issues[0]?.message:'Permintaan belum dapat diproses. Periksa konfigurasi kanal dan koneksi.'},e instanceof IdentityError?e.status:e instanceof z.ZodError?400:503);}}
+import { z } from "zod";
+import { cookies } from "next/headers";
+import { accountContext, IdentityError, limit } from "@/lib/auth/identity";
+import { validOrigin } from "@/lib/auth/security";
+import { developmentCommand } from "@/lib/development/server";
+import { devSchemas, devEnvelope } from "@/lib/development/validation";
+import {
+  channelConfig,
+  channelReadiness,
+  channelMessage,
+  sendChannel,
+} from "@/lib/development/channels";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+const output = (value: unknown, status = 200) =>
+  Response.json(value, {
+    status,
+    headers: { "Cache-Control": "private, no-store" },
+  });
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ action: string }> },
+) {
+  try {
+    if (
+      !validOrigin(
+        request.headers.get("origin"),
+        request.url,
+        process.env.APP_URL,
+      )
+    )
+      throw new IdentityError("Asal permintaan ditolak.", 403);
+    if (!request.headers.get("content-type")?.includes("application/json"))
+      throw new IdentityError("Gunakan JSON.", 415);
+    const reader = request.body?.getReader();
+    if (!reader) throw new IdentityError("Permintaan kosong.");
+    let size = 0;
+    const chunks: Uint8Array[] = [];
+    try {
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        size += value.length;
+        if (size > 50000) {
+          await reader.cancel();
+          throw new IdentityError("Permintaan terlalu besar.", 413);
+        }
+        chunks.push(value);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+    let raw;
+    try {
+      raw = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+    } catch {
+      throw new IdentityError("JSON tidak valid.");
+    }
+    const { action } = await params;
+    if (!devSchemas[action]) throw new IdentityError("Tidak ditemukan.", 404);
+    const input = devEnvelope.parse(raw);
+    input.data = devSchemas[action].parse(input.data ?? {});
+    const ctx = await accountContext(true);
+    await limit("development." + action, ctx.actor, 100, 900);
+    if (action === "select-school") {
+      const result = await developmentCommand<{ schools: { id: string }[] }>(
+        ctx,
+        "schools",
+      );
+      const school = (input.data as { school: string }).school;
+      if (!result.schools.some((s) => s.id === school))
+        throw new IdentityError("Sekolah tidak dapat dipilih.", 403);
+      (await cookies()).set("lms-school", school, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 86400,
+      });
+      return output({ ok: true, result: { school } });
+    }
+    if (action === "channel-readiness") {
+      const settings = await developmentCommand<{ admin: boolean }>(
+        ctx,
+        "settings",
+        input,
+      );
+      // Course scope is authorized by the same context as channel-state.
+      if (input.course) await developmentCommand(ctx, "channel-state", input);
+      else if (!settings.admin)
+        throw new IdentityError("Hanya admin sekolah.", 403);
+      let schoolId = input.school;
+      if (input.course) {
+        const { data, error } = await ctx.client
+          .from("teaching_classes")
+          .select("school_id")
+          .eq("id", input.course)
+          .single();
+        if (error || !data)
+          throw new IdentityError("Kelas tidak dapat diakses.", 403);
+        schoolId = data.school_id;
+      }
+      return output({ ok: true, result: channelReadiness(schoolId!) });
+    }
+    if (action === "channel-send") {
+      const kind = (input.data as { channel: "telegram" | "whatsapp" }).channel;
+      const result = await developmentCommand<{ school: string }>(
+        ctx,
+        "channel-check",
+        input,
+      );
+      channelConfig(result.school, kind);
+      const admin = createSupabaseAdminClient();
+      const claim = await admin.rpc("channel_claim", {
+        message: input.target,
+        course: input.course,
+        actor: ctx.actor,
+        kind,
+      });
+      if (claim.error)
+        throw new IdentityError("Antrean tidak dapat diklaim.", 409);
+      let accepted = 0,
+        uncertain = 0;
+      for (const job of claim.data ?? []) {
+        let status = "unknown";
+        try {
+          await sendChannel(
+            result.school,
+            kind,
+            job.destination,
+            channelMessage(kind, job.subject, job.body, input.course!),
+          );
+          status = "accepted";
+        } catch {
+          uncertain++;
+        }
+        const ack = await admin.rpc("channel_ack", {
+          message: input.target,
+          recipient: job.user_id,
+          kind,
+          result: status,
+        });
+        if (status === "accepted") {
+          if (ack.error) uncertain++;
+          else accepted++;
+        }
+      }
+      return output({ ok: true, result: { accepted, uncertain } });
+    }
+    return output({
+      ok: true,
+      result: await developmentCommand(ctx, action, input),
+    });
+  } catch (e) {
+    return output(
+      {
+        ok: false,
+        message:
+          e instanceof IdentityError
+            ? e.message
+            : e instanceof z.ZodError
+              ? e.issues[0]?.message
+              : "Permintaan belum dapat diproses. Periksa konfigurasi kanal dan koneksi.",
+      },
+      e instanceof IdentityError
+        ? e.status
+        : e instanceof z.ZodError
+          ? 400
+          : 503,
+    );
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-18T05:45:07.182Z",
+  "target": "http://127.0.0.1:3210",
+  "scope": "Real service worker, encrypted local store and actual Next.js offline shell; local server stopped during offline checks; synthetic local records, no authorized server submit or real provider messages",
+  "passed": [
+    "public_shell_install",
+    "material_read_without_network",
+    "draft_edit_save_and_reload_offline",
+    "offline_submit_disabled",
+    "protected_navigation_offline_fallback",
+    "cache_allowlist_no_private_pages_or_api",
+    "mobile_no_overflow",
+    "local_clear"
+  ],
+  "javascript_errors": []
+}

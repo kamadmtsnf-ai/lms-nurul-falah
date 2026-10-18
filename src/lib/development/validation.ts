@@ -1,3 +1,70 @@
-import {z} from 'zod';const id=z.uuid(),channel=z.enum(['telegram','whatsapp']),note=z.string().trim().min(10).max(500);
-export const devSchemas:Record<string,z.ZodType>={schools:z.object({}).strict(),settings:z.object({}).strict(),'platform-state':z.object({}).strict(),'platform-enable':z.object({enabled:z.boolean(),acceptance_reference:note}).strict(),'platform-create':z.object({name:z.string().trim().min(2).max(150),education_level:z.string().trim().min(2).max(50),admin_username:z.string().min(3).max(50)}).strict(),'platform-link':z.object({username:z.string().min(3).max(50),role:z.enum(['admin','teacher','student','guardian','principal','homeroom_teacher','duty_teacher'])}).strict(),'feature-save':z.object({offline_enabled:z.boolean(),team_enabled:z.boolean(),channels_enabled:z.boolean(),acceptance_reference:z.string().max(500),revision:z.number().int().min(0)}).strict(),'team-save':z.object({course_id:id,user_id:id,active:z.boolean()}).strict(),'contact-save':z.object({user_id:id,channel,destination:z.string().min(3).max(80),consent_reference:z.string().trim().min(5).max(500),verified:z.boolean(),active:z.boolean()}).strict(),'offline-material':z.object({}).strict(),'offline-draft-context':z.object({}).strict(),'channel-queue':z.object({channel}).strict(),'channel-state':z.object({}).strict(),'channel-send':z.object({channel}).strict(),'select-school':z.object({school:id}).strict()};
-export const devEnvelope=z.object({school:id.optional(),course:id.optional(),target:id.optional(),data:z.unknown().optional()}).strict();
+import { z } from "zod";
+const id = z.uuid(),
+  channel = z.enum(["telegram", "whatsapp"]),
+  note = z.string().trim().min(10).max(500);
+export const devSchemas: Record<string, z.ZodType> = {
+  schools: z.object({}).strict(),
+  settings: z.object({}).strict(),
+  "platform-state": z.object({}).strict(),
+  "platform-enable": z
+    .object({ enabled: z.boolean(), acceptance_reference: note })
+    .strict(),
+  "platform-create": z
+    .object({
+      name: z.string().trim().min(2).max(150),
+      education_level: z.string().trim().min(2).max(50),
+      admin_username: z.string().min(3).max(50),
+    })
+    .strict(),
+  "platform-link": z
+    .object({
+      username: z.string().min(3).max(50),
+      role: z.enum([
+        "admin",
+        "teacher",
+        "student",
+        "guardian",
+        "principal",
+        "homeroom_teacher",
+        "duty_teacher",
+      ]),
+    })
+    .strict(),
+  "feature-save": z
+    .object({
+      offline_enabled: z.boolean(),
+      team_enabled: z.boolean(),
+      channels_enabled: z.boolean(),
+      acceptance_reference: z.string().max(500),
+      revision: z.number().int().min(0),
+    })
+    .strict(),
+  "team-save": z
+    .object({ course_id: id, user_id: id, active: z.boolean() })
+    .strict(),
+  "contact-save": z
+    .object({
+      user_id: id,
+      channel,
+      destination: z.string().min(3).max(80),
+      consent_reference: z.string().trim().min(5).max(500),
+      verified: z.boolean(),
+      active: z.boolean(),
+    })
+    .strict(),
+  "offline-material": z.object({}).strict(),
+  "offline-draft-context": z.object({}).strict(),
+  "channel-queue": z.object({ channel }).strict(),
+  "channel-readiness": z.object({}).strict(),
+  "channel-state": z.object({}).strict(),
+  "channel-send": z.object({ channel }).strict(),
+  "select-school": z.object({ school: id }).strict(),
+};
+export const devEnvelope = z
+  .object({
+    school: id.optional(),
+    course: id.optional(),
+    target: id.optional(),
+    data: z.unknown().optional(),
+  })
+  .strict();

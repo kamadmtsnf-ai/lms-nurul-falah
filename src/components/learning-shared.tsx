@@ -1,5 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { FileText, UploadCloud, Trash2, Download } from "lucide-react";
+import { ConfirmDialog } from "./confirm-dialog";
+import { validateUpload } from "@/lib/upload-policy";
 import { Button } from "@/components/ui/button";
 import { learningRequest } from "@/lib/learning/types";
 import { fileKind, mimeForName } from "@/lib/learning/file-validation";
@@ -28,12 +31,17 @@ export function Links({ links }: { links: string[] }) {
 export function Files({
   course,
   assets,
+  onRemove,
 }: {
   course: string;
   assets: { id: string; name: string; bytes?: number }[];
+  onRemove?: (id: string) => Promise<void>;
 }) {
   const [message, setMessage] = useState(""),
-    [busy, setBusy] = useState("");
+    [busy, setBusy] = useState(""),
+    [removing, setRemoving] = useState<{ id: string; name: string } | null>(
+      null,
+    );
   async function download(asset: { id: string; name: string; bytes?: number }) {
     setBusy(asset.id);
     setMessage("");
@@ -56,21 +64,74 @@ export function Files({
   return (
     <div className="mt-3 space-y-2">
       {assets.map((a) => (
-        <button
-          type="button"
+        <div
           key={a.id}
-          disabled={!!busy}
-          onClick={() => void download(a)}
-          className="block rounded-lg bg-stone-50 px-3 py-2 text-left text-sm text-emerald-800 underline"
+          className="flex min-w-0 items-center gap-2 rounded-xl border border-stone-200 bg-stone-50/70 p-3"
         >
-          {busy === a.id ? "Menyiapkan unduhan…" : a.name}{" "}
-          {a.bytes !== undefined && (
-            <span className="text-xs text-stone-500">
-              ({(a.bytes / 1000000).toFixed(2)} MB)
+          <FileText
+            aria-hidden
+            size={20}
+            className="shrink-0 text-emerald-700"
+          />
+          <button
+            type="button"
+            disabled={!!busy}
+            onClick={() => void download(a)}
+            className="min-h-11 min-w-0 flex-1 text-left text-sm font-medium text-emerald-900 hover:underline focus-visible:outline-2 focus-visible:outline-emerald-700"
+          >
+            <span className="block break-words [overflow-wrap:anywhere]">
+              {busy === a.id ? "Menyiapkan unduhan…" : a.name}
             </span>
+            {a.bytes !== undefined && (
+              <span className="mt-1 block text-xs font-normal text-stone-500">
+                {(a.bytes / 1000000).toFixed(2)} MB · Unduh berkas
+              </span>
+            )}
+          </button>
+          <Download aria-hidden size={16} className="shrink-0 text-stone-400" />
+          {onRemove && (
+            <button
+              type="button"
+              aria-label={`Hapus lampiran ${a.name}`}
+              disabled={!!busy}
+              onClick={() => {
+                setMessage("");
+                setRemoving(a);
+              }}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-700"
+            >
+              <Trash2 size={18} />
+            </button>
           )}
-        </button>
+        </div>
       ))}
+      <ConfirmDialog
+        open={!!removing}
+        title="Hapus lampiran?"
+        description={`Berkas “${removing?.name ?? ""}” akan dihapus dari materi atau tugas ini. Tindakan ini tidak dapat dibatalkan. Tautan unduhan yang sudah diterbitkan dapat berlaku maksimal dua menit.`}
+        confirmLabel="Hapus lampiran"
+        busy={!!busy}
+        error={message}
+        onCancel={() => {
+          setRemoving(null);
+          setMessage("");
+        }}
+        onConfirm={() => {
+          if (!removing || !onRemove || busy) return;
+          setBusy(removing.id);
+          setMessage("");
+          void onRemove(removing.id)
+            .then(() => setRemoving(null))
+            .catch((e) =>
+              setMessage(
+                e instanceof Error
+                  ? e.message
+                  : "Lampiran belum dapat dihapus.",
+              ),
+            )
+            .finally(() => setBusy(""));
+        }}
+      />
       {message && (
         <p role="alert" className="text-sm text-red-700">
           {message}
@@ -90,11 +151,16 @@ export function Uploader({
   type: "material" | "assignment" | "submission";
   onDone: (id: string) => Promise<void>;
 }) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false),
+    [error, setError] = useState(false),
+    [filename, setFilename] = useState(""),
     [message, setMessage] = useState("");
   async function upload(file: File) {
     setBusy(true);
     setMessage("");
+    setError(false);
+    setFilename(file.name);
     try {
       const mime = mimeForName(file.name) ?? file.type,
         kind = fileKind(mime);
@@ -102,6 +168,8 @@ export function Uploader({
         throw new Error(
           "Format tidak didukung. Gunakan PDF, dokumen Office, JPG/PNG/WebP, MP3/M4A/OGG/WAV atau MP4/WebM.",
         );
+      const check = validateUpload(kind, mime, file.size);
+      if (!check.ok) throw new Error(check.reason ?? "Berkas tidak valid.");
       const ticket = await learningRequest("upload-start", {
         course,
         data: {
@@ -130,39 +198,80 @@ export function Uploader({
       await onDone(ticket.id);
       setMessage("Berkas siap digunakan.");
     } catch (e) {
+      setError(true);
       setMessage(e instanceof Error ? e.message : "Unggahan gagal.");
     } finally {
       setBusy(false);
     }
   }
   return (
-    <div className="mt-4 rounded-xl border border-dashed border-stone-300 p-4">
-      <label className="block text-sm font-medium">
-        {busy ? "Mengunggah dan memeriksa berkas…" : "Tambahkan lampiran"}
-        <input
-          type="file"
+    <div
+      aria-busy={busy}
+      className="mt-5 rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/40 p-4 sm:p-5"
+    >
+      <div className="flex items-start gap-3">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-800 shadow-sm">
+          <UploadCloud aria-hidden size={23} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-sm font-semibold text-stone-900">
+            Tambahkan lampiran
+          </h3>
+          <p className="mt-1 text-xs leading-5 text-stone-600">
+            Pilih satu berkas dari perangkat. Berkas diperiksa sebelum dapat
+            diunduh.
+          </p>
+        </div>
+      </div>
+      <input
+        ref={inputRef}
+        aria-label="Pilih file lampiran"
+        type="file"
+        disabled={busy}
+        accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.mp3,.m4a,.ogg,.wav,.mp4,.webm"
+        className="sr-only"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) void upload(file);
+          e.target.value = "";
+        }}
+      />
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <Button
+          type="button"
+          variant="outline"
           disabled={busy}
-          accept=".jpg,.jpeg,.png,.webp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.mp3,.m4a,.ogg,.wav,.mp4,.webm"
-          className="mt-3 block w-full text-xs"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) void upload(file);
-            e.target.value = "";
-          }}
-        />
-      </label>
-      <p className="mt-2 text-xs leading-5 text-stone-500">
+          onClick={() => inputRef.current?.click()}
+        >
+          {busy ? (
+            <>
+              <span aria-hidden className="loading-spinner" /> Mengunggah &
+              memeriksa…
+            </>
+          ) : (
+            "Pilih berkas"
+          )}
+        </Button>
+        <span className="min-w-0 break-words text-xs text-stone-500 [overflow-wrap:anywhere]">
+          {filename || "PDF, Word, Excel, PowerPoint, gambar, audio atau video"}
+        </span>
+      </div>
+      <p className="mt-3 text-xs leading-5 text-stone-500">
         Gambar maksimal 3 MB; dokumen maksimal 5 MB. Audio/video harus kurang
         dari 5 MB; untuk ukuran lebih besar gunakan tautan HTTPS.
       </p>
       {message && (
-        <p role="status" className="mt-3 text-sm text-emerald-900">
+        <p
+          role={error ? "alert" : "status"}
+          className={`mt-3 rounded-xl p-3 text-sm ${error ? "bg-red-50 text-red-800" : "bg-emerald-100 text-emerald-900"}`}
+        >
           {message}
         </p>
       )}
     </div>
   );
 }
+
 export function Notice({
   message,
   error = false,
