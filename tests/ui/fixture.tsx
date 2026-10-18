@@ -201,6 +201,26 @@ const attempt: Attempt = {
   can_answer: true,
   review_visible: false,
 };
+if (params.has("reliability")) {
+  attempt.server_now = new Date().toISOString();
+  attempt.deadline = new Date(Date.now() + 1800000).toISOString();
+  attempt.title = "Uji keandalan kuis";
+  attempt.instructions = "Pilih jawaban lalu tunggu sinkronisasi.";
+  attempt.questions = [
+    {
+      kind: "choice",
+      prompt: "Pilih jawaban",
+      options: ["Jawaban A", "Jawaban B"],
+      points: 1,
+    },
+  ];
+}
+const reliableAttempt = structuredClone(attempt);
+let lastReliablePacket = "";
+(window as any).__loseAck = false;
+(window as any).__holdAnswer = false;
+(window as any).__releaseAnswer = () => {};
+(window as any).__reliableServer = reliableAttempt;
 const report = (offset = 0) => ({
   offset,
   has_more: offset === 0,
@@ -491,6 +511,49 @@ window.fetch = async (url, options) => {
       })),
     });
   requests.push({ path, ...body });
+  if (params.has("reliability") && path.startsWith("/api/kuis/")) {
+    if (action === "answers") {
+      if (body.request_id !== lastReliablePacket) {
+        if (body.revision !== reliableAttempt.revision)
+          return Response.json(
+            { message: "Jawaban berubah di perangkat lain." },
+            { status: 409 },
+          );
+        reliableAttempt.answers = body.answers;
+        reliableAttempt.revision++;
+        lastReliablePacket = body.request_id;
+      }
+      if ((window as any).__holdAnswer)
+        await new Promise<void>((r) => {
+          (window as any).__releaseAnswer = r;
+        });
+      if ((window as any).__loseAck) {
+        (window as any).__loseAck = false;
+        throw new TypeError("Synthetic response lost after commit");
+      }
+    }
+    if (action === "finish") {
+      reliableAttempt.status = "submitted";
+      reliableAttempt.finished_at = new Date().toISOString();
+    }
+    reliableAttempt.server_now = new Date().toISOString();
+    const { id, status, revision, server_now, deadline, can_answer } =
+      reliableAttempt;
+    return Response.json({
+      result:
+        body.compact && status === "working"
+          ? {
+              id,
+              status,
+              revision,
+              server_now,
+              deadline,
+              can_answer,
+              compact: true,
+            }
+          : structuredClone(reliableAttempt),
+    });
+  }
   if ((window as any).__fail)
     return new Response("<html>Upstream unavailable</html>", { status: 502 });
   await new Promise((r) => setTimeout(r, 30));

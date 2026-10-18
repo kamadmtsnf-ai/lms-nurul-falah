@@ -6,7 +6,7 @@
   "production_build": "passed",
   "typecheck": "passed",
   "automated_tests": {
-    "passed": 169,
+    "passed": 172,
     "failed": 0
   },
   "http_scenarios": {
@@ -14,7 +14,7 @@
     "failed": 0,
     "scope": "local_no_database_config"
   },
-  "cloud_database": "25_migrations_applied_academic_flow_verified",
+  "cloud_database": "26_migrations_applied_quiz_concurrency_reliability_verified",
   "migration_versions": [
     "20261017152937",
     "20261017152957",
@@ -40,7 +40,8 @@
     "20261018104028",
     "20261018113505",
     "20261018144212",
-    "20261018144324"
+    "20261018144324",
+    "20261018150842"
   ],
   "external_email": "user_confirmed_activation_success_not_retested_in_stage_3",
   "deployment": "inspect_current_commit_in_vercel",
@@ -469,5 +470,35 @@
     "cloud_permissions": "nine_private_tables_RLS_direct_anon_authenticated_reads_denied; RPC_authenticated_only_identity_and_MFA_checked",
     "scope": "real_local_database_all_migrations; synthetic_browser_mock_API; cloud_schema_permissions; real_school_grade_and_enrollment_test_mutations_not_performed",
     "report": "docs/24-Penyempurnaan-Alur-Akademik.md"
+  },
+  "quiz_reliability": {
+    "status": "implemented",
+    "migration": "20261018150842",
+    "cloud_migration_applied": true,
+    "automated_tests_passed": 172,
+    "browser_recovery_scenarios": 6,
+    "ui_regression_checks": 379,
+    "http_scenarios": 23,
+    "typecheck": "passed",
+    "build": "passed",
+    "javascript_errors": [],
+    "synthetic_participants": 132,
+    "synthetic_waves": [
+      60,
+      100,
+      132
+    ],
+    "payload_fixture": {
+      "questions": 30,
+      "full_bytes": 3730507,
+      "compact_bytes": 57759,
+      "reduction_percent": 98.45
+    },
+    "cloud_locks": "shared_quiz_metadata; exclusive_attempt; per_student_quiz_start_advisory",
+    "no_new_advisor_warning": true,
+    "hosted_132_session_latency": "not_remeasured; previous failed client latency gate remains open",
+    "pending_answer_persistence": "in_page_memory_only; beforeunload_warning; no_new_browser_storage",
+    "scope": "real_local_single_connection_database; real_React_component_mock_API; cloud_function_definition_privileges_checked; no_real_school_answer_or_score_test_mutations",
+    "report": "docs/25-Optimasi-Keandalan-Kuis.md"
   }
 }

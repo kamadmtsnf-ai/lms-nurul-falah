@@ -8,9 +8,61 @@ import {
   quizRequest,
   QuizRequestError,
   type Attempt,
+  type AttemptSync,
   type AnswerValue,
 } from "@/lib/quiz/types";
-import { AnswerQueue, mayApplyPoll, savedAnswers } from "@/lib/quiz/sync";
+import {
+  AnswerQueue,
+  mayApplyPoll,
+  savedAnswers,
+  mergeAttemptSync,
+  syncDelay,
+} from "@/lib/quiz/sync";
+/** Keep one-second countdown renders outside the entire question form. */
+function QuizCountdown({ attempt }: { attempt: Attempt }) {
+  const [remaining, setRemaining] = useState(() =>
+    Math.max(
+      0,
+      Math.ceil(
+        (Date.parse(attempt.deadline) - Date.parse(attempt.server_now)) / 1000,
+      ),
+    ),
+  );
+  useEffect(() => {
+    if (attempt.status !== "working" || !attempt.can_answer) return;
+    const origin = performance.now(),
+      server = Date.parse(attempt.server_now);
+    const update = () =>
+      setRemaining(
+        Math.max(
+          0,
+          Math.ceil(
+            (Date.parse(attempt.deadline) -
+              server -
+              (performance.now() - origin)) /
+              1000,
+          ),
+        ),
+      );
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, [
+    attempt.deadline,
+    attempt.server_now,
+    attempt.status,
+    attempt.can_answer,
+  ]);
+  return (
+    <p role="timer" className="quiz-timer mt-3 font-semibold">
+      {attempt.status !== "working"
+        ? "Kuis selesai"
+        : !attempt.can_answer
+          ? "Percobaan baca-saja"
+          : `Sisa waktu: ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}`}
+    </p>
+  );
+}
 export function QuizAttempt({
   initial,
   course,
@@ -31,15 +83,6 @@ export function QuizAttempt({
           : "Semua jawaban tersimpan.",
     ),
     [busy, setBusy] = useState(false),
-    [remaining, setRemaining] = useState(() =>
-      Math.max(
-        0,
-        Math.ceil(
-          (Date.parse(initial.deadline) - Date.parse(initial.server_now)) /
-            1000,
-        ),
-      ),
-    ),
     [conflict, setConflict] = useState(false);
   const current = useRef(initial),
     queue = useRef(new AnswerQueue()),
@@ -48,7 +91,9 @@ export function QuizAttempt({
     blocked = useRef(false),
     retryAt = useRef(0),
     failures = useRef(0),
-    nextPoll = useRef(Date.now() + 20000),
+    polling = useRef(false),
+    nextSave = useRef(Date.now() + syncDelay("save")),
+    nextPoll = useRef(Date.now() + syncDelay("poll")),
     originTime = useRef({
       server: Date.parse(initial.server_now),
       local: performance.now(),
@@ -75,6 +120,7 @@ export function QuizAttempt({
   async function flush() {
     if (
       saving.current ||
+      !navigator.onLine ||
       blocked.current ||
       !current.current.can_answer ||
       current.current.status !== "working"
@@ -86,12 +132,14 @@ export function QuizAttempt({
     const controller = new AbortController(),
       timeout = setTimeout(() => controller.abort(), 15000);
     try {
-      const a = await quizRequest<Attempt>(
+      const response = await quizRequest<AttemptSync>(
         "answers",
-        { course, target: current.current.id, ...packet },
+        { course, target: current.current.id, ...packet, compact: true },
         controller.signal,
       );
+      const a = mergeAttemptSync(current.current, response, packet.answers);
       accept(a);
+      nextPoll.current = Date.now() + syncDelay("poll");
       queue.current.acknowledge(a.status !== "working");
       failures.current = 0;
       retryAt.current = 0;
@@ -128,10 +176,17 @@ export function QuizAttempt({
     } finally {
       clearTimeout(timeout);
       saving.current = false;
+      nextSave.current = Date.now() + syncDelay("save");
     }
   }
   async function finish(expired = false) {
     if (!current.current.can_answer) return;
+    if (!navigator.onLine) {
+      setNotice(
+        "Koneksi terputus. Jawaban yang belum tersimpan tetap di halaman ini. Sambungkan internet dan jangan tutup halaman.",
+      );
+      return;
+    }
     if (saving.current) {
       setNotice("Tunggu penyimpanan jawaban selesai, lalu coba kembali.");
       return;
@@ -170,84 +225,127 @@ export function QuizAttempt({
   useEffect(() => {
     mounted.current = true;
     let disposed = false;
-    const timer = setInterval(
-      () => {
-        if (disposed) return;
-        const a = current.current;
-        const left = Math.max(
-          0,
-          Math.ceil(
-            (Date.parse(a.deadline) -
-              originTime.current.server -
-              (performance.now() - originTime.current.local)) /
-              1000,
-          ),
-        );
-        setRemaining(left);
-        if (
-          a.status !== "working" ||
-          !a.can_answer ||
-          blocked.current ||
-          locked.current
-        )
-          return;
-        if (left === 0) {
-          if (Date.now() >= retryAt.current) void finish(true);
-          return;
-        }
-        if (
-          !saving.current &&
-          Date.now() >= retryAt.current &&
-          queue.current.hasWork
-        )
-          void flush();
-        else if (
-          !saving.current &&
-          !queue.current.hasWork &&
-          Date.now() >= nextPoll.current
-        ) {
-          nextPoll.current = Date.now() + 20000;
-          const polledRevision = a.revision;
-          void quizRequest<Attempt>("attempt", { course, target: a.id })
-            .then((remote) => {
-              if (
-                disposed ||
-                !mayApplyPoll(
-                  polledRevision,
-                  current.current.revision,
-                  queue.current.hasWork || saving.current || locked.current,
-                )
+    const timer = setInterval(() => {
+      if (disposed) return;
+      const a = current.current;
+      const left = Math.max(
+        0,
+        Math.ceil(
+          (Date.parse(a.deadline) -
+            originTime.current.server -
+            (performance.now() - originTime.current.local)) /
+            1000,
+        ),
+      );
+
+      if (
+        a.status !== "working" ||
+        !a.can_answer ||
+        blocked.current ||
+        locked.current ||
+        !navigator.onLine
+      )
+        return;
+      if (left === 0) {
+        if (Date.now() >= retryAt.current) void finish(true);
+        return;
+      }
+      if (
+        !saving.current &&
+        Date.now() >= retryAt.current &&
+        Date.now() >= nextSave.current &&
+        queue.current.hasWork
+      )
+        void flush();
+      else if (
+        !saving.current &&
+        !queue.current.hasWork &&
+        !polling.current &&
+        Date.now() >= nextPoll.current
+      ) {
+        nextPoll.current = Date.now() + syncDelay("poll");
+        polling.current = true;
+        const polledRevision = a.revision;
+        void quizRequest<AttemptSync>("attempt", {
+          course,
+          target: a.id,
+          compact: true,
+        })
+          .then((response) => {
+            const remote = mergeAttemptSync(current.current, response);
+            if (
+              disposed ||
+              !mayApplyPoll(
+                polledRevision,
+                current.current.revision,
+                queue.current.hasWork || saving.current || locked.current,
               )
-                return;
-              if (remote.status !== "working") accept(remote);
-              else if (remote.revision !== current.current.revision) {
-                blocked.current = true;
-                setConflict(true);
-                setNotice(
-                  "Jawaban berubah di perangkat lain. Muat ulang sebelum melanjutkan.",
-                );
-              } else
-                originTime.current = {
-                  server: Date.parse(remote.server_now),
-                  local: performance.now(),
-                };
-            })
-            .catch(() => {});
-        }
-      },
-      4000 + Math.random() * 1500,
-    );
+            )
+              return;
+            if (remote.status !== "working") accept(remote);
+            else if (remote.revision !== current.current.revision) {
+              blocked.current = true;
+              setConflict(true);
+              setNotice(
+                "Jawaban berubah di perangkat lain. Muat ulang sebelum melanjutkan.",
+              );
+            } else {
+              originTime.current = {
+                server: Date.parse(remote.server_now),
+                local: performance.now(),
+              };
+              setSync("Semua jawaban tersimpan.");
+            }
+          })
+          .catch(() => {})
+          .finally(() => {
+            polling.current = false;
+          });
+      }
+    }, 1000);
     const leaving = (e: BeforeUnloadEvent) => {
       if (queue.current.hasWork) {
         e.preventDefault();
         e.returnValue = "";
       }
     };
+    let wakeTimer: ReturnType<typeof setTimeout> | undefined;
+    const offline = () =>
+      setSync(
+        "Koneksi terputus. Jawaban belum tersimpan tetap di halaman ini; jangan tutup atau muat ulang halaman.",
+      );
+    const online = () => {
+      if (wakeTimer) clearTimeout(wakeTimer);
+      wakeTimer = setTimeout(() => {
+        if (
+          disposed ||
+          blocked.current ||
+          locked.current ||
+          current.current.status !== "working" ||
+          !current.current.can_answer
+        )
+          return;
+        retryAt.current = 0;
+        nextSave.current = 0;
+        nextPoll.current = 0;
+        setSync("Koneksi kembali. Memeriksa penyimpanan jawaban…");
+      }, Math.random() * 1500);
+    };
+    const visible = () => {
+      if (!document.hidden && navigator.onLine) online();
+    };
+    window.addEventListener("offline", offline);
+    window.addEventListener("online", online);
+    document.addEventListener("visibilitychange", visible);
     window.addEventListener("beforeunload", leaving);
     return () => {
       disposed = true;
       mounted.current = false;
       clearInterval(timer);
+      if (wakeTimer) clearTimeout(wakeTimer);
+      window.removeEventListener("offline", offline);
+      window.removeEventListener("online", online);
+      document.removeEventListener("visibilitychange", visible);
       window.removeEventListener("beforeunload", leaving);
     };
     // Refs keep the worker stable while individual answers change.
@@ -296,13 +394,7 @@ export function QuizAttempt({
         >
           {attempt.title}
         </h1>
-        <p role="timer" className="quiz-timer mt-3 font-semibold">
-          {done
-            ? "Kuis selesai"
-            : !attempt.can_answer
-              ? "Percobaan baca-saja"
-              : `Sisa waktu: ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}`}
-        </p>
+        <QuizCountdown attempt={attempt} />
         <p role="status" className="mt-2 text-sm text-emerald-100">
           {sync}
         </p>
@@ -375,7 +467,11 @@ export function QuizAttempt({
             onChange={(v) => {
               queue.current.change(i + 1, v);
               setAnswers((a) => ({ ...a, [i + 1]: v }));
-              setSync("Ada jawaban menunggu disimpan.");
+              setSync(
+                navigator.onLine
+                  ? "Ada jawaban menunggu disimpan."
+                  : "Koneksi terputus. Jawaban belum tersimpan tetap di halaman ini; jangan tutup atau muat ulang halaman.",
+              );
             }}
           />
           {done && attempt.review_visible && (

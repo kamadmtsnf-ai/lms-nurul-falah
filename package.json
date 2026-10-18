@@ -19,7 +19,8 @@
     "restore:storage:test": "node scripts/restore-storage-test.mjs",
     "test:browser:hosted": "node scripts/testing/browser-hosted.mjs",
     "diagnose:hosted": "node scripts/testing/diagnose-hosted.mjs",
-    "test:offline:browser": "node scripts/test-offline-browser.mjs"
+    "test:offline:browser": "node scripts/test-offline-browser.mjs",
+    "test:quiz:reliability": "node scripts/test-quiz-reliability.mjs"
   },
   "keywords": [],
   "author": "",
