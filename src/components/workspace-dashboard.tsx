@@ -142,11 +142,17 @@ export function WorkspaceDashboard({
         <div className="flex-1">
           <h2 className="font-semibold">Keamanan akun</h2>
           <p className="mt-1 text-sm leading-6 text-stone-500">
-            Akun aktif dan email terverifikasi. Perbarui password secara
-            berkala.
+            Gunakan password unik, aktifkan autentikator, dan periksa sesi
+            perangkat Anda.
           </p>
         </div>
         <div className="flex flex-wrap gap-4">
+          <Link
+            className="text-sm font-semibold text-emerald-800 underline"
+            href="/keamanan"
+          >
+            Autentikator & sesi
+          </Link>
           <Link
             className="text-sm font-semibold text-emerald-800 underline"
             href="/profil"

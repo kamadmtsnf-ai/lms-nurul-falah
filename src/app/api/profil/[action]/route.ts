@@ -238,8 +238,8 @@ export async function POST(
       profileSchemas[
         action as "name" | "phone" | "identity" | "username"
       ].parse(input);
-    if (action === "username") {
-      await limit("profile-username", ctx.actor, 6, 900);
+    if (action === "username" || action === "identity") {
+      await limit(`profile-${action}`, ctx.actor, 6, 900);
       await provePassword(ctx.actor, (v as { password: string }).password);
     }
     const { school, revision, ...values } = v;

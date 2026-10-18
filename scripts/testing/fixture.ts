@@ -1,9 +1,11 @@
+import {prepareAuthSecurityFixture} from './auth-security-fixture';
 import {PGlite,type Transaction} from '@electric-sql/pglite';import {readFile,readdir} from 'node:fs/promises';import {randomUUID} from 'node:crypto';
 export const school='00000000-0000-4000-8000-000000000001';
 export async function fixture(count=132){
  const db=new PGlite();await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create table auth.users(id uuid primary key);create table auth.sessions(id uuid primary key,user_id uuid references auth.users(id),created_at timestamptz not null,not_after timestamptz);
  create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;create function auth.uid() returns uuid language sql stable as $$ select nullif(auth.jwt()->>'sub','')::uuid $$;
  grant usage on schema public,auth to anon,authenticated,service_role;create schema storage;create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text,metadata jsonb);create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`);
+ await prepareAuthSecurityFixture(db);
  for(const file of (await readdir('supabase/migrations')).filter(f=>f.endsWith('.sql')).sort())await db.exec(await readFile(`supabase/migrations/${file}`,'utf8'));await db.exec(await readFile('supabase/seed.sql','utf8'));
  const actors=Array.from({length:count+2},(_,i)=>({id:randomUUID(),session:randomUUID(),name:i===0?'admin':i===1?'teacher':`student${i-1}`,role:i===0?'admin':i===1?'teacher':'student'}));
  for(const a of actors){await db.query('insert into auth.users values($1)',[a.id]);await db.query("insert into profiles(id,username_normalized,full_name,contact_email,email_verified_at,must_change_password) values($1,$2,$2,'test@example.test',now(),false)",[a.id,a.name]);await db.query('insert into auth.sessions values($1,$2,now(),null)',[a.session,a.id]);const m=await db.query<{id:string}>('insert into school_memberships(school_id,user_id) values($1,$2) returning id',[school,a.id]);await db.query('insert into membership_roles values($1,$2,$3)',[school,m.rows[0].id,a.role]);}

@@ -1,3 +1,4 @@
+import {prepareAuthSecurityFixture} from '../scripts/testing/auth-security-fixture';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {PGlite} from '@electric-sql/pglite';
@@ -17,7 +18,8 @@ test('workflow akun di PostgreSQL',async t=>{
   create function auth.uid() returns uuid language sql stable as $$ select nullif(auth.jwt()->>'sub','')::uuid $$;
   grant usage on schema public,auth to anon,authenticated,service_role;
   create schema storage;create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text,metadata jsonb);create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`);
-  for(const f of (await readdir('supabase/migrations')).filter(f=>f.endsWith('.sql')).sort())await db.exec(await readFile(`supabase/migrations/${f}`,'utf8'));
+  await prepareAuthSecurityFixture(db);
+ for(const f of (await readdir('supabase/migrations')).filter(f=>f.endsWith('.sql')).sort())await db.exec(await readFile(`supabase/migrations/${f}`,'utf8'));
   await db.exec(await readFile('supabase/seed.sql','utf8'));
   await db.exec(`insert into auth.users values('${admin}'),('${student}');`);
   async function command<T=Record<string,unknown>>(cmd:string,p:Record<string,unknown>={}){await db.exec('set role service_role');try{const r=await db.query<{result:T}>('select public.identity_command($1,$2::jsonb) as result',[cmd,JSON.stringify(p)]);return r.rows[0].result;}finally{await db.exec('reset role');}}

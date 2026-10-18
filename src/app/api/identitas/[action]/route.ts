@@ -113,7 +113,7 @@ export async function POST(
         await client.auth.signOut({ scope: "local" });
         throw new IdentityError("Username atau password belum benar.", 401);
       }
-      const ctx = await accountContext();
+      const ctx = await accountContext(false, true);
       if (v.password === DEFAULT_PASSWORD) {
         await identity("force_default", {
           actor: ctx.actor,
@@ -121,7 +121,9 @@ export async function POST(
         });
         ctx.profile.must_change_password = true;
       }
-      return ok({ next: nextFor(ctx.profile) });
+      return ok({
+        next: ctx.mfaRequired ? "/verifikasi-keamanan" : nextFor(ctx.profile),
+      });
     }
     if (action === "logout") {
       const client = await createSupabaseServerClient();
@@ -412,7 +414,13 @@ export async function POST(
           ? error.issues[0]?.message
           : "Layanan akun belum dapat dihubungi. Coba lagi atau hubungi admin.";
     return Response.json(
-      { ok: false, message },
+      {
+        ok: false,
+        message,
+        ...(error instanceof IdentityError && error.next
+          ? { next: error.next }
+          : {}),
+      },
       { status, headers: { "Cache-Control": "private, no-store" } },
     );
   }

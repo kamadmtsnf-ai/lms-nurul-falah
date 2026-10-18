@@ -11,6 +11,7 @@ export function ConfirmDialog({
   error,
   onCancel,
   onConfirm,
+  children,
 }: {
   open: boolean;
   title: string;
@@ -20,6 +21,7 @@ export function ConfirmDialog({
   error?: string;
   onCancel: () => void;
   onConfirm: () => void;
+  children?: React.ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null),
     titleId = useId(),
@@ -67,6 +69,7 @@ export function ConfirmDialog({
         <p id={descriptionId} className="mt-3 text-sm leading-6 text-stone-600">
           {description}
         </p>
+        {children}
         {error && (
           <p
             role="alert"

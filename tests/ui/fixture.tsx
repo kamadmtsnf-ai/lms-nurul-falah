@@ -1,3 +1,7 @@
+import {
+  SecurityWorkspace,
+  MfaChallenge,
+} from "../../src/components/security-workspace";
 import { ProfileWorkspace } from "../../src/components/profile-workspace";
 import type { ProfileData } from "../../src/lib/profile/types";
 import { visibleStudentLists } from "../../src/lib/students/visibility";
@@ -368,7 +372,9 @@ let profileData: ProfileData = {
   phone: "081234567890",
   nip: "001234567890123456",
   npk: "0012345678901",
-  nik: "0012345678901234",
+  nik: "",
+  nik_masked: "••••••••••••1234",
+  has_nik: true,
   has_photo: false,
   revision: 0,
   server_now: new Date().toISOString(),
@@ -424,6 +430,64 @@ window.fetch = async (url, options) => {
   if ((window as any).__fail)
     return new Response("<html>Upstream unavailable</html>", { status: 502 });
   await new Promise((r) => setTimeout(r, 30));
+  if (path.startsWith("/api/keamanan/")) {
+    if (action === "state")
+      return Response.json({
+        ok: true,
+        result: {
+          factors: params.has("mfaEnabled")
+            ? [{ id, name: "Autentikator pribadi" }]
+            : [],
+          sessions: [
+            {
+              id,
+              current: true,
+              created_at: now,
+              updated_at: null,
+              user_agent: "Browser perangkat saat ini",
+            },
+            {
+              id: "other-session",
+              current: false,
+              created_at: now,
+              updated_at: now,
+              user_agent: long,
+            },
+          ],
+          events: [
+            { id: "event", field: "security.nik_revealed", created_at: now },
+          ],
+        },
+      });
+    if (action === "enroll")
+      return Response.json({
+        ok: true,
+        result: {
+          factor_id: id,
+          qr:
+            "data:image/svg+xml;utf-8," +
+            encodeURIComponent(
+              '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="white"/></svg>',
+            ),
+          secret: "TEST_ONLY_NOT_A_REAL_KEY",
+        },
+      });
+    if (action === "reveal-nik") {
+      if ((window as any).__securityDelay)
+        await new Promise((r) => setTimeout(r, 250));
+      return Response.json({ ok: true, result: { nik: "0012345678901234" } });
+    }
+    if (action === "verify")
+      return Response.json({
+        ok: true,
+        next: "/ruang-belajar",
+        message: "Verifikasi berhasil.",
+      });
+    return Response.json({
+      ok: true,
+      message: "Permintaan keamanan berhasil.",
+    });
+  }
   if (path.startsWith("/api/profil/")) {
     if (action === "email")
       return Response.json({
@@ -440,7 +504,9 @@ window.fetch = async (url, options) => {
         profileData.next.name = "2030-12-31T00:00:00Z";
       } else if (action === "phone") profileData.phone = body.phone;
       else if (action === "identity") {
-        profileData.nik = body.nik;
+        profileData.nik = "";
+        profileData.has_nik = !body.clear_nik;
+        profileData.nik_masked = body.clear_nik ? "" : "••••••••••••1234";
         profileData.nip = body.nip || "";
         profileData.npk = body.npk || "";
         profileData.next.identity = "2030-12-31T00:00:00Z";
@@ -733,6 +799,10 @@ function Fixture() {
     <AppShell>
       {mode === "course" ? (
         <CourseWorkspace initial={studentView(course)} />
+      ) : mode === "security" ? (
+        <SecurityWorkspace admin />
+      ) : mode === "mfa" ? (
+        <MfaChallenge factors={[{ id, name: "Autentikator pribadi" }]} />
       ) : mode === "profile" ? (
         <ProfileWorkspace initial={profileData} />
       ) : mode === "academic" ? (

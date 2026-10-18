@@ -25,7 +25,7 @@ await build({
         b.onLoad({ filter: /.*/, namespace: "fixture" }, (args) => ({
           contents:
             args.path === "next/navigation"
-              ? 'export function usePathname(){const view=new URLSearchParams(location.search).get("view");return ({dashboard:"/ruang-belajar",academic:"/admin/akademik",users:"/admin/pengguna",monitoring:"/pemantauan",profile:"/profil",course:"/pembelajaran/fixture"})[view]||"/akademik"}'
+              ? 'export function usePathname(){const view=new URLSearchParams(location.search).get("view");return ({dashboard:"/ruang-belajar",academic:"/admin/akademik",users:"/admin/pengguna",monitoring:"/pemantauan",profile:"/profil",security:"/keamanan",mfa:"/verifikasi-keamanan",course:"/pembelajaran/fixture"})[view]||"/akademik"}'
               : 'import React from "react";export default function Link({children,...props}){return React.createElement("a",props,children)}',
           resolveDir: process.cwd(),
           loader: "js",
@@ -424,6 +424,132 @@ try {
       .click();
     await inspectTable("Tabel pratinjau impor Excel", "username");
     await tablePage.close();
+  }
+  for (const width of [320, 390, 768, 1440]) {
+    const p = await browser.newPage({ viewport: { width, height: 900 } });
+    p.on("pageerror", (e) => errors.push(e.message));
+    await p.goto(`${base}/?view=security`);
+    await p.getByText("Status: Belum aktif", { exact: true }).waitFor();
+    await check(p, `security/disabled/${width}`);
+    await p
+      .getByLabel("Password saat ini untuk penyiapan", { exact: true })
+      .fill("test-password");
+    await p
+      .getByRole("button", { name: "Siapkan autentikator", exact: true })
+      .click();
+    await p.getByAltText("Kode QR penyiapan autentikator pribadi").waitFor();
+    await check(p, `security/enroll/${width}`);
+    assert.equal(await p.evaluate(() => localStorage.length), 0);
+    await p
+      .getByRole("button", { name: "Batalkan penyiapan", exact: true })
+      .click();
+    await p
+      .getByAltText("Kode QR penyiapan autentikator pribadi")
+      .waitFor({ state: "hidden" });
+    await p.goto(`${base}/?view=security&mfaEnabled=1`);
+    await p
+      .getByRole("button", { name: "Nonaktifkan autentikator", exact: true })
+      .click();
+    await p.getByRole("dialog").waitFor();
+    await check(p, `security/disable-confirm/${width}`);
+    await p.keyboard.press("Escape");
+    assert.equal(
+      await p.evaluate(() =>
+        window.__requests.some((r) => r.path === "/api/keamanan/disable"),
+      ),
+      false,
+    );
+    await p
+      .getByRole("button", { name: "Keluar dari perangkat lain", exact: true })
+      .click();
+    await p
+      .getByLabel("Password saat ini untuk keamanan", { exact: true })
+      .fill("test-password");
+    await p.evaluate(() => (window.__fail = true));
+    await p
+      .getByRole("button", { name: "Ya, akhiri sesi", exact: true })
+      .click();
+    await p.getByRole("dialog").getByRole("alert").waitFor();
+    await check(p, `security/session-error/${width}`);
+    await p.evaluate(() => (window.__fail = false));
+    await p
+      .getByRole("button", { name: "Ya, akhiri sesi", exact: true })
+      .click();
+    await p.getByRole("dialog").waitFor({ state: "hidden" });
+    await p.goto(`${base}/?view=mfa`);
+    await p.getByLabel("Kode autentikator", { exact: true }).fill("012345");
+    await p.evaluate(() => (window.__fail = true));
+    await p
+      .getByRole("button", { name: "Verifikasi & lanjutkan", exact: true })
+      .click();
+    await p.getByRole("alert").waitFor();
+    assert.equal(
+      await p.getByLabel("Kode autentikator", { exact: true }).inputValue(),
+      "",
+    );
+    await check(p, `security/challenge-error/${width}`);
+    await p.evaluate(() => (window.__fail = false));
+    await p.getByLabel("Kode autentikator", { exact: true }).fill("012345");
+    await p
+      .getByRole("button", { name: "Verifikasi & lanjutkan", exact: true })
+      .click();
+    await p.waitForURL("**/ruang-belajar");
+    await p.goto(`${base}/?view=profile`);
+    await p.getByRole("tab", { name: "Identitas", exact: true }).click();
+    assert.equal(
+      await p.getByLabel("NIK (16 digit)", { exact: true }).inputValue(),
+      "",
+    );
+    assert.equal(
+      await p.getByText("0012345678901234", { exact: true }).count(),
+      0,
+    );
+    await p
+      .getByRole("button", { name: "Lihat NIK lengkap", exact: true })
+      .click();
+    await p
+      .getByLabel("Password saat ini untuk melihat NIK", { exact: true })
+      .fill("test-password");
+    await check(p, `security/nik-confirm/${width}`);
+    await p
+      .getByRole("button", { name: "Verifikasi & tampilkan", exact: true })
+      .click();
+    await p.getByRole("dialog").waitFor({ state: "hidden" });
+    assert.equal(
+      await p.getByText("0012345678901234", { exact: true }).count(),
+      1,
+    );
+    await p.getByRole("tab", { name: "Akun & keamanan", exact: true }).click();
+    await p.getByText("0012345678901234", { exact: true }).waitFor({state:"detached"});
+    assert.equal(
+      await p.getByText("0012345678901234", { exact: true }).count(),
+      0,
+    );
+    await p.getByRole("tab", { name: "Identitas", exact: true }).click();
+    await p
+      .getByRole("button", { name: "Lihat NIK lengkap", exact: true })
+      .click();
+    await p
+      .getByLabel("Password saat ini untuk melihat NIK", { exact: true })
+      .fill("test-password");
+    await p.evaluate(() => (window.__securityDelay = true));
+    await p
+      .getByRole("button", { name: "Verifikasi & tampilkan", exact: true })
+      .click();
+    await p.evaluate(() => {
+      Object.defineProperty(document, "hidden", {
+        value: true,
+        configurable: true,
+      });
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    await p.waitForTimeout(350);
+    assert.equal(
+      await p.getByText("0012345678901234", { exact: true }).count(),
+      0,
+    );
+    await check(p, `security/nik-late-response/${width}`);
+    await p.close();
   }
   for (const width of [320, 390, 768, 1440]) {
     const p = await browser.newPage({ viewport: { width, height: 900 } });

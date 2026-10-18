@@ -1,3 +1,4 @@
+import {prepareAuthSecurityFixture} from '../scripts/testing/auth-security-fixture';
 import {test} from 'node:test';import assert from 'node:assert/strict';import {PGlite} from '@electric-sql/pglite';import {readFile,readdir} from 'node:fs/promises';import {randomUUID} from 'node:crypto';
 import {validateFile} from '../src/lib/learning/file-validation';
 const school='00000000-0000-4000-8000-000000000001';
@@ -7,7 +8,8 @@ test('pembelajaran: guru, siswa, wali, piket, versi, nilai dan storage',async t=
   await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;create table auth.users(id uuid primary key);create table auth.sessions(id uuid primary key,user_id uuid references auth.users(id),created_at timestamptz not null,not_after timestamptz);
   create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;create function auth.uid() returns uuid language sql stable as $$ select nullif(auth.jwt()->>'sub','')::uuid $$;
   grant usage on schema public,auth to anon,authenticated,service_role;create schema storage;create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text,name text,metadata jsonb);create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);`);
-  for(const f of (await readdir('supabase/migrations')).filter(f=>f.endsWith('.sql')).sort())await db.exec(await readFile(`supabase/migrations/${f}`,'utf8'));
+  await prepareAuthSecurityFixture(db);
+ for(const f of (await readdir('supabase/migrations')).filter(f=>f.endsWith('.sql')).sort())await db.exec(await readFile(`supabase/migrations/${f}`,'utf8'));
   await db.exec(await readFile('supabase/seed.sql','utf8'));
   const roles:Record<string,string[]>={admin:['admin'],teacher:['teacher'],student:['student'],other:['student'],guardian:['guardian'],duty:['duty_teacher'],homeroom:['homeroom_teacher'],outsider:['teacher']};
   for(const [key,id] of Object.entries(ids)){

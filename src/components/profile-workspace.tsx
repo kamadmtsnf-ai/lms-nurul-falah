@@ -1,4 +1,5 @@
 "use client";
+import { SensitiveNik } from "./sensitive-nik";
 import Link from "next/link";
 import {
   useEffect,
@@ -169,7 +170,15 @@ export function ProfileWorkspace({ initial }: { initial: ProfileData }) {
   }
   function submit(action: Action, e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const values = Object.fromEntries(new FormData(e.currentTarget));
+    const values: Record<string, unknown> = Object.fromEntries(
+      new FormData(e.currentTarget),
+    );
+    if (action === "identity") values.clear_nik = values.clear_nik === "on";
+    e.currentTarget
+      .querySelectorAll<HTMLInputElement>('input[type="password"]')
+      .forEach((input) => {
+        input.value = "";
+      });
     setError("");
     setMessage("");
     if (action === "phone") void save(action, values);
@@ -473,6 +482,12 @@ export function ProfileWorkspace({ initial }: { initial: ProfileData }) {
             </Value>
           </dl>
         )}
+        {(!data.is_student || data.is_teacher) && (
+          <SensitiveNik
+            masked={data.nik_masked || ""}
+            active={tab === "identity"}
+          />
+        )}
         {data.is_teacher && (
           <dl className="mt-5">
             <Value label="Kode pegawai sekolah (readonly)">
@@ -482,7 +497,7 @@ export function ProfileWorkspace({ initial }: { initial: ProfileData }) {
         )}
         {!data.is_student || data.is_teacher ? (
           <form
-            key={`${data.nip}:${data.npk}:${data.nik}`}
+            key={`${data.nip}:${data.npk}:${data.nik_masked}`}
             onSubmit={(e) => submit("identity", e)}
             className="mt-5"
           >
@@ -521,11 +536,31 @@ export function ProfileWorkspace({ initial }: { initial: ProfileData }) {
                     inputMode="numeric"
                     maxLength={16}
                     pattern="[0-9]{16}|"
-                    defaultValue={data.nik}
+                    defaultValue=""
+                    placeholder={data.nik_masked || "Belum diisi"}
+                    autoComplete="off"
                     className={fieldClass}
                   />
                 </label>
               </div>
+              {data.has_nik && (
+                <label className="mt-4 flex items-start gap-2 text-sm">
+                  <input type="checkbox" name="clear_nik" className="mt-1" />
+                  Hapus NIK tersimpan (kosong tanpa centang berarti tetap
+                  mempertahankannya)
+                </label>
+              )}
+              <label className="mt-4 block text-sm">
+                Password saat ini untuk perubahan identitas
+                <input
+                  type="password"
+                  name="password"
+                  required
+                  maxLength={128}
+                  autoComplete="current-password"
+                  className={fieldClass}
+                />
+              </label>
               <p className="mt-3 text-xs leading-5 text-stone-500">
                 Nomor disimpan sebagai teks agar angka nol di awal tidak hilang.
                 Kosongkan nomor yang belum dimiliki. Menyimpan perubahan
@@ -668,6 +703,12 @@ export function ProfileWorkspace({ initial }: { initial: ProfileData }) {
             className="rounded-xl border border-emerald-200 px-4 py-3 text-sm font-semibold text-emerald-800"
           >
             Ubah password
+          </Link>
+          <Link
+            href="/keamanan"
+            className="rounded-xl border border-emerald-200 px-4 py-3 text-sm font-semibold text-emerald-800"
+          >
+            Keamanan akun & sesi
           </Link>
         </div>
       </section>

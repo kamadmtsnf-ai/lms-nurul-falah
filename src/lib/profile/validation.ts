@@ -41,10 +41,16 @@ export const profileSchemas = {
     .object({
       ...base,
       nik: digits(16, "NIK"),
+      clear_nik: z.boolean().default(false),
+      password: z.string().min(1, "Masukkan password saat ini.").max(128),
       nip: digits(18, "NIP").default(""),
       npk: digits(13, "NPK").default(""),
     })
-    .strict(),
+    .strict()
+    .refine((v) => !v.clear_nik || v.nik === "", {
+      message: "Kosongkan NIK baru jika ingin menghapus NIK tersimpan.",
+      path: ["nik"],
+    }),
   username: z
     .object({
       ...base,

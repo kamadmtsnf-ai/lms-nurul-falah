@@ -40,7 +40,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <nav className="app-navigation-inner" aria-label="Navigasi utama">
           {navigation.map(({ href, label, icon: Icon }) => {
             const active =
-              pathname === href || (href === "/akademik" && academic);
+              pathname === href ||
+              (href === "/akademik" && academic) ||
+              (href === "/profil" && pathname === "/keamanan");
             return (
               <Link
                 key={href}

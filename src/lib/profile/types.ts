@@ -15,6 +15,8 @@ export type ProfileData = {
   nip: string;
   npk: string;
   nik: string;
+  nik_masked: string;
+  has_nik: boolean;
   has_photo: boolean;
   revision: number;
   server_now: string;

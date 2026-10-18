@@ -16,6 +16,7 @@ test("profile validation preserves identifiers, normalizes phone, rejects forged
     profileSchemas.identity.parse({
       ...base,
       nik: "0012345678901234",
+      password: "test-current-password",
       nip: "",
       npk: "",
     }).nik,
