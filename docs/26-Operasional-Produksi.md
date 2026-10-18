@@ -78,3 +78,10 @@ Urutan respons: catat waktu WIB dan versi → tentukan dampak → tunjuk admin s
 Rollback aplikasi tidak membatalkan migrasi/data. Periksa kompatibilitas schema sebelum rollback; jangan menghapus atau menimpa nilai untuk memulihkan layanan. Jangan memperpanjang atau mengubah skor kuis massal tanpa keputusan akademik yang tercatat. Informasikan status melalui kanal sekolah yang diotorisasi; implementasi tidak mengirim pesan otomatis ke orang tua/siswa.
 
 Template issue **Insiden operasional** tersedia. Repo publik: hanya gunakan ID kejadian acak, waktu, modul, dan dampak agregat. Bukti sensitif, identitas korban, dan pemberitahuan insiden harus ditangani secara privat sesuai prosedur sekolah.
+
+## Bukti eksekusi
+
+- [CI pengujian, build, HTTP, dan pemulihan koneksi kuis — lulus](https://github.com/kamadmtsnf-ai/lms-nurul-falah/actions/runs/39140475628).
+- [Latihan native PostgreSQL 17 — lulus](https://github.com/kamadmtsnf-ai/lms-nurul-falah/actions/runs/39140819286): arsip custom terenkripsi, target lokal kosong, data/foreign key/RLS/ACL cocok. Hanya data sintetis.
+- [Monitoring publik — lulus](https://github.com/kamadmtsnf-ai/lms-nurul-falah/actions/runs/39140475629). Readiness privat ditandai BLOCKED karena secret server belum tersedia.
+- Backup produksi belum dijalankan; konfigurasi tujuan privat, kunci pemulihan, dan kredensial tetap diperlukan. UAT manusia serta penerimaan notifikasi nyata belum dilakukan.

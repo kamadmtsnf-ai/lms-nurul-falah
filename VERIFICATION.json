@@ -62,7 +62,7 @@
   "supabase_security_advisors": "no_errors_preexisting_leaked_password_warning_and_expected_rpc_table_infos",
   "supabase_performance_advisors": "unused_indexes_info_only",
   "client_latency_gate": "failed_target_p95_below_2000ms",
-  "production_backup_restore": "not_executed_native_postgres_and_storage_restore_pending",
+  "production_backup_restore": "synthetic_native_PostgreSQL17_and_encrypted_storage_restore_passed; production_backup_and_production_restore_pending_operator_configuration",
   "fixture_cleanup": {
     "school_remaining": 0,
     "users_remaining": 0,
@@ -506,10 +506,10 @@
     "automated_tests_passed": 186,
     "role_matrix": "admin_teacher_student_guardian_principal_homeroom_duty_multirole_unassigned_disabled_revoked_session",
     "full_application_image_restore": "passed_synthetic_PGlite_encrypted_image_data_reports_and_RLS",
-    "native_postgres17_dump_restore": "awaiting_GitHub_workflow_execution",
+    "native_postgres17_dump_restore": "passed_GitHub_run_39140819286_synthetic_native_dump_restore_data_foreignkeys_RLS_ACL",
     "production_backup": "BLOCKED_missing_operator_secrets_and_private_S3_destination; scheduled_workflow_present",
-    "public_monitor": "live_probe_passed; hourly_workflow_to_be_verified",
-    "private_monitor": "blocked_until_server_secret_configured",
+    "public_monitor": "passed_GitHub_run_39140475629_hourly_schedule_installed",
+    "private_monitor": "BLOCKED_confirmed_GitHub_server_secret_absent_step_skipped_and_summary_explicit",
     "incident_handling": "severity_runbook_and_public_safe_issue_template; no_real_incident_or_notification_sent",
     "storage_fix": "profile_photos_bucket_identity_preserved_and_restore_tested",
     "restore_guard": "local_empty_database_only_verified_before_restore",
@@ -517,6 +517,9 @@
     "build": "passed",
     "typecheck": "passed",
     "http_scenarios": 23,
-    "report": "docs/26-Operasional-Produksi.md"
+    "report": "docs/26-Operasional-Produksi.md",
+    "native_drill_url": "https://github.com/kamadmtsnf-ai/lms-nurul-falah/actions/runs/39140819286",
+    "monitor_url": "https://github.com/kamadmtsnf-ai/lms-nurul-falah/actions/runs/39140475629",
+    "ci_acceptance_url": "https://github.com/kamadmtsnf-ai/lms-nurul-falah/actions/runs/39140475628"
   }
 }
