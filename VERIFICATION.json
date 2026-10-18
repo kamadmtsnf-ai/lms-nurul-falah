@@ -14,7 +14,7 @@
     "failed": 0,
     "scope": "local_no_database_config"
   },
-  "cloud_database": "26_migrations_applied_quiz_concurrency_reliability_verified",
+  "cloud_database": "27_migrations_applied_attachment_retention_verified",
   "migration_versions": [
     "20261017152937",
     "20261017152957",
@@ -41,7 +41,8 @@
     "20261018113505",
     "20261018144212",
     "20261018144324",
-    "20261018150842"
+    "20261018150842",
+    "20261018170222"
   ],
   "external_email": "user_confirmed_activation_success_not_retested_in_stage_3",
   "deployment": "inspect_current_commit_in_vercel",
@@ -523,11 +524,10 @@
     "ci_acceptance_url": "https://github.com/kamadmtsnf-ai/lms-nurul-falah/actions/runs/39140475628"
   },
   "attachment_retention": {
-    "implementation": "complete_local_release_blocked",
-    "production_status": "not_deployed",
-    "migration": "20261018155955_attachment_retention.sql",
-    "migration_applied": false,
-    "blocker": "Supabase apply_migration returned Invalid or expired requestState; live schema confirmed unchanged",
+    "implementation": "complete",
+    "production_status": "release_pending",
+    "migration": "20261018170222_attachment_retention.sql",
+    "migration_applied": true,
     "defaults": {
       "enabled": false,
       "pending_days": 2,
@@ -555,6 +555,14 @@
       "failed": 0,
       "javascript_errors": 0,
       "scope": "synthetic data and mocked API, four viewport widths"
+    },
+    "cloud_verification": {
+      "rls_enabled": true,
+      "direct_browser_table_access": false,
+      "worker_service_role_only": true,
+      "enabled_policies": 0,
+      "queue_rows": 0,
+      "github_ci": "success_39147309291"
     }
   }
 }
