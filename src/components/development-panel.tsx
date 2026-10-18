@@ -133,6 +133,7 @@ export function DevelopmentSettings({
             </p>
             {state.admin ? (
               <form
+                method="post"
                 key={state.features.revision}
                 className="mt-4 space-y-4"
                 onSubmit={(e) => {
@@ -200,6 +201,7 @@ export function DevelopmentSettings({
                   Guru di sekolah ini; akses berlaku saat fitur tim aktif.
                 </p>
                 <form
+                  method="post"
                   className="mt-4 space-y-3"
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -261,6 +263,7 @@ export function DevelopmentSettings({
                   environment Vercel, bukan form ini.
                 </p>
                 <form
+                  method="post"
                   className="mt-4 space-y-3"
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -380,6 +383,7 @@ function PlatformPanel() {
           otomatis memberi hak membaca nilai atau jawaban siswa.
         </p>
         <form
+          method="post"
           key={JSON.stringify(state?.features)}
           className="mt-4 space-y-3"
           onSubmit={(e) => {
@@ -418,6 +422,7 @@ function PlatformPanel() {
       <section className={panelClass}>
         <h2 className="text-lg font-semibold">Tambah sekolah</h2>
         <form
+          method="post"
           className="mt-4 space-y-3"
           onSubmit={(e) => {
             e.preventDefault();
@@ -469,6 +474,7 @@ function PlatformPanel() {
       <section className={panelClass}>
         <h2 className="text-lg font-semibold">Tautkan akun yang sudah ada</h2>
         <form
+          method="post"
           className="mt-4 space-y-3"
           onSubmit={(e) => {
             e.preventDefault();
@@ -662,6 +668,7 @@ export function DevelopmentCourse({ state }: { state: CourseState }) {
             disetujui. Kredensial penyedia harus tersedia pada environment.
           </p>
           <form
+            method="post"
             className="mt-4 space-y-3"
             onSubmit={(e) => {
               e.preventDefault();

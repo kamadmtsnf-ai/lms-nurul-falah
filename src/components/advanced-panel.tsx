@@ -112,6 +112,7 @@ export function AdvancedPanel({ state }: { state: CourseState }) {
               {manager && (
                 <>
                   <form
+                    method="post"
                     key={`${m.prerequisite_id}:${m.enabled}`}
                     className="mt-4 space-y-3"
                     onSubmit={(e) => {
@@ -212,6 +213,7 @@ export function AdvancedPanel({ state }: { state: CourseState }) {
                 {manager && (
                   <>
                     <form
+                      method="post"
                       className="mt-4 space-y-3"
                       onSubmit={(e) => {
                         e.preventDefault();
@@ -287,6 +289,7 @@ export function AdvancedPanel({ state }: { state: CourseState }) {
                     </form>
                     {rule?.group_mode && (
                       <form
+                        method="post"
                         className="mt-5 space-y-3 border-t pt-5"
                         onSubmit={(e) => {
                           e.preventDefault();
@@ -391,6 +394,7 @@ function ShareMaterial({
   >([]);
   return (
     <form
+      method="post"
       className="mt-4 space-y-3 border-t pt-4"
       onSubmit={(e) => {
         e.preventDefault();
@@ -532,6 +536,7 @@ function Discussion({
       </div>
       {canPost && (
         <form
+          method="post"
           className="mt-4 space-y-3"
           onSubmit={(e) => {
             e.preventDefault();
@@ -596,6 +601,7 @@ function GroupSubmission({
   );
   return (
     <form
+      method="post"
       className="mt-4 space-y-3"
       onSubmit={(e) => {
         e.preventDefault();
@@ -742,6 +748,7 @@ export function WeightedPanel({
       </p>
       {manager && (
         <form
+          method="post"
           key={JSON.stringify(report?.weights)}
           className="mt-5 grid gap-3 sm:grid-cols-3"
           onSubmit={(e) => {
@@ -921,6 +928,7 @@ export function BankPanel({ course }: { course: string }) {
       <section className={panelClass}>
         <h2 className="text-lg font-semibold">Tambah soal ke bank</h2>
         <form
+          method="post"
           className="mt-4 space-y-4"
           onSubmit={(e) => {
             e.preventDefault();
@@ -1072,6 +1080,7 @@ function ActivityMessages({ course }: { course: string }) {
       <h2 className="text-lg font-semibold">Notifikasi kegiatan</h2>
       <Notice message={message} />
       <form
+        method="post"
         className="mt-4 space-y-3"
         onSubmit={(e) => {
           e.preventDefault();
@@ -1237,6 +1246,7 @@ function RubricGrader({
             Muat kiriman dan versi nilai
           </Button>
           <form
+            method="post"
             key={submission.version_id + String(version?.updated_at)}
             className="mt-4 space-y-3"
             onSubmit={(e) => {
@@ -1320,6 +1330,7 @@ function GroupEditor({
         Ubah kelompok sebelum pengumpulan
       </summary>
       <form
+        method="post"
         className="mt-3 space-y-3"
         onSubmit={(e) => {
           e.preventDefault();

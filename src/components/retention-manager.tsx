@@ -66,6 +66,7 @@ export function RetentionManager({ school }: { school: string }) {
           menghapus data otomatis.
         </p>
         <form
+          method="post"
           className="mt-5 space-y-4"
           onSubmit={(e) => {
             e.preventDefault();
@@ -126,6 +127,7 @@ export function RetentionManager({ school }: { school: string }) {
             </p>
             {r.status !== "purged" && (
               <form
+                method="post"
                 className="mt-4 space-y-3"
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -190,6 +192,7 @@ export function RetentionManager({ school }: { school: string }) {
             )}
             {r.status === "prepared" && (
               <form
+                method="post"
                 className="mt-4 space-y-3 border-t pt-4"
                 onSubmit={(e) => {
                   e.preventDefault();

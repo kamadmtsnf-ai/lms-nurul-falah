@@ -452,6 +452,7 @@ function SchoolForm({
 }) {
   return (
     <form
+      method="post"
       className="mt-6 space-y-5"
       onSubmit={(e) => {
         e.preventDefault();
@@ -654,6 +655,7 @@ function EntityForm({
   });
   return (
     <form
+      method="post"
       className="mt-6"
       onSubmit={(e) => {
         e.preventDefault();

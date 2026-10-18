@@ -295,6 +295,7 @@ function MaterialPanel({
             {editor ? "Ubah" : "Tambah"} materi
           </h2>
           <form
+            method="post"
             key={editor?.id ?? "new"}
             className="mt-5 space-y-4"
             onSubmit={(e) => {
@@ -490,6 +491,7 @@ function MeetingPanel({
             {editing ? "Ubah" : "Tambah"} pertemuan
           </h2>
           <form
+            method="post"
             key={editor ?? "new"}
             className="mt-4 space-y-4"
             onSubmit={(e) => {
@@ -699,6 +701,7 @@ function AssignmentPanel({
             {editor ? "Ubah" : "Tambah"} tugas
           </h2>
           <form
+            method="post"
             key={editor?.id ?? "new"}
             className="mt-5 space-y-4"
             onSubmit={(e) => {
@@ -1023,6 +1026,7 @@ function SubmissionForm({
         </p>
       )}
       <form
+        method="post"
         className="mt-5 space-y-4"
         onSubmit={(e) => {
           e.preventDefault();
@@ -1309,6 +1313,7 @@ function Grading({
       )}
       {canGrade && detail ? (
         <form
+          method="post"
           key={grade?.updated_at ?? "new-grade"}
           className="mt-5 grid gap-4 sm:grid-cols-2"
           onSubmit={(e) => {

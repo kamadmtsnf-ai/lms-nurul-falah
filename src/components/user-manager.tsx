@@ -88,6 +88,7 @@ export function UserManager({ school }: { school: string }) {
           menjalani aktivasi. Email dapat dipakai bersama oleh beberapa anak.
         </p>
         <form
+          method="post"
           className="mt-6 space-y-5"
           onSubmit={(e) => {
             e.preventDefault();
@@ -156,6 +157,7 @@ export function UserManager({ school }: { school: string }) {
           )}
           {users.map((u) => (
             <form
+              method="post"
               key={`${u.id}:${u.status}:${(u.roles ?? []).join(",")}`}
               className="surface-card rounded-2xl border border-stone-200 bg-white p-6"
               onSubmit={(e) => {

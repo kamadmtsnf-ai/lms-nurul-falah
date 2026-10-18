@@ -15,7 +15,7 @@ try{
  assert.equal(ready,true,'Server harus siap dalam 10 detik');
  const home=await fetch(base);assert.equal(home.status,200);assert.match(await home.text(),/Satu ruang untuk setiap langkah belajar/);assert.equal(home.headers.get('x-content-type-options'),'nosniff');
  console.log('PASS: beranda dan header keamanan');
- const login=await fetch(base+'/masuk');assert.equal(login.status,200);assert.match(await login.text(),/Selamat datang kembali/);console.log('PASS: halaman informasi akses');
+ const login=await fetch(base+'/masuk');assert.equal(login.status,200);const loginHtml=await login.text();assert.match(loginHtml,/Selamat datang kembali/);assert.match(loginHtml,/<form[^>]*method="post"/);assert.match(loginHtml,/<input(?=[^>]*name="password")(?=[^>]*disabled="")[^>]*>/);console.log('PASS: halaman informasi akses');
  const health=await fetch(base+'/api/health');assert.equal((await health.json()).status,'ok');assert.match(health.headers.get('cache-control'),/no-store/);console.log('PASS: liveness tanpa cache');
  const protectedPage=await fetch(base+'/ruang-belajar',{redirect:'manual'});assert.equal(protectedPage.status,307);assert.equal(protectedPage.headers.get('location'),'/masuk');console.log('PASS: halaman privat tertutup tanpa konfigurasi');
  const missing=await fetch(base+'/halaman-tidak-ada');assert.equal(missing.status,404);console.log('PASS: halaman 404');

@@ -81,6 +81,7 @@ export function OfflineWorkspace() {
             </>
           ) : (
             <form
+              method="post"
               className="mt-4 space-y-3"
               onChange={() => setDirty((d) => ({ ...d, [row.id]: true }))}
               onSubmit={(e) => {

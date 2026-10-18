@@ -551,6 +551,7 @@ function EssayGrader({
         (q, i) =>
           q.kind === "essay" && (
             <form
+              method="post"
               key={i}
               className="mt-4 space-y-3 border-t pt-4"
               onSubmit={(e) => {

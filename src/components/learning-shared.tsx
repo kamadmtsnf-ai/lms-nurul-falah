@@ -204,6 +204,7 @@ export function AttendanceForm({
   };
   return (
     <form
+      method="post"
       onSubmit={(e) => {
         e.preventDefault();
         const entries = students

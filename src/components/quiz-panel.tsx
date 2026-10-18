@@ -169,6 +169,7 @@ export function QuizPanel({ course }: { course: string }) {
           )}
           {state.context.manager && state.context.writable && (
             <form
+              method="post"
               key={q.updated_at}
               className="mt-5 flex flex-wrap items-center gap-4 border-t pt-4"
               onSubmit={(e) => {
@@ -280,6 +281,7 @@ function QuizEditor({
       </p>
       <Notice message={message} error />
       <form
+        method="post"
         className="mt-5 space-y-5"
         onSubmit={(e) => {
           e.preventDefault();

@@ -27,6 +27,8 @@ export function AuthForm({
   fragment?: boolean;
   extra?: Record<string, string>;
 }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
   const [visible, setVisible] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -43,6 +45,7 @@ export function AuthForm({
   }, [fragment]);
   return (
     <form
+      method="post"
       className="mt-7 space-y-5"
       onSubmit={async (e) => {
         e.preventDefault();
@@ -95,7 +98,7 @@ export function AuthForm({
               }
               autoComplete={f.autoComplete}
               defaultValue={f.value}
-              disabled={busy}
+              disabled={busy || !ready}
               required={f.required !== false}
               minLength={f.minLength}
               maxLength={
@@ -150,7 +153,7 @@ export function AuthForm({
       </div>
       <Button
         type="submit"
-        disabled={busy || (fragment && !token)}
+        disabled={!ready || busy || (fragment && !token)}
         className="w-full"
       >
         {busy && <span aria-hidden className="loading-spinner" />}
