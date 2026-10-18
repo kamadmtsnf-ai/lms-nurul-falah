@@ -1,0 +1,55 @@
+{
+  "stage": 9,
+  "date": "2026-10-18",
+  "timezone": "Asia/Jakarta",
+  "status": "implemented_default_disabled_operational_acceptance_pending",
+  "automated_tests": {
+    "passed": 116,
+    "failed": 0
+  },
+  "http_local_groups": 17,
+  "typecheck": "passed",
+  "production_build": "passed",
+  "migrations_applied": 21,
+  "hosted_database_integration": {
+    "result": "passed_rolled_back",
+    "synthetic_identities": 4,
+    "synthetic_schools": 2,
+    "scope": "database_claims_not_HTTP_login",
+    "schools_remaining": 0,
+    "profiles_remaining": 0
+  },
+  "production_flags": {
+    "enabled_feature_schools": 0,
+    "multi_school": false
+  },
+  "offline_storage_test": "fake-indexeddb_6.2.6_plus_WebCrypto",
+  "channel_test": "HTTP_mock_only",
+  "real_channel_messages_sent": 0,
+  "real_schools_created": 0,
+  "real_platform_administrators_provisioned": 0,
+  "new_features": [
+    "per_school_activation_flags",
+    "active_school_selector",
+    "central_school_provisioning_and_membership_linking",
+    "same_school_teaching_team",
+    "public_PWA_shell",
+    "per_account_per_tab_AES_GCM_offline_materials_and_individual_drafts",
+    "offline_expiry_and_logout_cleanup",
+    "manual_revision_safe_draft_submission",
+    "consented_channel_contacts",
+    "idempotent_channel_queue",
+    "per_school_Telegram_and_WhatsApp_server_adapters"
+  ],
+  "open_gates": [
+    "stage6_latency",
+    "real_private_browser_and_devices",
+    "real_PWA_install_network_disconnect_and_draft_sync",
+    "multi_school_and_team_hosted_capacity",
+    "approved_real_channel_delivery",
+    "production_backup_restore",
+    "stage7_real_pilot"
+  ],
+  "security_advisors": "no_errors_preexisting_password_warning_expected_private_RLS_infos",
+  "performance_advisors": "unused_index_info_only_after_policy_consolidation"
+}

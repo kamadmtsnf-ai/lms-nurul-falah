@@ -1,12 +1,12 @@
 # LMS Nurul Falah
 
-LMS sampai Tahap 8 mencakup materi, absensi, tugas, kuis dan laporan Excel/PDF, disertai pengujian serta perbaikan sinkronisasi. Gerbang kelayakan yang belum lulus dicatat pada dokumentasi Tahap 6. Frontend/backend di Vercel; Supabase menangani PostgreSQL, Auth dan Storage.
+LMS sampai Tahap 9 mencakup materi, absensi, tugas, kuis dan laporan Excel/PDF, disertai pengujian serta perbaikan sinkronisasi. Gerbang kelayakan yang belum lulus dicatat pada dokumentasi Tahap 6. Frontend/backend di Vercel; Supabase menangani PostgreSQL, Auth dan Storage.
 
 ## Status terbaru
 
 - Source: https://github.com/kamadmtsnf-ai/lms-nurul-falah
 - Aplikasi: https://lms-nurul-falah.vercel.app
-- Sembilan belas migrasi diterapkan pada Supabase `slppnagegknxsjhfqthm`.
+- Dua puluh satu migrasi diterapkan pada Supabase `slppnagegknxsjhfqthm`.
 - Form login, wajib ganti password lalu login ulang, email per akun, pemulihan berbasis token sekali pakai, multi-peran dan manajemen akun tersedia.
 - Aktivasi telah dikonfirmasi berhasil oleh pengguna. Email menggunakan konfigurasi SMTP; tidak ada bypass aktivasi.
 - Master akademik, tujuh template/impor Excel serta materi, tugas dan dua sumber absensi tersedia. Kuis/laporan V1 mengikuti Tahap 5.
@@ -69,3 +69,7 @@ Panduan migrasi data, aktivasi bertahap dan pendampingan: [docs/10-Tahap-7-Pelun
 ## Tahap 8 — Modul cakupan penuh
 
 Jenis soal lengkap, bank/impor soal, koreksi esai, kelompok/rubrik, prasyarat/diskusi, dashboard/portal wali, nilai berbobot, email kegiatan dan retensi alumni tersedia. Panduan penggunaan serta batas penerimaan: [docs/11-Tahap-8-Cakupan-Penuh.md](docs/11-Tahap-8-Cakupan-Penuh.md). Status implementasi dan penerimaan operasional dibedakan.
+
+## Tahap 9 — Pengembangan terkontrol
+
+Offline terenkripsi/PWA, pemilih dan pengelolaan sekolah, tim pengajar dan adapter WhatsApp/Telegram tersedia dengan aktivasi bawaan nonaktif. Persiapan admin pusat, kredensial kanal dan batas pengujian: [docs/12-Tahap-9-Pengembangan.md](docs/12-Tahap-9-Pengembangan.md).
