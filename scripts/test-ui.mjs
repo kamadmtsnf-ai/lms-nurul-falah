@@ -301,6 +301,87 @@ try {
     assert.equal(await previewPage.locator("tbody tr").count(), 264);
     await previewPage.close();
   }
+  for (const width of [320, 390, 768, 1440]) {
+    const tablePage = await browser.newPage({
+      viewport: { width, height: 900 },
+    });
+    tablePage.on("pageerror", (e) => errors.push(e.message));
+    await tablePage.goto(`${base}/?view=course&tables=1&realistic=1`);
+    async function inspectTable(label) {
+      const region = tablePage.getByRole("region", {
+        name: label,
+        exact: true,
+      });
+      await region.waitFor();
+      await region.scrollIntoViewIfNeeded();
+      const before = await region.evaluate((el) => {
+        const head = el.querySelector("thead th"),
+          a = el.querySelector("tbody tr:nth-child(2) td"),
+          b = el.querySelector("tbody tr:nth-child(3) td");
+        return {
+          overflowY: el.scrollHeight > el.clientHeight,
+          overflowX: el.scrollWidth > el.clientWidth,
+          head: head.textContent,
+          stripeA: getComputedStyle(a).backgroundColor,
+          stripeB: getComputedStyle(b).backgroundColor,
+        };
+      });
+      assert.equal(before.overflowY, true, `${label}: vertical scroll`);
+      assert.equal(before.head, "Siswa");
+      assert.notEqual(before.stripeA, before.stripeB, `${label}: zebra`);
+      if (width < 768)
+        assert.equal(before.overflowX, true, `${label}: horizontal scroll`);
+      await region.evaluate((el) => {
+        el.scrollTop = 180;
+        el.scrollLeft = el.scrollWidth;
+      });
+      await tablePage.waitForTimeout(80);
+      const position = await region.evaluate((el) => {
+        const box = el.getBoundingClientRect(),
+          head = el.querySelector("thead th").getBoundingClientRect(),
+          cell = el.querySelector("tbody td").getBoundingClientRect();
+        return {
+          top: head.top - box.top,
+          left: cell.left - box.left,
+          headerLeft: head.left - box.left,
+          zHeader: +getComputedStyle(el.querySelector("thead th")).zIndex,
+          zCell: +getComputedStyle(el.querySelector("tbody td")).zIndex,
+        };
+      });
+      assert.ok(
+        Math.abs(position.top - 1) < 2,
+        `${label}: sticky header ${JSON.stringify(position)}`,
+      );
+      assert.ok(
+        Math.abs(position.left - 1) < 2,
+        `${label}: sticky student ${JSON.stringify(position)}`,
+      );
+      assert.ok(Math.abs(position.headerLeft - 1) < 2, `${label}: corner`);
+      assert.ok(position.zHeader > position.zCell);
+      await check(tablePage, `${label}/scrolled/${width}`);
+      await region.evaluate((el) => {
+        el.scrollTop = 0;
+        el.scrollLeft = 0;
+      });
+    }
+    await tablePage
+      .getByRole("tab", { name: "Pertemuan & absensi", exact: true })
+      .click();
+    await inspectTable("Tabel rekap kehadiran");
+    await tablePage
+      .getByRole("tab", { name: "Nilai tugas", exact: true })
+      .click();
+    await inspectTable("Tabel nilai tugas");
+    await tablePage.getByRole("tab", { name: "Laporan", exact: true }).click();
+    await inspectTable("Tabel ringkasan siswa");
+    await tablePage
+      .getByRole("tab", { name: "Hasil kuis", exact: true })
+      .click();
+    await inspectTable("Tabel hasil kuis");
+    await tablePage.setViewportSize({ width: 740, height: 390 });
+    await inspectTable("Tabel hasil kuis");
+    await tablePage.close();
+  }
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(`${base}/?view=course&preview=1`);

@@ -1,4 +1,5 @@
 "use client";
+import { DataTableViewport } from "./data-table-viewport";
 import { navigateTabs } from "@/lib/http/tab-navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -109,7 +110,7 @@ export function ReportPanel({ course }: { course: string }) {
             className={panelClass}
           >
             {tab === "summary" && (
-              <div className="section-tabs overflow-auto">
+              <DataTableViewport label="Tabel ringkasan siswa">
                 <table className="w-full text-left text-sm">
                   <caption className="sr-only">
                     Ringkasan absensi, tugas dan nilai siswa
@@ -145,17 +146,17 @@ export function ReportPanel({ course }: { course: string }) {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </DataTableViewport>
             )}
             {tab === "quiz" && (
-              <div className="overflow-auto">
+              <DataTableViewport label="Tabel hasil kuis">
                 <table className="w-full text-left text-sm">
                   <caption className="sr-only">Hasil percobaan kuis</caption>
                   <thead>
                     <tr>
                       {[
-                        "Kuis",
                         "Siswa",
+                        "Kuis",
                         "Status",
                         "Skor",
                         "Nilai",
@@ -170,8 +171,8 @@ export function ReportPanel({ course }: { course: string }) {
                   <tbody>
                     {data.quizzes.map((q) => (
                       <tr className="border-t" key={q.attempt_id}>
-                        <td className="p-3">{q.title}</td>
                         <td className="p-3">{q.student_name}</td>
+                        <td className="p-3">{q.title}</td>
                         <td className="p-3">
                           {q.status === "working"
                             ? "Dikerjakan"
@@ -210,7 +211,7 @@ export function ReportPanel({ course }: { course: string }) {
                 {!data.quizzes.length && (
                   <p className="mt-3 text-sm">Belum ada percobaan kuis.</p>
                 )}
-              </div>
+              </DataTableViewport>
             )}
             {tab === "activity" &&
               (data.activity ? (

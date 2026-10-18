@@ -1,4 +1,5 @@
 "use client";
+import { DataTableViewport } from "./data-table-viewport";
 import { ClientReady } from "./client-ready";
 import { PageHeading } from "./page-heading";
 import { navigateTabs } from "@/lib/http/tab-navigation";
@@ -639,7 +640,7 @@ function AttendanceRecap({ state }: { state: CourseState }) {
         Hanya catatan yang sudah disimpan dihitung. Sumber harian dan pertemuan
         ditampilkan terpisah.
       </p>
-      <div className="mt-4 overflow-auto">
+      <DataTableViewport label="Tabel rekap kehadiran">
         <table className="w-full text-left text-sm">
           <thead>
             <tr>
@@ -677,7 +678,7 @@ function AttendanceRecap({ state }: { state: CourseState }) {
             ))}
           </tbody>
         </table>
-      </div>
+      </DataTableViewport>
     </section>
   );
 }
@@ -1433,7 +1434,7 @@ function Grades({ state }: { state: CourseState }) {
       <p role="status" className="mt-3 text-xs text-stone-500">
         {tasks.length} tugas ditampilkan pada halaman ini.
       </p>
-      <div className="mt-5 overflow-x-auto">
+      <DataTableViewport label="Tabel nilai tugas">
         <table className="w-full text-left text-sm">
           <thead>
             <tr>
@@ -1490,7 +1491,7 @@ function Grades({ state }: { state: CourseState }) {
             )}
           </tbody>
         </table>
-      </div>
+      </DataTableViewport>
       {!state.assignments.length && (
         <p className="mt-5 text-sm text-stone-500">Belum ada tugas.</p>
       )}

@@ -809,3 +809,15 @@ button[data-variant="default"] {
 
 .confirm-dialog { max-height: calc(100dvh - 2rem); overflow-y: auto; }
 .confirm-dialog::backdrop { background: rgb(15 23 42 / 55%); backdrop-filter: blur(4px); }
+
+/* Scoped scroll surfaces for learning recap/report tables. */
+.data-table-scroll { position: relative; isolation: isolate; max-height: min(65dvh, 36rem); overscroll-behavior: contain; scrollbar-gutter: stable; }
+.data-table-scroll table { width: 100%; min-width: 48rem; table-layout: fixed; border-collapse: separate; border-spacing: 0; }
+.data-table-scroll th, .data-table-scroll td { padding: .875rem 1rem; vertical-align: top; border-bottom: 1px solid #e7e5e4; }
+.data-table-scroll thead th { position: sticky; top: 0; z-index: 3; background: #ecf4f1; color: #24554a; font-weight: 600; box-shadow: 0 1px 0 #cbdad4; }
+.data-table-scroll tbody tr { --row-bg: #fff; }
+.data-table-scroll tbody tr:nth-child(even) { --row-bg: #f4f7f6; }
+.data-table-scroll tbody tr:hover { --row-bg: #eaf3ef; }
+.data-table-scroll tbody td { background: var(--row-bg); }
+.data-table-scroll tr > :first-child { position: sticky; left: 0; z-index: 2; width: clamp(8rem, 30vw, 14rem); min-width: clamp(8rem, 30vw, 14rem); max-width: 14rem; overflow-wrap: anywhere; box-shadow: 1px 0 0 #d6e0db; }
+.data-table-scroll thead tr > :first-child { z-index: 4; }

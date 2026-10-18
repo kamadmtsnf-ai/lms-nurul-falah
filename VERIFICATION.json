@@ -297,5 +297,47 @@
     "schema_changes": false,
     "private_hosted_file_preview": "not_exercised_real_school_files_untouched",
     "report": "docs/17-Pratinjau-Filter-Navigasi.md"
+  },
+  "table_presentation": {
+    "date": "2026-10-18",
+    "base_commit": "796b1b7fe09387aa5099b6f2a5fe44962e659fa5",
+    "tables": [
+      "attendance_recap",
+      "assignment_grades",
+      "student_summary",
+      "quiz_results"
+    ],
+    "tests": {
+      "passed": 128,
+      "failed": 0
+    },
+    "ui": {
+      "checks": 187,
+      "viewports": [
+        {
+          "width": 320,
+          "status": "passed"
+        },
+        {
+          "width": 390,
+          "status": "passed"
+        },
+        {
+          "width": 768,
+          "status": "passed"
+        },
+        {
+          "width": 1440,
+          "status": "passed"
+        }
+      ],
+      "javascriptErrors": [],
+      "scope": "Real React components with synthetic data and mocked API; does not replace authenticated live acceptance tests."
+    },
+    "http_groups": 17,
+    "typecheck": "passed",
+    "production_build": "passed",
+    "schema_or_api_changes": false,
+    "report": "docs/18-Tabel-Sticky-Zebra.md"
   }
 }

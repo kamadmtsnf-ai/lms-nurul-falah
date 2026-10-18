@@ -192,7 +192,7 @@ const report = (offset = 0) => ({
   course: course.course,
   rows: empty
     ? []
-    : roster.slice(0, 5).map((r) => ({
+    : roster.slice(0, params.has("tables") ? 60 : 5).map((r) => ({
         ...r,
         present: 1,
         attendance_recorded: 1,
@@ -202,7 +202,25 @@ const report = (offset = 0) => ({
         quiz_average: 70,
         weighted_final: 75,
       })),
-  quizzes: [],
+  quizzes: params.has("tables")
+    ? roster
+        .slice(0, 60)
+        .map((r, i) => ({
+          quiz_id: id,
+          title: "Kuis pembelajaran " + (i + 1),
+          student_name: r.full_name,
+          student_id: r.id,
+          attempt_id: "attempt-" + i,
+          status: "submitted",
+          started_at: now,
+          deadline: now,
+          finished_at: now,
+          score: 80,
+          max_score: 100,
+          grades_visible: true,
+          can_open: false,
+        }))
+    : [],
   activity: { meetings: 1, materials: 1, assignments: 1, quizzes: 1 },
   weights: { assignment_weight: 50, quiz_weight: 50, visible: true },
 });
