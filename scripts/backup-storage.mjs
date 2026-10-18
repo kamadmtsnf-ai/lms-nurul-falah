@@ -51,6 +51,7 @@ try {
     },
     dest,
     encryption,
+    sourceBucket,
   );
   console.log(
     `Cadangan Storage ${sourceBucket} terenkripsi selesai: ${result.objects} objek. Jalankan drill pemulihan sebelum menerima cadangan.`,

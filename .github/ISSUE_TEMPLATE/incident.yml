@@ -1,0 +1,34 @@
+name: Insiden operasional
+description: Laporkan gangguan layanan tanpa menyertakan data pribadi atau rahasia.
+title: "[INSIDEN] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: "Repositori ini publik. Jangan masukkan nama/NIS siswa, nilai, email, token, password, isi backup, atau log mentah. Gunakan ID kejadian acak dan waktu WIB."
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Tingkat insiden
+      options:
+        - SEV1 - kebocoran data atau kehilangan data terkonfirmasi
+        - SEV2 - login, kuis, atau layanan utama tidak tersedia
+        - SEV3 - sebagian fungsi terganggu
+    validations:
+      required: true
+  - type: textarea
+    id: timeline
+    attributes:
+      label: Waktu dan dampak tanpa identitas pengguna
+    validations:
+      required: true
+  - type: textarea
+    id: containment
+    attributes:
+      label: Tindakan, hasil verifikasi, dan rencana pemulihan
+    validations:
+      required: true
+  - type: textarea
+    id: prevention
+    attributes:
+      label: Akar masalah dan pencegahan pengulangan

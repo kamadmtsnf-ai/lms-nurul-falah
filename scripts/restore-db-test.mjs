@@ -1,4 +1,104 @@
-import {readFile,mkdtemp,writeFile,rm} from 'node:fs/promises';import {tmpdir} from 'node:os';import path from 'node:path';import {spawn} from 'node:child_process';import {backupKey,decryptBackup,digest} from './testing/backup-crypto.mjs';
-if(process.env.PGSERVICE||process.env.PGSERVICEFILE||(process.env.PGHOSTADDR&&!['127.0.0.1','::1'].includes(process.env.PGHOSTADDR)))throw new Error('Service/host override tidak diizinkan pada pemulihan uji.');
-if(!['127.0.0.1','localhost','::1'].includes(process.env.PGHOST)||!/^lms_restore_[a-z0-9_]+$/.test(process.env.PGDATABASE??'')||process.env.LMS_RESTORE_ACK!=='isolated-test-database')throw new Error('Pemulihan otomatis hanya untuk database lokal kosong bernama lms_restore_*. Tidak boleh ke produksi.');
-const manifestPath=process.argv[2];if(!manifestPath)throw new Error('Berikan path manifest cadangan.');const manifest=JSON.parse(await readFile(manifestPath,'utf8'));if(typeof manifest.file!=='string'||path.basename(manifest.file)!==manifest.file)throw new Error('Nama berkas manifest tidak aman.');const encrypted=await readFile(path.join(path.dirname(manifestPath),manifest.file));if(digest(encrypted)!==manifest.sha256)throw new Error('Checksum cadangan tidak sesuai.');const key=backupKey(process.env.LMS_BACKUP_KEY_BASE64);const bytes=decryptBackup(encrypted,key);key.fill(0);const temp=await mkdtemp(path.join(tmpdir(),'lms-restore-'));try{const file=path.join(temp,'verified.dump');await writeFile(file,bytes,{mode:0o600});bytes.fill(0);await new Promise((resolve,reject)=>{const p=spawn('pg_restore',['--exit-on-error','--single-transaction','--no-owner','--dbname',process.env.PGDATABASE,file],{env:process.env,stdio:['ignore','ignore','pipe']});p.stderr.resume();p.on('error',()=>reject(new Error('pg_restore belum terpasang.')));p.on('exit',code=>code===0?resolve():reject(new Error(`Pemulihan gagal (${code}). Periksa role/extension yang diperlukan; tidak ada perintah --clean.`)));});console.log('Pemulihan database uji selesai. Periksa jumlah, hash, RLS dan alur aplikasi sebelum menerima cadangan.');}finally{await rm(temp,{recursive:true,force:true});}
+import { readFile, mkdtemp, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { spawn } from "node:child_process";
+import { backupKey, decryptBackup, digest } from "./testing/backup-crypto.mjs";
+if (
+  process.env.PGSERVICE ||
+  process.env.PGSERVICEFILE ||
+  (process.env.PGHOSTADDR &&
+    !["127.0.0.1", "::1"].includes(process.env.PGHOSTADDR))
+)
+  throw new Error("Service/host override tidak diizinkan pada pemulihan uji.");
+if (
+  !["127.0.0.1", "localhost", "::1"].includes(process.env.PGHOST) ||
+  !/^lms_restore_[a-z0-9_]+$/.test(process.env.PGDATABASE ?? "") ||
+  process.env.LMS_RESTORE_ACK !== "isolated-test-database"
+)
+  throw new Error(
+    "Pemulihan otomatis hanya untuk database lokal kosong bernama lms_restore_*. Tidak boleh ke produksi.",
+  );
+await new Promise((resolve, reject) => {
+  const p = spawn(
+    "psql",
+    [
+      "-X",
+      "-At",
+      "--no-password",
+      "--set",
+      "ON_ERROR_STOP=1",
+      "--command",
+      "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname not in ('pg_catalog','information_schema') and n.nspname not like 'pg_toast%' and c.relkind in ('r','p','v','m','S','f')",
+    ],
+    { env: process.env, stdio: ["ignore", "pipe", "pipe"] },
+  );
+  let result = "";
+  p.stdout.on("data", (x) => {
+    result += x.toString();
+  });
+  p.stderr.resume();
+  p.on("error", () =>
+    reject(new Error("psql diperlukan untuk memverifikasi target kosong.")),
+  );
+  p.on("exit", (code) =>
+    code === 0 && result.trim() === "0"
+      ? resolve()
+      : reject(
+          new Error(
+            "Target pemulihan tidak kosong atau tidak dapat diverifikasi; pemulihan dibatalkan.",
+          ),
+        ),
+  );
+});
+const manifestPath = process.argv[2];
+if (!manifestPath) throw new Error("Berikan path manifest cadangan.");
+const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+if (
+  typeof manifest.file !== "string" ||
+  path.basename(manifest.file) !== manifest.file
+)
+  throw new Error("Nama berkas manifest tidak aman.");
+const encrypted = await readFile(
+  path.join(path.dirname(manifestPath), manifest.file),
+);
+if (digest(encrypted) !== manifest.sha256)
+  throw new Error("Checksum cadangan tidak sesuai.");
+const key = backupKey(process.env.LMS_BACKUP_KEY_BASE64);
+const bytes = decryptBackup(encrypted, key);
+key.fill(0);
+const temp = await mkdtemp(path.join(tmpdir(), "lms-restore-"));
+try {
+  const file = path.join(temp, "verified.dump");
+  await writeFile(file, bytes, { mode: 0o600 });
+  bytes.fill(0);
+  await new Promise((resolve, reject) => {
+    const p = spawn(
+      "pg_restore",
+      [
+        "--exit-on-error",
+        "--single-transaction",
+        "--no-owner",
+        "--dbname",
+        process.env.PGDATABASE,
+        file,
+      ],
+      { env: process.env, stdio: ["ignore", "ignore", "pipe"] },
+    );
+    p.stderr.resume();
+    p.on("error", () => reject(new Error("pg_restore belum terpasang.")));
+    p.on("exit", (code) =>
+      code === 0
+        ? resolve()
+        : reject(
+            new Error(
+              `Pemulihan gagal (${code}). Periksa role/extension yang diperlukan; tidak ada perintah --clean.`,
+            ),
+          ),
+    );
+  });
+  console.log(
+    "Pemulihan database uji selesai. Periksa jumlah, hash, RLS dan alur aplikasi sebelum menerima cadangan.",
+  );
+} finally {
+  await rm(temp, { recursive: true, force: true });
+}

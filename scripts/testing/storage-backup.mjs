@@ -22,7 +22,14 @@ export function safeObjectPath(value) {
     throw new Error("Path objek tidak aman.");
   return value;
 }
-export async function backupStorage(adapter, destination, key) {
+export async function backupStorage(
+  adapter,
+  destination,
+  key,
+  bucket = "lms-private",
+) {
+  if (!["lms-private", "profile-photos"].includes(bucket))
+    throw new Error("Bucket cadangan tidak diizinkan.");
   const root = path.resolve(destination);
   await mkdir(root, { recursive: true, mode: 0o700 });
   await chmod(root, 0o700);
@@ -84,7 +91,7 @@ export async function backupStorage(adapter, destination, key) {
         Buffer.from(
           JSON.stringify({
             version: 1,
-            bucket: "lms-private",
+            bucket,
             created_at,
             files,
           }),
@@ -137,7 +144,7 @@ export async function restoreStorageLocal(indexFile, destination, key) {
   const manifest = JSON.parse(decryptBackup(sealed, key).toString("utf8"));
   if (
     manifest.version !== 1 ||
-    manifest.bucket !== "lms-private" ||
+    !["lms-private", "profile-photos"].includes(manifest.bucket) ||
     !Array.isArray(manifest.files) ||
     manifest.files.length !== index.object_count
   )

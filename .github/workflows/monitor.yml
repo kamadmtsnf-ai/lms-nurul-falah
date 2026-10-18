@@ -1,0 +1,45 @@
+name: Production public monitoring
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      [
+        "scripts/operations/check-production.mjs",
+        ".github/workflows/monitor.yml",
+      ]
+permissions:
+  contents: read
+concurrency:
+  group: production-monitor
+  cancel-in-progress: false
+jobs:
+  probe:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - run: node scripts/operations/check-production.mjs
+      - id: private-config
+        env:
+          PRIVATE_KEY: ${{ secrets.LMS_BACKUP_SUPABASE_KEY }}
+        run: |
+          if [ -n "$PRIVATE_KEY" ]; then
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'Database/Storage readiness: BLOCKED, server credential not configured. Public probe does not prove backend readiness.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - if: steps.private-config.outputs.enabled == 'true'
+        run: npm ci --ignore-scripts
+      - if: steps.private-config.outputs.enabled == 'true'
+        run: node scripts/operations/check-private.mjs
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.LMS_BACKUP_SUPABASE_KEY }}

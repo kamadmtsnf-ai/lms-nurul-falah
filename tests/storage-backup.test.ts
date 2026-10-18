@@ -125,3 +125,38 @@ test("Storage: unsafe paths, duplicate listings and partial downloads fail close
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("profile photo backup retains its bucket identity and rejects unknown buckets", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "lms-photo-drill-")),
+    key = randomBytes(32);
+  try {
+    const adapter = {
+      list: async () => [{ id: "photo", name: "avatar.webp" }],
+      download: async () =>
+        new Blob(["synthetic photo"], { type: "image/webp" }),
+    };
+    const result = await backupStorage(adapter, root, key, "profile-photos");
+    const dest = path.join(root, "lms_storage_restore_photo");
+    await restoreStorageLocal(
+      path.join(result.directory, "index.json"),
+      dest,
+      key,
+    );
+    assert.equal(
+      JSON.parse(
+        await readFile(path.join(dest, "restored-manifest.json"), "utf8"),
+      ).bucket,
+      "profile-photos",
+    );
+    assert.equal(
+      await readFile(path.join(dest, "objects/avatar.webp"), "utf8"),
+      "synthetic photo",
+    );
+    await assert.rejects(
+      () => backupStorage(adapter, root, key, "unknown" as any),
+      /Bucket/,
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

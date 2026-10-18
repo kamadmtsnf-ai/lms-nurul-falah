@@ -1,15 +1,121 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {randomBytes} from 'node:crypto';import {backupKey,encryptBackup,decryptBackup,digest} from '../scripts/testing/backup-crypto.mjs';
-test('cadangan AES-GCM dapat dipulihkan; kunci salah dan perubahan isi ditolak',()=>{const key=backupKey(randomBytes(32).toString('base64')),data=Buffer.from('Jawaban sintetis: tidak ada data pribadi.');const encrypted=encryptBackup(data,key);assert.deepEqual(decryptBackup(encrypted,key),data);assert.notEqual(digest(encrypted),digest(encryptBackup(data,key)));assert.throws(()=>decryptBackup(encrypted,randomBytes(32)));const altered=Buffer.from(encrypted);altered[20]^=1;assert.throws(()=>decryptBackup(altered,key));assert.throws(()=>backupKey('123'));});
-import {mkdtemp,mkdir,writeFile,readdir,readFile,rm,stat} from 'node:fs/promises';import {tmpdir} from 'node:os';import path from 'node:path';import {spawnSync} from 'node:child_process';
-test('CLI cadangan: berkas privat, opsi ACL, integritas sebelum restore dan target produksi ditolak',async()=>{
- const root=await mkdtemp(path.join(tmpdir(),'lms-backup-cli-test-'));const bin=path.join(root,'bin'),dest=path.join(root,'exports'),called=path.join(root,'restored');await mkdir(bin);
- try{
-  await writeFile(path.join(bin,'pg_dump'),`#!/usr/bin/env node\nrequire('node:fs').writeFileSync(process.argv.at(-1),'PGDMP synthetic fixture');`,{mode:0o700});
-  await writeFile(path.join(bin,'pg_restore'),`#!/usr/bin/env node\nconst f=require('node:fs');if(process.argv.includes('--no-privileges'))process.exit(8);if(f.readFileSync(process.argv.at(-1),'utf8')!=='PGDMP synthetic fixture')process.exit(9);f.writeFileSync(process.env.LMS_TEST_RESTORED,'yes');`,{mode:0o700});
-  const env={...process.env,PATH:bin+path.delimiter+process.env.PATH,PGHOST:'127.0.0.1',PGDATABASE:'lms_restore_fixture',PGUSER:'fixture',LMS_BACKUP_DIR:dest,LMS_BACKUP_KEY_BASE64:randomBytes(32).toString('base64'),LMS_RESTORE_ACK:'isolated-test-database',LMS_TEST_RESTORED:called};for(const k of ['PGHOSTADDR','PGSERVICE','PGSERVICEFILE'])delete (env as Record<string,unknown>)[k];
-  const backup=spawnSync(process.execPath,['scripts/backup-db.mjs'],{env,encoding:'utf8'});assert.equal(backup.status,0,backup.stderr);const files=await readdir(dest);assert.equal(files.length,2);assert.equal(files.some(f=>f.endsWith('.partial')),false);const manifest=path.join(dest,files.find(f=>f.endsWith('.json'))!);const meta=JSON.parse(await readFile(manifest,'utf8'));assert.equal(meta.acl_preserved,true);assert.equal((await stat(path.join(dest,meta.file))).mode&0o777,0o600);
-  const denied=spawnSync(process.execPath,['scripts/restore-db-test.mjs',manifest],{env:{...env,PGHOST:'production.invalid'},encoding:'utf8'});assert.notEqual(denied.status,0);await assert.rejects(()=>stat(called));
-  const restored=spawnSync(process.execPath,['scripts/restore-db-test.mjs',manifest],{env,encoding:'utf8'});assert.equal(restored.status,0,restored.stderr);assert.equal(await readFile(called,'utf8'),'yes');await rm(called);
-  const encrypted=await readFile(path.join(dest,meta.file));encrypted[20]^=1;await writeFile(path.join(dest,meta.file),encrypted);meta.sha256=digest(encrypted);await writeFile(manifest,JSON.stringify(meta));const corrupt=spawnSync(process.execPath,['scripts/restore-db-test.mjs',manifest],{env,encoding:'utf8'});assert.notEqual(corrupt.status,0);await assert.rejects(()=>stat(called));
- }finally{await rm(root,{recursive:true,force:true});}
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { randomBytes } from "node:crypto";
+import {
+  backupKey,
+  encryptBackup,
+  decryptBackup,
+  digest,
+} from "../scripts/testing/backup-crypto.mjs";
+test("cadangan AES-GCM dapat dipulihkan; kunci salah dan perubahan isi ditolak", () => {
+  const key = backupKey(randomBytes(32).toString("base64")),
+    data = Buffer.from("Jawaban sintetis: tidak ada data pribadi.");
+  const encrypted = encryptBackup(data, key);
+  assert.deepEqual(decryptBackup(encrypted, key), data);
+  assert.notEqual(digest(encrypted), digest(encryptBackup(data, key)));
+  assert.throws(() => decryptBackup(encrypted, randomBytes(32)));
+  const altered = Buffer.from(encrypted);
+  altered[20] ^= 1;
+  assert.throws(() => decryptBackup(altered, key));
+  assert.throws(() => backupKey("123"));
+});
+import {
+  mkdtemp,
+  mkdir,
+  writeFile,
+  readdir,
+  readFile,
+  rm,
+  stat,
+} from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+test("CLI cadangan: berkas privat, opsi ACL, integritas sebelum restore dan target produksi ditolak", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "lms-backup-cli-test-"));
+  const bin = path.join(root, "bin"),
+    dest = path.join(root, "exports"),
+    called = path.join(root, "restored");
+  await mkdir(bin);
+  try {
+    await writeFile(
+      path.join(bin, "pg_dump"),
+      `#!/usr/bin/env node\nrequire('node:fs').writeFileSync(process.argv.at(-1),'PGDMP synthetic fixture');`,
+      { mode: 0o700 },
+    );
+    await writeFile(
+      path.join(bin, "psql"),
+      `#!/usr/bin/env node\nconsole.log(process.env.LMS_TEST_NONEMPTY?'1':'0');`,
+      { mode: 0o700 },
+    );
+    await writeFile(
+      path.join(bin, "pg_restore"),
+      `#!/usr/bin/env node\nconst f=require('node:fs');if(process.argv.includes('--no-privileges'))process.exit(8);if(f.readFileSync(process.argv.at(-1),'utf8')!=='PGDMP synthetic fixture')process.exit(9);f.writeFileSync(process.env.LMS_TEST_RESTORED,'yes');`,
+      { mode: 0o700 },
+    );
+    const env = {
+      ...process.env,
+      PATH: bin + path.delimiter + process.env.PATH,
+      PGHOST: "127.0.0.1",
+      PGDATABASE: "lms_restore_fixture",
+      PGUSER: "fixture",
+      LMS_BACKUP_DIR: dest,
+      LMS_BACKUP_KEY_BASE64: randomBytes(32).toString("base64"),
+      LMS_RESTORE_ACK: "isolated-test-database",
+      LMS_TEST_RESTORED: called,
+    };
+    for (const k of ["PGHOSTADDR", "PGSERVICE", "PGSERVICEFILE"])
+      delete (env as Record<string, unknown>)[k];
+    const backup = spawnSync(process.execPath, ["scripts/backup-db.mjs"], {
+      env,
+      encoding: "utf8",
+    });
+    assert.equal(backup.status, 0, backup.stderr);
+    const files = await readdir(dest);
+    assert.equal(files.length, 2);
+    assert.equal(
+      files.some((f) => f.endsWith(".partial")),
+      false,
+    );
+    const manifest = path.join(dest, files.find((f) => f.endsWith(".json"))!);
+    const meta = JSON.parse(await readFile(manifest, "utf8"));
+    assert.equal(meta.acl_preserved, true);
+    assert.equal((await stat(path.join(dest, meta.file))).mode & 0o777, 0o600);
+    const denied = spawnSync(
+      process.execPath,
+      ["scripts/restore-db-test.mjs", manifest],
+      { env: { ...env, PGHOST: "production.invalid" }, encoding: "utf8" },
+    );
+    assert.notEqual(denied.status, 0);
+    await assert.rejects(() => stat(called));
+    const nonempty = spawnSync(
+      process.execPath,
+      ["scripts/restore-db-test.mjs", manifest],
+      { env: { ...env, LMS_TEST_NONEMPTY: "yes" }, encoding: "utf8" },
+    );
+    assert.notEqual(nonempty.status, 0);
+    await assert.rejects(() => stat(called));
+    const restored = spawnSync(
+      process.execPath,
+      ["scripts/restore-db-test.mjs", manifest],
+      { env, encoding: "utf8" },
+    );
+    assert.equal(restored.status, 0, restored.stderr);
+    assert.equal(await readFile(called, "utf8"), "yes");
+    await rm(called);
+    const encrypted = await readFile(path.join(dest, meta.file));
+    encrypted[20] ^= 1;
+    await writeFile(path.join(dest, meta.file), encrypted);
+    meta.sha256 = digest(encrypted);
+    await writeFile(manifest, JSON.stringify(meta));
+    const corrupt = spawnSync(
+      process.execPath,
+      ["scripts/restore-db-test.mjs", manifest],
+      { env, encoding: "utf8" },
+    );
+    assert.notEqual(corrupt.status, 0);
+    await assert.rejects(() => stat(called));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

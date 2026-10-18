@@ -1,0 +1,42 @@
+name: Native synthetic restore drill
+on:
+  schedule:
+    - cron: "47 20 1 * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      [
+        "scripts/operations/native-restore-drill.mjs",
+        "scripts/backup-db.mjs",
+        "scripts/restore-db-test.mjs",
+        ".github/workflows/restore-drill.yml",
+      ]
+permissions:
+  contents: read
+jobs:
+  native-restore:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: synthetic-local-only
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: synthetic-local-only
+      LMS_NATIVE_DRILL_ACK: disposable-local-postgres
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+      - run: sudo apt-get update -qq && sudo apt-get install -y postgresql-client-17
+      - run: node scripts/operations/native-restore-drill.mjs
