@@ -410,19 +410,65 @@ try {
     await tablePage
       .getByRole("button", { name: "Template & impor Excel", exact: true })
       .click();
-    await tablePage
-      .locator('input[type="file"]')
-      .setInputFiles({
-        name: "uji.xlsx",
-        mimeType:
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        buffer: Buffer.from("synthetic preview fixture"),
-      });
+    await tablePage.locator('input[type="file"]').setInputFiles({
+      name: "uji.xlsx",
+      mimeType:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      buffer: Buffer.from("synthetic preview fixture"),
+    });
     await tablePage
       .getByRole("button", { name: "Periksa pratinjau", exact: true })
       .click();
     await inspectTable("Tabel pratinjau impor Excel", "username");
     await tablePage.close();
+  }
+  for (const width of [390, 1440]) {
+    const p = await browser.newPage({ viewport: { width, height: 900 } });
+    p.on("pageerror", (e) => errors.push(e.message));
+    await p.goto(`${base}/?view=daily&tables=1&inactive=1`);
+    await p
+      .getByRole("button", { name: "Tampilkan absensi", exact: true })
+      .click();
+    await p
+      .getByRole("region", { name: "Tabel pencatatan absensi", exact: true })
+      .waitFor();
+    assert.equal(await p.locator("tbody tr").count(), 131);
+    assert.equal(
+      await p.getByText("Siswa Nonaktif", { exact: true }).count(),
+      0,
+    );
+    await check(p, `inactive/daily/${width}`);
+    await p.getByRole("tab", { name: "Rekap harian", exact: true }).click();
+    await p
+      .getByRole("button", { name: "Tampilkan rekap", exact: true })
+      .click();
+    await p
+      .getByRole("region", { name: "Tabel rekap absensi harian", exact: true })
+      .waitFor();
+    assert.equal(await p.locator("tbody tr").count(), 131);
+    assert.equal(
+      await p.getByText("Siswa Nonaktif", { exact: true }).count(),
+      0,
+    );
+    await check(p, `inactive/daily-report/${width}`);
+    await p.goto(`${base}/?view=course&tables=1&inactive=1`);
+    await p.getByRole("tab", { name: "Laporan", exact: true }).click();
+    await p
+      .getByRole("region", { name: "Tabel ringkasan siswa", exact: true })
+      .waitFor();
+    assert.equal(await p.locator("tbody tr").count(), 59);
+    assert.equal(
+      await p.getByText("Siswa Nonaktif", { exact: true }).count(),
+      0,
+    );
+    await check(p, `inactive/report/${width}`);
+    await p.getByRole("tab", { name: "Hasil kuis", exact: true }).click();
+    assert.equal(
+      await p.getByText("Siswa Nonaktif", { exact: true }).count(),
+      0,
+    );
+    await check(p, `inactive/quiz/${width}`);
+    await p.close();
   }
   for (const width of [320, 390, 768, 1440]) {
     const userPage = await browser.newPage({

@@ -1,3 +1,4 @@
+import { visibleStudentLists } from "../../src/lib/students/visibility";
 import { AppShell } from "../../src/components/app-shell";
 import { WorkspaceDashboard } from "../../src/components/workspace-dashboard";
 import React, { useState } from "react";
@@ -34,7 +35,12 @@ const roster = empty
   ? []
   : Array.from({ length: 132 }, (_, i) => ({
       id: i === 0 ? student : `student-${i}`,
-      full_name: i === 0 ? long : `Siswa ${i + 1}`,
+      full_name:
+        params.has("inactive") && i === 1
+          ? "Siswa Nonaktif"
+          : i === 0
+            ? long
+            : `Siswa ${i + 1}`,
     }));
 const ctx = {
   actor: student,
@@ -331,6 +337,11 @@ let managedUsers = params.has("userfilters")
       },
     ]
   : null;
+const activeStudents = new Set(
+  roster.filter((_, i) => !params.has("inactive") || i !== 1).map((r) => r.id),
+);
+const studentView = <T,>(data: T): T =>
+  params.has("inactive") ? visibleStudentLists(data, activeStudents) : data;
 const requests: Record<string, unknown>[] = [];
 (window as any).__requests = requests;
 (window as any).__fail = false;
@@ -570,7 +581,7 @@ window.fetch = async (url, options) => {
       }
       return Response.json({ message: "Baris 2 tidak valid" }, { status: 400 });
   }
-  return Response.json({ ok: true, result });
+  return Response.json({ ok: true, result: studentView(result) });
 };
 const academic = {
   school: {
@@ -632,9 +643,9 @@ function Fixture() {
   return (
     <AppShell>
       {mode === "course" ? (
-        <CourseWorkspace initial={course} />
+        <CourseWorkspace initial={studentView(course)} />
       ) : mode === "academic" ? (
-        <AcademicManager initial={academic} school={school} />
+        <AcademicManager initial={studentView(academic)} school={school} />
       ) : mode === "users" ? (
         <UserManager school={school} />
       ) : mode === "daily" ? (
