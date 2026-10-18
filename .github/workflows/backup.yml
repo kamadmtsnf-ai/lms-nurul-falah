@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 24
       - run: npm ci --ignore-scripts
-      - run: sudo apt-get update -qq && sudo apt-get install -y postgresql-client-17
+      - run: bash scripts/operations/install-pg-clients.sh
       - name: Export encrypted database and private Storage to private destination
         run: node scripts/operations/backup-run.mjs
         env:

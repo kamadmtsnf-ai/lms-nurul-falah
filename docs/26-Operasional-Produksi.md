@@ -47,7 +47,7 @@ Variables:
 - `LMS_BACKUP_REGION`: region provider (`auto` bila provider memerlukannya).
 - `LMS_BACKUP_DESTINATION_ACK`: isi `private-bucket-verified` **setelah** mematikan akses publik dan memeriksa izin bucket.
 
-PostgreSQL memakai TLS `verify-full`. Workflow menggunakan klien PostgreSQL 17 sesuai server saat implementasi. Perubahan mayor server perlu tinjauan klien. Tidak ada akun penyimpanan, paket berbayar, atau penagihan yang diaktifkan otomatis.
+PostgreSQL memakai TLS `verify-full`. Workflow menggunakan klien dari image resmi `postgres:17` melalui Docker sesuai server saat implementasi. Perubahan mayor server perlu tinjauan klien. Tidak ada akun penyimpanan, paket berbayar, atau penagihan yang diaktifkan otomatis.
 
 Pilih tujuan privat yang sudah dimiliki atau penyedia dengan kuota gratis yang mencukupi; periksa kuota dan biaya aktual sebelum mengaktifkan. Backup + verifikasi mengonsumsi egress/penyimpanan; GitHub Actions juga mempunyai batas penggunaan. Retensi awal yang disarankan: 7 backup harian dan 4 mingguan jika kuota cukup. Atur lifecycle pada provider setelah menimbang kebutuhan arsip/retensi data siswa. Script tidak menghapus backup lama secara otomatis.
 
