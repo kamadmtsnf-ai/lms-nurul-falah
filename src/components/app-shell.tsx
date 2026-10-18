@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import {
   BookOpen,
   House,
+  UserRound,
   ChartNoAxesCombined,
   ChevronRight,
 } from "lucide-react";
@@ -11,6 +12,7 @@ import { Brand } from "./brand";
 import { LogoutButton } from "./auth-form";
 const navigation = [
   { href: "/ruang-belajar", label: "Ruang akun", icon: House },
+  { href: "/profil", label: "Profil", icon: UserRound },
   { href: "/akademik", label: "Kelas & semester", icon: BookOpen },
   { href: "/pemantauan", label: "Pemantauan", icon: ChartNoAxesCombined },
 ];
@@ -26,7 +28,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header className="app-topbar">
         <div className="app-topbar-inner">
           <Brand />
-          <div className="flex min-w-0 items-center gap-3">
+          <div className="flex shrink-0 items-center gap-3">
             <span className="hidden text-xs text-stone-500 sm:block">
               Belajar bersama, tumbuh dengan ilmu
             </span>

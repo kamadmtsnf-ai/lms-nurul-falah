@@ -1,3 +1,4 @@
+import {cleanupRetainedProfilePhotos} from '@/lib/profile/server';
 import {z} from 'zod';
 import {accountContext,IdentityError,limit} from '@/lib/auth/identity';
 import {validOrigin} from '@/lib/auth/security';
@@ -29,13 +30,13 @@ export async function POST(request:Request,{params}:{params:Promise<{action:stri
    let sent=0,uncertain=0;for(const job of claim.data??[]){let status='sent';try{await transport.sendMail({from,to:job.email,subject:job.subject,text:job.body+'\n\nBuka LMS Nurul Falah untuk melihat kegiatan pembelajaran.'});sent++;}catch{status='unknown';uncertain++;}const ack=await admin.rpc('activity_mail_ack',{message:input.target,recipient:job.user_id,result:status});if(ack.error)uncertain++;}return output({ok:true,result:{sent,uncertain,message:'Batch maksimal 3 penerima diproses. Periksa antrean sebelum melanjutkan.'}});
   }finally{transport.close();}
  }
- if(action==='retention-auth'){const result=await advancedCommand<{student_id:string}>(ctx,action,input);const removed=await createSupabaseAdminClient().auth.admin.deleteUser(result.student_id);if(removed.error)throw new IdentityError('Penghapusan akun Auth belum selesai. Hubungi operator.',503);return output({ok:true,result:{status:'purged'}});}
+ if(action==='retention-auth'){const result=await advancedCommand<{student_id:string}>(ctx,action,input);await cleanupRetainedProfilePhotos(result.student_id);const removed=await createSupabaseAdminClient().auth.admin.deleteUser(result.student_id);if(removed.error)throw new IdentityError('Penghapusan akun Auth belum selesai. Hubungi operator.',503);return output({ok:true,result:{status:'purged'}});}
  if(action==='retention-purge'){
   // Prepare rechecks scope and confirms the authorized operator; repeatable after partial Storage failure.
-  const records=await advancedCommand<{records:{student_id:string;export_reference:string;status:string}[]}>(ctx,'retention-list',{school:input.school,offset:input.offset??0});const d=input.data as {student_id:string;confirmation:string};const row=records.records.find(r=>r.student_id===d.student_id);if(!row||row.status!=='prepared')throw new IdentityError('Siapkan penghapusan dahulu.',409);
+  const records=await advancedCommand<{records:{student_id:string;export_reference:string;status:string}[]}>(ctx,'retention-list',{school:input.school,offset:input.offset??0},true);const d=input.data as {student_id:string;confirmation:string};const row=records.records.find(r=>r.student_id===d.student_id);if(!row||row.status!=='prepared')throw new IdentityError('Siapkan penghapusan dahulu.',409);
   const prepared=await advancedCommand<{paths:string[]}>(ctx,'retention-prepare',{school:input.school,data:{student_id:d.student_id,confirmation:'SIAPKAN PENGHAPUSAN',export_reference:row.export_reference}});
   const admin=createSupabaseAdminClient();for(let n=0;n<prepared.paths.length;n+=100){const removed=await admin.storage.from('lms-private').remove(prepared.paths.slice(n,n+100));if(removed.error)throw new IdentityError('Penghapusan berkas belum selesai. Akun tetap dinonaktifkan; periksa lalu ulangi.',503);}
-  await advancedCommand(ctx,'retention-purge',input);const removed=await admin.auth.admin.deleteUser(d.student_id);if(removed.error)throw new IdentityError('Data aktif sudah dibersihkan; penghapusan Auth masih memerlukan operator.',503);return output({ok:true,result:{status:'purged'}});
+  await advancedCommand(ctx,'retention-purge',input);await cleanupRetainedProfilePhotos(d.student_id);const removed=await admin.auth.admin.deleteUser(d.student_id);if(removed.error)throw new IdentityError('Data aktif sudah dibersihkan; penghapusan Auth masih memerlukan operator.',503);return output({ok:true,result:{status:'purged'}});
  }
  if(action==='material-share'){
  const result=await advancedCommand<{id:string}>(ctx,action,input);const destination=(input.data as {destination_course:string}).destination_course;const admin=createSupabaseAdminClient();

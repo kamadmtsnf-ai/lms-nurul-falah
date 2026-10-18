@@ -1,3 +1,5 @@
+import { ProfileWorkspace } from "../../src/components/profile-workspace";
+import type { ProfileData } from "../../src/lib/profile/types";
 import { visibleStudentLists } from "../../src/lib/students/visibility";
 import { AppShell } from "../../src/components/app-shell";
 import { WorkspaceDashboard } from "../../src/components/workspace-dashboard";
@@ -342,6 +344,61 @@ const activeStudents = new Set(
 );
 const studentView = <T,>(data: T): T =>
   params.has("inactive") ? visibleStudentLists(data, activeStudents) : data;
+const profileRole = params.get("profileRole") || "teacher";
+let profileData: ProfileData = {
+  id: student,
+  name: long,
+  username: "guru.001",
+  email: "wali@example.test",
+  email_verified_at: now,
+  status: "active",
+  created_at: now,
+  school,
+  school_name: long,
+  roles:
+    profileRole === "student"
+      ? ["student"]
+      : profileRole === "guardian"
+        ? ["guardian"]
+        : profileRole === "admin"
+          ? ["admin"]
+          : ["teacher", "principal", "homeroom_teacher", "duty_teacher"],
+  is_student: profileRole === "student",
+  is_teacher: profileRole === "teacher",
+  phone: "081234567890",
+  nip: "001234567890123456",
+  npk: "0012345678901",
+  nik: "0012345678901234",
+  has_photo: false,
+  revision: 0,
+  server_now: new Date().toISOString(),
+  next: {
+    name: null,
+    identity: null,
+    username: null,
+    email: null,
+    photo: null,
+  },
+  student_number: "000123",
+  staff_code: "G001",
+  classrooms: [{ id, name: "7A", year: "2026/2027", semester: 1 }],
+  guardians: [
+    { id, full_name: long, relationship: "Ibu", phone: "081234567890" },
+  ],
+  children: [
+    { id: student, full_name: "Anak Pertama", relationship: "Wali" },
+    { id: "child-2", full_name: "Anak Kedua", relationship: "Wali" },
+  ],
+  duties: [
+    { kind: "Kepala Madrasah", detail: long, weekdays: null },
+    { kind: "Wali Kelas", detail: "7A", weekdays: null },
+    { kind: "Guru Piket", detail: "Semester aktif", weekdays: [1, 4] },
+  ],
+};
+if (params.has("profilePhoto")) profileData.has_photo = true;
+if (params.has("profileLocked"))
+  for (const key of Object.keys(profileData.next))
+    profileData.next[key as keyof ProfileData["next"]] = "2030-12-31T00:00:00Z";
 const requests: Record<string, unknown>[] = [];
 (window as any).__requests = requests;
 (window as any).__fail = false;
@@ -367,6 +424,38 @@ window.fetch = async (url, options) => {
   if ((window as any).__fail)
     return new Response("<html>Upstream unavailable</html>", { status: 502 });
   await new Promise((r) => setTimeout(r, 30));
+  if (path.startsWith("/api/profil/")) {
+    if (action === "email")
+      return Response.json({
+        ok: true,
+        next: "/verifikasi",
+        message: "Verifikasi email baru.",
+      });
+    if (action !== "read") {
+      if (action === "photo" || action === "remove-photo") {
+        profileData.has_photo = action === "photo";
+        profileData.next.photo = "2030-12-31T00:00:00Z";
+      } else if (action === "name") {
+        profileData.name = body.name;
+        profileData.next.name = "2030-12-31T00:00:00Z";
+      } else if (action === "phone") profileData.phone = body.phone;
+      else if (action === "identity") {
+        profileData.nik = body.nik;
+        profileData.nip = body.nip || "";
+        profileData.npk = body.npk || "";
+        profileData.next.identity = "2030-12-31T00:00:00Z";
+      } else if (action === "username") {
+        profileData.username = body.username;
+        profileData.next.username = "2030-12-31T00:00:00Z";
+      }
+      profileData.revision++;
+    }
+    return Response.json({
+      ok: true,
+      result: { ...profileData, next: { ...profileData.next } },
+      message: "Perubahan profil berhasil disimpan.",
+    });
+  }
   let result: unknown = {};
   if (path.includes("/identitas/")) {
     if (action === "admin-list")
@@ -644,6 +733,8 @@ function Fixture() {
     <AppShell>
       {mode === "course" ? (
         <CourseWorkspace initial={studentView(course)} />
+      ) : mode === "profile" ? (
+        <ProfileWorkspace initial={profileData} />
       ) : mode === "academic" ? (
         <AcademicManager initial={studentView(academic)} school={school} />
       ) : mode === "users" ? (

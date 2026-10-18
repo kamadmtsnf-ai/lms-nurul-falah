@@ -146,13 +146,21 @@ export function WorkspaceDashboard({
             berkala.
           </p>
         </div>
-        <Link
-          className="text-sm font-semibold text-emerald-800 underline"
-          href="/ganti-password?from=ruang-belajar"
-        >
-          Ubah password
-          <ArrowRight className="ml-2 inline" size={14} aria-hidden />
-        </Link>
+        <div className="flex flex-wrap gap-4">
+          <Link
+            className="text-sm font-semibold text-emerald-800 underline"
+            href="/profil"
+          >
+            Kelola profil
+          </Link>
+          <Link
+            className="text-sm font-semibold text-emerald-800 underline"
+            href="/ganti-password?from=ruang-belajar"
+          >
+            Ubah password
+            <ArrowRight className="ml-2 inline" size={14} aria-hidden />
+          </Link>
+        </div>
       </section>
     </AppShell>
   );

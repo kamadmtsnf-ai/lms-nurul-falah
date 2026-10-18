@@ -14,6 +14,7 @@ export type Field = {
   value?: string;
   required?: boolean;
   minLength?: number;
+  readOnly?: boolean;
 };
 export function AuthForm({
   action,
@@ -97,6 +98,7 @@ export function AuthForm({
                   ? "text"
                   : (f.type ?? "text")
               }
+              readOnly={f.readOnly}
               autoComplete={f.autoComplete}
               defaultValue={f.value}
               disabled={busy || !ready}
@@ -191,6 +193,7 @@ export function LogoutButton() {
     <div className="flex max-w-full flex-col items-end gap-2">
       <Button
         type="button"
+        className="whitespace-nowrap"
         variant="outline"
         disabled={!ready || busy}
         onClick={() => {

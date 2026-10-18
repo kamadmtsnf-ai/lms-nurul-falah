@@ -3,6 +3,9 @@ import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { backupKey } from "./testing/backup-crypto.mjs";
 import { backupStorage } from "./testing/storage-backup.mjs";
+const sourceBucket = process.env.LMS_STORAGE_BUCKET ?? "lms-private";
+if (!["lms-private", "profile-photos"].includes(sourceBucket))
+  throw new Error("Bucket cadangan tidak diizinkan.");
 const url = process.env.SUPABASE_URL,
   key =
     process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -25,25 +28,23 @@ const encryption = backupKey(process.env.LMS_BACKUP_KEY_BASE64),
     auth: { persistSession: false, autoRefreshToken: false },
   });
 try {
-  const bucket = await client.storage.getBucket("lms-private");
+  const bucket = await client.storage.getBucket(sourceBucket);
   if (bucket.error || bucket.data.public)
     throw new Error("Bucket privat sumber tidak dapat diverifikasi.");
   const result = await backupStorage(
     {
       list: async (prefix, offset, limit) => {
-        const r = await client.storage
-          .from("lms-private")
-          .list(prefix, {
-            offset,
-            limit,
-            sortBy: { column: "name", order: "asc" },
-          });
+        const r = await client.storage.from(sourceBucket).list(prefix, {
+          offset,
+          limit,
+          sortBy: { column: "name", order: "asc" },
+        });
         if (r.error)
           throw new Error("Inventaris Storage gagal; ekspor dibatalkan.");
         return r.data;
       },
       download: async (object) => {
-        const r = await client.storage.from("lms-private").download(object);
+        const r = await client.storage.from(sourceBucket).download(object);
         if (r.error) throw new Error("Unduhan objek gagal; ekspor dibatalkan.");
         return r.data;
       },
@@ -52,7 +53,7 @@ try {
     encryption,
   );
   console.log(
-    `Cadangan Storage terenkripsi selesai: ${result.objects} objek. Jalankan drill pemulihan sebelum menerima cadangan.`,
+    `Cadangan Storage ${sourceBucket} terenkripsi selesai: ${result.objects} objek. Jalankan drill pemulihan sebelum menerima cadangan.`,
   );
 } finally {
   encryption.fill(0);

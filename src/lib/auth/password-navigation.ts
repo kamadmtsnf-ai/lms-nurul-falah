@@ -3,7 +3,7 @@ export function canReturnFromPassword(
   from: unknown,
 ) {
   return (
-    from === "ruang-belajar" &&
+    (from === "ruang-belajar" || from === "profil") &&
     !profile.must_change_password &&
     Boolean(profile.email_verified_at)
   );

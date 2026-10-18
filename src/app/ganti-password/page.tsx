@@ -11,7 +11,8 @@ export default async function ChangePassword({
   searchParams: Promise<{ from?: string }>;
 }) {
   const { profile } = await requireAccount();
-  const back = canReturnFromPassword(profile, (await searchParams).from);
+  const from = (await searchParams).from;
+  const back = canReturnFromPassword(profile, from);
   return (
     <AuthShell
       title="Ganti password akun"
@@ -45,7 +46,11 @@ export default async function ChangePassword({
       />
       {back && (
         <Button asChild variant="outline" className="mt-5 w-full">
-          <Link href="/ruang-belajar">Kembali ke Ruang Belajar</Link>
+          <Link href={from === "profil" ? "/profil" : "/ruang-belajar"}>
+            {from === "profil"
+              ? "Kembali ke Profil"
+              : "Kembali ke Ruang Belajar"}
+          </Link>
         </Button>
       )}
       <div className="mt-5">

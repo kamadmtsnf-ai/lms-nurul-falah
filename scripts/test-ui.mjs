@@ -25,7 +25,7 @@ await build({
         b.onLoad({ filter: /.*/, namespace: "fixture" }, (args) => ({
           contents:
             args.path === "next/navigation"
-              ? 'export function usePathname(){const view=new URLSearchParams(location.search).get("view");return ({dashboard:"/ruang-belajar",academic:"/admin/akademik",users:"/admin/pengguna",monitoring:"/pemantauan",course:"/pembelajaran/fixture"})[view]||"/akademik"}'
+              ? 'export function usePathname(){const view=new URLSearchParams(location.search).get("view");return ({dashboard:"/ruang-belajar",academic:"/admin/akademik",users:"/admin/pengguna",monitoring:"/pemantauan",profile:"/profil",course:"/pembelajaran/fixture"})[view]||"/akademik"}'
               : 'import React from "react";export default function Link({children,...props}){return React.createElement("a",props,children)}',
           resolveDir: process.cwd(),
           loader: "js",
@@ -51,7 +51,10 @@ const server = createServer(async (req, res) => {
     res.end(previewPdf);
     return;
   }
-  if (req.url === "/preview-image.png") {
+  if (
+    req.url === "/preview-image.png" ||
+    req.url?.startsWith("/api/profil/foto")
+  ) {
     res.setHeader("Content-Type", "image/png");
     res.end(
       Buffer.from(
@@ -421,6 +424,205 @@ try {
       .click();
     await inspectTable("Tabel pratinjau impor Excel", "username");
     await tablePage.close();
+  }
+  for (const width of [320, 390, 768, 1440]) {
+    const p = await browser.newPage({ viewport: { width, height: 900 } });
+    p.on("pageerror", (e) => errors.push(e.message));
+    for (const role of ["teacher", "student", "guardian", "admin"]) {
+      await p.goto(`${base}/?view=profile&profileRole=${role}`);
+      for (const name of [
+        "Data pribadi",
+        "Identitas",
+        "Akun & keamanan",
+        "Informasi peran",
+      ]) {
+        await p.getByRole("tab", { name, exact: true }).click();
+        await check(p, `profile/${role}/${name}/${width}`);
+        if (
+          role === "teacher" &&
+          name === "Data pribadi" &&
+          [320, 1440].includes(width)
+        )
+          await p.screenshot({
+            path: join(output, `profile-${width}.png`),
+            fullPage: true,
+          });
+      }
+      if (role === "student") {
+        assert.equal(await p.getByText("000123", { exact: true }).count(), 1);
+        await p
+          .getByRole("tab", { name: "Akun & keamanan", exact: true })
+          .click();
+        assert.equal(
+          await p
+            .getByLabel("Username", { exact: true })
+            .getAttribute("readonly"),
+          "",
+        );
+        assert.equal(
+          await p
+            .getByRole("button", { name: "Simpan username", exact: true })
+            .count(),
+          0,
+        );
+      }
+      if (role === "guardian")
+        assert.equal(await p.locator("ol.list-decimal > li").count(), 2);
+      if (role === "teacher")
+        assert.equal(
+          await p.getByText("Senin, Kamis", { exact: true }).count(),
+          1,
+        );
+    }
+    await p.goto(`${base}/?view=profile&profileLocked=1`);
+    assert.equal(
+      await p
+        .getByRole("button", { name: "Simpan nama", exact: true })
+        .isDisabled(),
+      true,
+    );
+    assert.equal(
+      await p
+        .getByRole("button", { name: "Simpan foto", exact: true })
+        .isDisabled(),
+      true,
+    );
+    assert.equal(
+      await p
+        .getByRole("button", { name: "Simpan nomor HP/WA", exact: true })
+        .isEnabled(),
+      true,
+    );
+    await check(p, `profile/locked/${width}`);
+    await p.close();
+  }
+  {
+    const p = await browser.newPage({ viewport: { width: 390, height: 900 } });
+    p.on("pageerror", (e) => errors.push(e.message));
+    await p.goto(`${base}/?view=profile&realistic=1`);
+    await p
+      .getByRole("textbox", { name: "Nama lengkap", exact: true })
+      .fill("Guru Profil Baru");
+    await p.getByRole("button", { name: "Simpan nama", exact: true }).click();
+    await p.getByRole("dialog").waitFor();
+    await check(p, "profile/name-confirm");
+    await p.keyboard.press("Escape");
+    assert.equal(
+      await p.evaluate(
+        () =>
+          window.__requests.filter((r) => r.path === "/api/profil/name").length,
+      ),
+      0,
+    );
+    await p.getByRole("button", { name: "Simpan nama", exact: true }).click();
+    await p
+      .getByRole("button", { name: "Ya, simpan perubahan", exact: true })
+      .click();
+    await p.getByRole("dialog").waitFor({ state: "hidden" });
+    assert.equal(
+      await p
+        .getByRole("button", { name: "Simpan nama", exact: true })
+        .isDisabled(),
+      true,
+    );
+    await p
+      .getByRole("textbox", { name: "Nomor HP/WA", exact: true })
+      .fill("081299999999");
+    await p
+      .getByRole("button", { name: "Simpan nomor HP/WA", exact: true })
+      .click();
+    await p
+      .getByRole("button", { name: "Simpan nomor HP/WA", exact: true })
+      .waitFor();
+    await p.getByLabel("Pilih foto", { exact: true }).setInputFiles({
+      name: "foto.png",
+      mimeType: "image/png",
+      buffer: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jXioAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    });
+    await p.getByAltText("Pratinjau foto pilihan").waitFor();
+    await p.getByRole("button", { name: "Simpan foto", exact: true }).click();
+    await p
+      .getByRole("button", { name: "Ya, simpan perubahan", exact: true })
+      .click();
+    await p.getByRole("dialog").waitFor({ state: "hidden" });
+    assert.equal(
+      await p
+        .getByRole("button", { name: "Hapus foto", exact: true })
+        .isDisabled(),
+      true,
+    );
+    await check(p, "profile/photo-saved");
+    await p.getByRole("tab", { name: "Akun & keamanan", exact: true }).click();
+    await p
+      .getByRole("textbox", { name: "Username", exact: true })
+      .fill("guru.profil");
+    await p
+      .getByLabel("Password saat ini untuk ubah username", { exact: true })
+      .fill("password-kuat");
+    await p
+      .getByRole("button", { name: "Simpan username", exact: true })
+      .click();
+    await p
+      .getByRole("button", { name: "Ya, simpan perubahan", exact: true })
+      .click();
+    await p.getByRole("dialog").waitFor({ state: "hidden" });
+    assert.equal(
+      await p
+        .getByRole("button", { name: "Simpan username", exact: true })
+        .isDisabled(),
+      true,
+    );
+    assert.equal(
+      await p
+        .getByRole("link", { name: "Ubah password", exact: true })
+        .getAttribute("href"),
+      "/ganti-password?from=profil",
+    );
+    await p.goto(`${base}/?view=profile&profilePhoto=1&realistic=1`);
+    await p.getByRole("button", { name: "Hapus foto", exact: true }).click();
+    await p
+      .getByRole("dialog", { name: "Hapus foto profil?", exact: true })
+      .waitFor();
+    await check(p, "profile/photo-delete-confirm");
+    await p
+      .getByRole("button", { name: "Ya, hapus foto", exact: true })
+      .click();
+    await p.getByRole("dialog").waitFor({ state: "hidden" });
+    assert.equal(
+      await p
+        .getByRole("button", { name: "Simpan foto", exact: true })
+        .isDisabled(),
+      true,
+    );
+    await p.getByRole("tab", { name: "Data pribadi", exact: true }).focus();
+    await p.keyboard.press("End");
+    assert.equal(
+      await p
+        .getByRole("tab", { name: "Informasi peran", exact: true })
+        .getAttribute("aria-selected"),
+      "true",
+    );
+    await p.goto(`${base}/?view=profile&realistic=1`);
+    await p.getByRole("tab", { name: "Akun & keamanan", exact: true }).click();
+    await p
+      .getByRole("textbox", { name: "Email baru", exact: true })
+      .fill("baru@example.test");
+    await p
+      .getByLabel("Password saat ini untuk ubah email", { exact: true })
+      .fill("password-kuat");
+    await p
+      .getByRole("button", { name: "Ubah & verifikasi email", exact: true })
+      .click();
+    await p.getByRole("dialog").waitFor();
+    await check(p, "profile/email-confirm");
+    await p
+      .getByRole("button", { name: "Ya, simpan perubahan", exact: true })
+      .click();
+    await p.waitForURL("**/verifikasi");
+    await p.close();
   }
   for (const width of [390, 1440]) {
     const p = await browser.newPage({ viewport: { width, height: 900 } });

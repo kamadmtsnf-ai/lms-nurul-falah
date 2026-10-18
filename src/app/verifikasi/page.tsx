@@ -1,20 +1,30 @@
+import { profileCommand } from "@/lib/profile/server";
+import { canEdit, profileDate } from "@/lib/profile/validation";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth-shell";
 import { AuthForm, LogoutButton } from "@/components/auth-form";
 import { requireAccount } from "@/lib/auth/page-context";
 export const dynamic = "force-dynamic";
 export default async function Verify() {
-  const { profile } = await requireAccount();
+  const ctx = await requireAccount();
+  const { profile } = ctx;
   if (profile.must_change_password) redirect("/ganti-password");
+  if (profile.email_verified_at) redirect("/profil");
+  const emailState = await profileCommand<{ next: string | null }>(
+    ctx,
+    "email-state",
+  );
+  const locked = !canEdit(emailState.next);
   return (
     <AuthShell
       title="Verifikasi email Anda"
       description="Email digunakan untuk pemulihan akun. Siswa boleh menggunakan email orang tua atau wali. Akses pembelajaran dibuka setelah email terverifikasi."
     >
-      {profile.email_verified_at && (
-        <p className="mt-4 rounded-xl bg-emerald-50 p-4 text-sm">
-          Email saat ini sudah terverifikasi. Mengirim ke alamat baru akan
-          meminta verifikasi kembali.
+      {locked && (
+        <p className="mt-4 rounded-xl bg-amber-50 p-4 text-sm leading-6">
+          Verifikasi email baru yang ditampilkan di bawah. Anda dapat mengirim
+          ulang tautan ke alamat yang sama. Perubahan alamat berikutnya tersedia
+          pada {profileDate(emailState.next)} (WIB).
         </p>
       )}
       <AuthForm
@@ -27,6 +37,7 @@ export default async function Verify() {
             type: "email",
             autoComplete: "email",
             value: profile.contact_email ?? "",
+            readOnly: locked,
           },
         ]}
       />

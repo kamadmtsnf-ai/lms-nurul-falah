@@ -21,6 +21,11 @@ test("password return button requires explicit workspace origin and a fully acti
     email_verified_at: new Date().toISOString(),
   };
   assert.equal(canReturnFromPassword(profile, "ruang-belajar"), true);
+  assert.equal(canReturnFromPassword(profile, "profil"), true);
+  assert.equal(
+    canReturnFromPassword({ ...profile, must_change_password: true }, "profil"),
+    false,
+  );
   for (const from of [
     undefined,
     "https://evil.test",

@@ -6,15 +6,15 @@
   "production_build": "passed",
   "typecheck": "passed",
   "automated_tests": {
-    "passed": 135,
+    "passed": 146,
     "failed": 0
   },
   "http_scenarios": {
-    "passed": 17,
+    "passed": 19,
     "failed": 0,
     "scope": "local_no_database_config"
   },
-  "cloud_database": "21_migrations_applied_stage9_rollback_integration_passed",
+  "cloud_database": "22_migrations_applied_profile_self_service_verified",
   "migration_versions": [
     "20261017152937",
     "20261017152957",
@@ -36,7 +36,8 @@
     "20261017234701",
     "20261017234942",
     "20261018002715",
-    "20261018002920"
+    "20261018002920",
+    "20261018104028"
   ],
   "external_email": "user_confirmed_activation_success_not_retested_in_stage_3",
   "deployment": "inspect_current_commit_in_vercel",
@@ -386,5 +387,34 @@
     "history_preserved": true,
     "scope": "real_local_database_and_mock_browser; production_accounts_not_modified",
     "report": "docs/21-Siswa-Akun-Nonaktif.md"
+  },
+  "profile_page": {
+    "status": "implemented",
+    "path": "/profil",
+    "migration": "20261018104028",
+    "cloud_migration_applied": true,
+    "cloud_storage_bucket": "profile-photos_private",
+    "cloud_permission_checks": "anon_and_authenticated_rpc_execute_denied; private_tables_rls_enabled_direct_read_denied",
+    "cooldowns_days": {
+      "photo": 90,
+      "name": 45,
+      "identity_group": 45,
+      "email": 60,
+      "username_non_student": 40
+    },
+    "automated_tests_passed": 146,
+    "ui_checks_passed": 295,
+    "http_scenarios_passed": 19,
+    "build": "passed",
+    "typecheck": "passed",
+    "viewports": [
+      320,
+      390,
+      768,
+      1440
+    ],
+    "javascript_errors": [],
+    "scope": "real_local_database_synthetic_browser_and_cloud_schema_checks; authenticated_production_profile_mutations_not_run; no_real_verification_email_sent",
+    "report": "docs/22-Halaman-Profil.md"
   }
 }

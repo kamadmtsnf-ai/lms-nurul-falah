@@ -6,6 +6,7 @@ export async function advancedCommand<T = unknown>(
   ctx: AccountContext,
   cmd: string,
   p: Record<string, unknown> = {},
+  internalRetention = false,
 ): Promise<T> {
   const { data, error } = await ctx.client.rpc("advanced_command", { cmd, p });
   if (error) {
@@ -17,5 +18,6 @@ export async function advancedCommand<T = unknown>(
     console.error("Fitur lanjutan gagal:", error.code);
     throw new IdentityError("Fitur lanjutan belum dapat dihubungi.", 503);
   }
+  if (internalRetention && cmd === "retention-list") return data as T;
   return activeStudentLists(data as T);
 }
