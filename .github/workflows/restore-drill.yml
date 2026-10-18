@@ -30,7 +30,6 @@ jobs:
       PGPORT: 5432
       PGUSER: postgres
       PGPASSWORD: synthetic-local-only
-      LMS_PG_CONTAINER: ${{ job.services.postgres.id }}
       LMS_NATIVE_DRILL_ACK: disposable-local-postgres
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -41,3 +40,5 @@ jobs:
           node-version: 24
       - run: bash scripts/operations/install-pg-clients.sh
       - run: node scripts/operations/native-restore-drill.mjs
+        env:
+          LMS_PG_CONTAINER: ${{ job.services.postgres.id }}
