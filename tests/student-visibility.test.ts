@@ -140,10 +140,8 @@ test("real database account status controls daily/course/report/academic lists; 
       const raw = await rpc(name, cmd, p),
         result = await visible(raw);
       assert.ok(!studentIdsInLists(result).includes(off), cmd);
-      assert.ok(
-        studentIdsInLists(raw).includes(off),
-        `${cmd} fixture contains inactive student`,
-      );
+      if (cmd === "report" || cmd === "weighted-report") assert.ok(!studentIdsInLists(raw).includes(off), `${cmd} filters disabled students in database too`);
+      else assert.ok(studentIdsInLists(raw).includes(off), `${cmd} fixture contains inactive student`);
     }
     const managed = (
       await f.db.query<{ v: any[] }>(

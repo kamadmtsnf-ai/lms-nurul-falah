@@ -4,6 +4,7 @@ import { ClientReady } from "./client-ready";
 import { PageHeading } from "./page-heading";
 import { navigateTabs } from "@/lib/http/tab-navigation";
 import { DevelopmentCourse } from "./development-panel";
+import { AcademicFlowPanel } from "./academic-flow-panel";
 import { AdvancedPanel } from "./advanced-panel";
 import { QuizPanel } from "./quiz-panel";
 import { ReportPanel } from "./report-panel";
@@ -84,6 +85,7 @@ export function CourseWorkspace({ initial }: { initial: CourseState }) {
             { key: "grades", label: "Nilai tugas" },
             { key: "quiz", label: "Kuis" },
             { key: "reports", label: "Laporan" },
+            { key: "flow", label: "Alur akademik" },
             { key: "advanced", label: "Lanjutan" },
             { key: "development", label: "Pengembangan" },
           ].map((t) => (
@@ -168,6 +170,7 @@ export function CourseWorkspace({ initial }: { initial: CourseState }) {
         {tab === "grades" && <Grades state={state} />}{" "}
         {tab === "quiz" && <QuizPanel course={course} />}{" "}
         {tab === "reports" && <ReportPanel course={course} />}{" "}
+        {tab === "flow" && <AcademicFlowPanel course={course} />}
         {tab === "advanced" && <AdvancedPanel state={state} />}{" "}
         {tab === "development" && <DevelopmentCourse state={state} />}
       </div>
@@ -1378,18 +1381,18 @@ function Grading({
               className={fieldClass}
             />
           </label>
-          {!state.context.teacher && (
+          {
             <label className="text-sm sm:col-span-2">
-              Alasan koreksi admin (wajib)
+              Alasan penilaian / koreksi (wajib saat koreksi atau admin)
               <input
                 name="reason"
-                required
+                required={Boolean(grade) || !state.context.teacher}
                 minLength={5}
                 maxLength={1000}
                 className={fieldClass}
               />
             </label>
-          )}
+          }
           <Button disabled={busy} type="submit" className="justify-self-start">
             Simpan penilaian
           </Button>

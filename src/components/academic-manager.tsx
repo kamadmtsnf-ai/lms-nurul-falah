@@ -1,4 +1,5 @@
 "use client";
+import { AcademicRollover } from "./academic-rollover";
 import { DataTableViewport } from "./data-table-viewport";
 import { ClientReady } from "./client-ready";
 import Link from "next/link";
@@ -200,6 +201,7 @@ export function AcademicManager({
             {[
               { key: "school", label: "Pengaturan sekolah" },
               ...entities.map((e) => ({ key: e.key, label: e.label })),
+              { key: "rollover", label: "Pergantian periode & kenaikan kelas" },
               { key: "import", label: "Template & impor Excel" },
             ].map((item) => (
               <button
@@ -253,6 +255,13 @@ export function AcademicManager({
                 </p>
               </div>
             </section>
+          )}
+          {section === "rollover" && (
+            <AcademicRollover
+              school={school}
+              state={state}
+              onComplete={reload}
+            />
           )}
           {section === "import" && (
             <ImportPanel school={school} onComplete={reload} />
@@ -363,10 +372,7 @@ export function AcademicManager({
                         {entity.fields
                           .filter((f) => f.key !== "description")
                           .map((f) => (
-                            <th
-                              key={f.key}
-                              className="px-3 py-3 font-medium"
-                            >
+                            <th key={f.key} className="px-3 py-3 font-medium">
                               {f.label}
                             </th>
                           ))}

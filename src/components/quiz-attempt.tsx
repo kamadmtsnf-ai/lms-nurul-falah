@@ -618,8 +618,16 @@ function EssayGrader({
                 />
               </label>
               <label className="block text-sm">
-                Alasan perubahan (wajib untuk admin)
-                <input name="reason" maxLength={1000} className={fieldClass} />
+                Alasan perubahan (wajib saat koreksi atau oleh admin)
+                <input
+                  name="reason"
+                  minLength={5}
+                  required={Boolean(
+                    attempt.essay_marks?.find((m) => m.position === i + 1),
+                  )}
+                  maxLength={1000}
+                  className={fieldClass}
+                />
               </label>
               <Button disabled={busy} type="submit">
                 Simpan koreksi soal {i + 1}

@@ -1306,8 +1306,14 @@ function RubricGrader({
               />
             </label>
             <label className="block text-sm">
-              Alasan penilaian (wajib admin)
-              <input className={fieldClass} name="reason" maxLength={1000} />
+              Alasan penilaian / koreksi (wajib untuk koreksi atau admin)
+              <input
+                className={fieldClass}
+                name="reason"
+                minLength={5}
+                required={Boolean(version) || !state.context.teacher}
+                maxLength={1000}
+              />
             </label>
             <Button disabled={busy || version === undefined} type="submit">
               Simpan total rubrik
