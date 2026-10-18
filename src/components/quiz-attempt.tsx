@@ -1,4 +1,5 @@
 "use client";
+import { ClientReady } from "./client-ready";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -284,7 +285,7 @@ export function QuizAttempt({
   ]);
   const done = attempt.status !== "working";
   return (
-    <div className="space-y-5">
+    <ClientReady className="space-y-5">
       <header className="workspace-hero sticky top-0 z-10 rounded-2xl p-5 text-white shadow">
         <p className="text-xs uppercase tracking-wider">
           LMS Nurul Falah · Percobaan {attempt.attempt_no ?? 1}
@@ -444,7 +445,7 @@ export function QuizAttempt({
       >
         Kembali ke pembelajaran
       </Link>
-    </div>
+    </ClientReady>
   );
 }
 

@@ -799,3 +799,10 @@ button[data-variant="default"] {
     transform: rotate(360deg);
   }
 }
+.client-ready {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-width: 0;
+}

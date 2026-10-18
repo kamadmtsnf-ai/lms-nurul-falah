@@ -1,4 +1,5 @@
 "use client";
+import { ClientReady } from "./client-ready";
 import { PageHeading } from "./page-heading";
 import { navigateTabs } from "@/lib/http/tab-navigation";
 import { useState } from "react";
@@ -121,7 +122,7 @@ export function DailyAttendance({
       )
     : [];
   return (
-    <div className="space-y-5">
+    <ClientReady className="space-y-5">
       <PageHeading
         eyebrow="Kehadiran sekolah"
         title="Absensi harian"
@@ -310,6 +311,6 @@ export function DailyAttendance({
           )}
         </section>
       )}
-    </div>
+    </ClientReady>
   );
 }

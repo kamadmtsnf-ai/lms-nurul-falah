@@ -1,4 +1,5 @@
 "use client";
+import { ClientReady } from "./client-ready";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import {
@@ -139,7 +140,7 @@ export function AcademicManager({
       )
     : [];
   return (
-    <div>
+    <ClientReady>
       <div className="mb-6 flex items-center gap-4 rounded-2xl bg-emerald-900 p-5 text-white">
         {typeof state.school.logo_url === "string" && state.school.logo_url && (
           <img
@@ -438,7 +439,7 @@ export function AcademicManager({
           )}
         </div>
       </div>
-    </div>
+    </ClientReady>
   );
 }
 function SchoolForm({

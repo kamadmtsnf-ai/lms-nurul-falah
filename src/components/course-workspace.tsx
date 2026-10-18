@@ -1,4 +1,5 @@
 "use client";
+import { ClientReady } from "./client-ready";
 import { PageHeading } from "./page-heading";
 import { navigateTabs } from "@/lib/http/tab-navigation";
 import { DevelopmentCourse } from "./development-panel";
@@ -59,7 +60,7 @@ export function CourseWorkspace({ initial }: { initial: CourseState }) {
   }
   const manager = state.context.manager && state.context.writable;
   return (
-    <div className="space-y-6">
+    <ClientReady className="space-y-6">
       <section className="workspace-hero rounded-2xl p-6 sm:p-8">
         <PageHeading
           eyebrow={`${state.course.classroom} · ${state.context.semester_status === "archived" ? "Arsip semester" : "Ruang pembelajaran"}`}
@@ -209,7 +210,7 @@ export function CourseWorkspace({ initial }: { initial: CourseState }) {
           </div>
         </div>
       )}
-    </div>
+    </ClientReady>
   );
 }
 function PublicationFields({
