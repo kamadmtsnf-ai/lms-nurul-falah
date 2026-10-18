@@ -1,3 +1,4 @@
+import {ApiRequestError,postJson} from '@/lib/http/client';
 export type AnswerValue=number|string|number[];
 export type Question={kind:'choice'|'boolean'|'complex'|'agree'|'matching'|'short'|'essay';prompt:string;options:string[];matches?:string[];key?:number[]|string[];answer_key?:number[]|string[];correct?:number;explanation?:string;points:number;position?:number};
 export type Quiz={id:string;title:string;instructions:string;status:'draft'|'published'|'archived';opens_at:string;closes_at:string;duration_minutes:number;grades_visible:boolean;explanations_visible:boolean;updated_at:string;max_attempts?:number;shuffle_questions?:boolean;shuffle_options?:boolean;monitor_tabs?:boolean};
@@ -6,5 +7,5 @@ export type QuizList={quizzes:Quiz[];offset:number;has_more:boolean;context:{man
 export type ReportRow={id:string;full_name:string;present:number;attendance_recorded:number;overdue_missing:number;submissions:number;assignment_average:number|null;quiz_average:number|null;weighted_final?:number|null};
 export type QuizResult={quiz_id:string;title:string;student_name:string;student_id:string;attempt_id:string;status:string;started_at:string;deadline:string;finished_at:string|null;score:number|null;max_score:number;grades_visible:boolean;can_open:boolean};
 export type Report={offset:number;has_more:boolean;generated_at:string;course:{classroom:string;subject:string;teacher:string};rows:ReportRow[];quizzes:QuizResult[];activity:Record<string,number>|null};
-export class QuizRequestError extends Error{constructor(message:string,public status:number){super(message);}}
-export async function quizRequest<T>(action:string,body:Record<string,unknown>,signal?:AbortSignal):Promise<T>{const r=await fetch(`/api/kuis/${action}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),cache:'no-store',signal});const d=await r.json();if(!r.ok)throw new QuizRequestError(d.message??'Permintaan gagal.',r.status);return d.result as T;}
+export {ApiRequestError as QuizRequestError};
+export async function quizRequest<T>(action:string,body:Record<string,unknown>,signal?:AbortSignal):Promise<T>{const d=await postJson<{result:T}>(`/api/kuis/${action}`,body,signal);return d.result;}

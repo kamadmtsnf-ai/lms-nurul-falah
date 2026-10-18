@@ -38,7 +38,7 @@ export async function POST(request:Request,{params}:{params:Promise<{action:stri
    return ok({next:nextFor(ctx.profile)});
   }
   if(action==="logout"){
-   const client=await createSupabaseServerClient();await client.auth.signOut({scope:"local"});return ok({next:"/masuk"});
+   const client=await createSupabaseServerClient();const {error}=await client.auth.signOut({scope:"local"});if(error)throw new IdentityError("Sesi belum dapat diakhiri. Periksa koneksi dan coba keluar kembali.",503);return ok({next:"/masuk"});
   }
   if(action==="bootstrap"){
    const supplied=z.string().min(32).max(256).parse(input.code);

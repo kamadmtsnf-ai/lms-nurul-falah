@@ -73,5 +73,47 @@
   "offline_browser_acceptance": "pending_real_browser_and_devices",
   "offline_store_tests": "fake_indexeddb_and_webcrypto_passed",
   "external_channels": "mock_HTTP_only_no_real_send",
-  "platform_admin_provisioning": "operator_script_available_not_run_for_real_accounts"
+  "platform_admin_provisioning": "operator_script_available_not_run_for_real_accounts",
+  "page_audit": {
+    "date": "2026-10-18",
+    "base_commit": "a063bce93ac52708d9ff82630c0a059999c5225f",
+    "pages_reviewed": 19,
+    "api_routes_reviewed": 8,
+    "typecheck": "passed",
+    "production_build": "passed",
+    "tests": {
+      "passed": 120,
+      "failed": 0
+    },
+    "http_groups": {
+      "passed": 17,
+      "scope": "local_no_database_config"
+    },
+    "browser": {
+      "checks": 138,
+      "viewports": [
+        {
+          "width": 320,
+          "status": "passed"
+        },
+        {
+          "width": 390,
+          "status": "passed"
+        },
+        {
+          "width": 768,
+          "status": "passed"
+        },
+        {
+          "width": 1440,
+          "status": "passed"
+        }
+      ],
+      "javascriptErrors": [],
+      "scope": "Real React components with synthetic data and mocked API; does not replace authenticated live acceptance tests."
+    },
+    "report": "docs/13-Audit-Semua-Halaman.md",
+    "live_authenticated_acceptance": "pending",
+    "schema_changes": false
+  }
 }

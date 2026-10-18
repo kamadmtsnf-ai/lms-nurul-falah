@@ -1,0 +1,324 @@
+import { build } from "esbuild";
+import { chromium } from "playwright";
+import { createServer } from "node:http";
+import { readFile, mkdir, readdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import assert from "node:assert/strict";
+import { tmpdir } from "node:os";
+const output = join(tmpdir(), "lms-ui-audit");
+await mkdir(output, { recursive: true });
+await build({
+  entryPoints: ["tests/ui/fixture.tsx"],
+  bundle: true,
+  outfile: join(output, "fixture.js"),
+  format: "iife",
+  jsx: "automatic",
+  plugins: [
+    {
+      name: "next-link-fixture",
+      setup(b) {
+        b.onResolve({ filter: /^next\/link$/ }, () => ({
+          path: "link",
+          namespace: "fixture",
+        }));
+        b.onLoad({ filter: /.*/, namespace: "fixture" }, () => ({
+          contents:
+            'import React from "react";export default function Link({children,...props}){return React.createElement("a",props,children)}',
+          resolveDir: process.cwd(),
+          loader: "js",
+        }));
+      },
+    },
+  ],
+});
+const cssFiles = (
+  await readdir(".next/static/css", { recursive: true })
+).filter((f) => f.endsWith(".css"));
+const css = (
+  await Promise.all(
+    cssFiles.map((f) => readFile(join(".next/static/css", f), "utf8")),
+  )
+).join("\n");
+const server = createServer(async (req, res) => {
+  res.setHeader(
+    "Content-Type",
+    req.url === "/fixture.js"
+      ? "text/javascript"
+      : req.url === "/style.css"
+        ? "text/css"
+        : "text/html",
+  );
+  res.end(
+    req.url === "/fixture.js"
+      ? await readFile(join(output, "fixture.js"))
+      : req.url === "/style.css"
+        ? css
+        : '<!doctype html><html lang="id"><head><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="stylesheet" href="/style.css"></head><body><div id="root"></div><script src="/fixture.js"></script></body></html>',
+  );
+});
+await new Promise((r) => server.listen(0, "127.0.0.1", r));
+const base = `http://127.0.0.1:${server.address().port}`;
+const browser = await chromium.launch({
+  headless: true,
+  args: ["--no-sandbox"],
+});
+const results = [],
+  errors = [];
+let checks = 0;
+async function check(page, label) {
+  await page.waitForTimeout(90);
+  const overflow = await page.evaluate(() => ({
+    doc: document.documentElement.scrollWidth,
+    view: innerWidth,
+    offenders: [...document.querySelectorAll("main *")]
+      .filter((e) => {
+        const r = e.getBoundingClientRect();
+        return (
+          r.width > 0 &&
+          (r.left < -1 || r.right > innerWidth + 1) &&
+          !e.closest(".overflow-auto,.overflow-x-auto")
+        );
+      })
+      .slice(0, 8)
+      .map((e) => e.tagName + "." + e.className),
+  }));
+  assert.ok(
+    overflow.doc <= overflow.view + 1,
+    `${label}: page overflow ${JSON.stringify(overflow)}`,
+  );
+  assert.deepEqual(overflow.offenders, [], `${label}: clipped element`);
+  checks++;
+}
+try {
+  for (const width of [320, 390, 768, 1440]) {
+    const page = await browser.newPage({
+      viewport: { width, height: width < 600 ? 740 : 900 },
+    });
+    page.on("pageerror", (e) => errors.push(e.message));
+    for (const view of [
+      "auth",
+      "academic",
+      "users",
+      "daily",
+      "quiz",
+      "monitoring",
+      "retention",
+      "development",
+      "offline",
+      "course",
+    ]) {
+      await page.goto(`${base}/?view=${view}`);
+      await check(page, `${view}/${width}`);
+      if (view === "academic") {
+        for (const name of [
+          "Kelas / rombel",
+          "Guru piket",
+          "Template & impor Excel",
+        ]) {
+          await page.getByRole("button", { name, exact: true }).click();
+          await check(page, `academic/${name}/${width}`);
+        }
+      }
+      if (view === "daily") {
+        await page
+          .getByRole("button", { name: "Tampilkan absensi", exact: true })
+          .click();
+        await check(page, `daily/loaded/${width}`);
+        await page
+          .getByRole("tab", { name: "Rekap harian", exact: true })
+          .click();
+        await page
+          .getByRole("button", { name: "Tampilkan rekap", exact: true })
+          .click();
+        await check(page, `daily/report/${width}`);
+      }
+      if (view === "development") {
+        await page
+          .getByRole("button", { name: "Kelola banyak sekolah", exact: true })
+          .click();
+        await page.waitForTimeout(90);
+        assert.equal(
+          await page
+            .getByLabel("Izinkan pembuatan/penautan sekolah")
+            .isChecked(),
+          true,
+        );
+        await check(page, `platform/${width}`);
+      }
+      if (view === "course") {
+        for (const name of [
+          "Pertemuan & absensi",
+          "Tugas",
+          "Nilai tugas",
+          "Kuis",
+          "Laporan",
+          "Lanjutan",
+          "Pengembangan",
+        ]) {
+          await page.getByRole("tab", { name, exact: true }).click();
+          await check(page, `course/${name}/${width}`);
+          if (name === "Laporan") {
+            for (const sub of ["Hasil kuis", "Aktivitas pengampu"]) {
+              await page.getByRole("tab", { name: sub, exact: true }).click();
+              await check(page, `report/${sub}/${width}`);
+            }
+          }
+          if (name === "Lanjutan") {
+            for (const sub of [
+              "Tugas lanjutan",
+              "Nilai akhir berbobot",
+              "Bank soal",
+              "Notifikasi kegiatan",
+            ]) {
+              await page
+                .getByRole("button", { name: sub, exact: true })
+                .click();
+              await check(page, `advanced/${sub}/${width}`);
+            }
+          }
+        }
+      }
+    }
+    await page.goto(`${base}/?view=course&empty=1`);
+    await check(page, `empty/${width}`);
+    await page.goto(`${base}/?view=course&student=1`);
+    await page.getByRole("tab", { name: "Tugas", exact: true }).click();
+    await check(page, `student-submit/${width}`);
+    await page.getByRole("tab", { name: "Lanjutan", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Tugas lanjutan", exact: true })
+      .click();
+    await check(page, `student-group/${width}`);
+    await page.setViewportSize({ width: 740, height: 390 });
+    await check(page, `landscape/${width}`);
+    await page.close();
+    results.push({ width, status: "passed" });
+  }
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto(`${base}/?view=auth`);
+  await page.evaluate(() => {
+    window.__fail = true;
+  });
+  await page.getByRole("button", { name: "Keluar", exact: true }).click();
+  await page.getByRole("alert").waitFor();
+  assert.match(
+    await page.getByRole("alert").textContent(),
+    /respons yang valid/,
+  );
+  checks++;
+  await page.goto(`${base}/?view=monitoring`);
+  await page
+    .getByRole("button", { name: "Siswa berikutnya", exact: true })
+    .click();
+  await page.waitForTimeout(150);
+  const offsets = await page.evaluate(() =>
+    window.__requests
+      .filter((r) => String(r.path).endsWith("weighted-report"))
+      .map((r) => r.offset ?? 0),
+  );
+  assert.ok(
+    offsets.slice(-2).every((x) => x === 100),
+    JSON.stringify(offsets),
+  );
+  checks++;
+
+  await page.goto(`${base}/?view=course`);
+  await page.getByRole("tab", { name: "Materi", exact: true }).focus();
+  await page.keyboard.press("ArrowRight");
+  assert.equal(
+    await page
+      .getByRole("tab", { name: "Pertemuan & absensi", exact: true })
+      .getAttribute("aria-selected"),
+    "true",
+  );
+  checks++;
+  await page.getByRole("tab", { name: "Lanjutan", exact: true }).click();
+  await page.getByRole("button", { name: "Bank soal", exact: true }).click();
+  await page.evaluate(() => {
+    window.__validImport = true;
+  });
+  await page
+    .locator("input[type=file]")
+    .setInputFiles({
+      name: "valid.xlsx",
+      mimeType:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      buffer: Buffer.from("fixture"),
+    });
+  await page
+    .getByRole("button", { name: "Konfirmasi simpan 1 soal" })
+    .waitFor();
+  await page.evaluate(() => {
+    window.__validImport = false;
+  });
+  await page
+    .locator("input[type=file]")
+    .setInputFiles({
+      name: "invalid.xlsx",
+      mimeType:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      buffer: Buffer.from("invalid"),
+    });
+  await page.getByText("Baris 2 tidak valid", { exact: true }).waitFor();
+  assert.equal(
+    await page
+      .getByRole("button", { name: "Konfirmasi simpan 1 soal" })
+      .count(),
+    0,
+  );
+  checks++;
+  await page.evaluate(() => window.__seedOffline());
+  await page.goto(`${base}/?view=offline`);
+  await page
+    .getByRole("textbox", { name: "Jawaban draf" })
+    .fill("Jawaban yang sedang diubah");
+  assert.equal(
+    await page
+      .getByRole("button", { name: "Kumpulkan saat online", exact: true })
+      .isDisabled(),
+    true,
+  );
+  await page
+    .getByRole("button", { name: "Simpan draf lokal", exact: true })
+    .click();
+  await page.waitForTimeout(100);
+  assert.equal(
+    await page
+      .getByRole("button", { name: "Kumpulkan saat online", exact: true })
+      .isDisabled(),
+    false,
+  );
+  checks++;
+  await page.goto(`${base}/?view=quiz`);
+  await page.locator("input[type=radio]").first().check();
+  page.once("dialog", (dialog) => dialog.dismiss());
+  await page
+    .getByRole("link", { name: "Kembali ke pembelajaran", exact: true })
+    .click();
+  assert.match(page.url(), /view=quiz/);
+  checks++;
+  await page.goto(`${base}/?view=course&student=1`);
+  await page.getByRole("tab", { name: "Tugas", exact: true }).click();
+  await page.screenshot({
+    path: join(output, "mobile-assignment.png"),
+    fullPage: true,
+  });
+  assert.deepEqual(errors, [], "Browser JavaScript errors");
+  const data = {
+    checks,
+    viewports: results,
+    javascriptErrors: errors,
+    scope:
+      "Real React components with synthetic data and mocked API; does not replace authenticated live acceptance tests.",
+  };
+  await mkdir("docs/verification", { recursive: true });
+  await writeFile(
+    "docs/verification/ui-audit-results.json",
+    JSON.stringify(data, null, 2) + "\n",
+  );
+  console.log(JSON.stringify(data));
+} finally {
+  await browser.close();
+  await new Promise((r) => server.close(r));
+}

@@ -1,6 +1,124 @@
 @import "tailwindcss";
-:root { color-scheme: light; --background: #f7f8f3; --foreground: #1c302a; }
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--background); color: var(--foreground); font-family: Arial, Helvetica, sans-serif; }
-a { text-underline-offset: 4px; }
-::selection { background: #c6e6d7; }
+:root {
+  color-scheme: light;
+  --background: #f7f8f3;
+  --foreground: #1c302a;
+}
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: 1.5;
+  }
+  :where(
+    main,
+    section,
+    article,
+    aside,
+    header,
+    nav,
+    form,
+    fieldset,
+    label,
+    main div
+  ) {
+    min-width: 0;
+  }
+  :where(h1, h2, h3, p, li, td, th, label, a, button, legend, span) {
+    overflow-wrap: anywhere;
+  }
+  fieldset {
+    max-width: 100%;
+  }
+  :where(input, select, textarea) {
+    max-width: 100%;
+    min-width: 0;
+    font: inherit;
+  }
+  :where(select, input:not([type="checkbox"]):not([type="radio"]), textarea) {
+    min-height: 44px;
+  }
+  :where(input[type="checkbox"], input[type="radio"]) {
+    flex-shrink: 0;
+    accent-color: #065f46;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+  :where(button, summary, select, a) {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+  :where(button, a, input, select, textarea, summary):focus-visible {
+    outline: 2px solid #047857;
+    outline-offset: 3px;
+  }
+  textarea {
+    resize: vertical;
+  }
+  :where(img, video, iframe) {
+    max-width: 100%;
+  }
+  a {
+    text-underline-offset: 4px;
+  }
+  :where(th) {
+    font-weight: 600;
+    color: #57534e;
+  }
+  :where(thead) {
+    background: #fafaf9;
+  }
+  :where(tbody tr):hover {
+    background: #f7faf8;
+  }
+  :where([role="tablist"]) {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  :where([role="tab"]) {
+    flex-shrink: 0;
+  }
+  ::selection {
+    background: #c6e6d7;
+  }
+  @media (max-width: 639px) {
+    :where(input, select, textarea) {
+      font-size: 16px;
+    }
+    :where(main > header) {
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    :where(h1) {
+      font-size: 1.75rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+}
+
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}

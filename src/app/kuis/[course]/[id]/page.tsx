@@ -1,3 +1,39 @@
-import Link from 'next/link';import {notFound} from 'next/navigation';import {z} from 'zod';import {requireAccount} from '@/lib/auth/page-context';import {quizCommand} from '@/lib/quiz/server';import type {Attempt} from '@/lib/quiz/types';import {QuizAttempt} from '@/components/quiz-attempt';
-export const dynamic='force-dynamic';
-export default async function Page({params}:{params:Promise<{course:string;id:string}>}){const {course,id}=await params;if(!z.uuid().safeParse(course).success||!z.uuid().safeParse(id).success)notFound();const ctx=await requireAccount(true);let a:Attempt;try{a=await quizCommand<Attempt>(ctx,'attempt',{course,target:id});}catch{return <main className="mx-auto max-w-3xl p-8"><h1 className="text-2xl font-semibold">Percobaan belum dapat dibuka</h1><Link className="mt-5 inline-block text-emerald-800 underline" href={`/pembelajaran/${course}`}>Kembali ke pembelajaran</Link></main>;}return <main className="mx-auto max-w-3xl px-4 py-8"><QuizAttempt initial={a} course={course}/></main>;}
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { z } from "zod";
+import { requireAccount } from "@/lib/auth/page-context";
+import { quizCommand } from "@/lib/quiz/server";
+import type { Attempt } from "@/lib/quiz/types";
+import { QuizAttempt } from "@/components/quiz-attempt";
+export const dynamic = "force-dynamic";
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ course: string; id: string }>;
+}) {
+  const { course, id } = await params;
+  if (!z.uuid().safeParse(course).success || !z.uuid().safeParse(id).success)
+    notFound();
+  const ctx = await requireAccount(true);
+  let a: Attempt;
+  try {
+    a = await quizCommand<Attempt>(ctx, "attempt", { course, target: id });
+  } catch {
+    return (
+      <main className="mx-auto max-w-3xl p-8">
+        <h1 className="text-2xl font-semibold">Percobaan belum dapat dibuka</h1>
+        <Link
+          className="mt-5 inline-block text-emerald-800 underline"
+          href={`/pembelajaran/${course}`}
+        >
+          Kembali ke pembelajaran
+        </Link>
+      </main>
+    );
+  }
+  return (
+    <main className="mx-auto max-w-3xl px-4 py-8">
+      <QuizAttempt key={id} initial={a} course={course} />
+    </main>
+  );
+}

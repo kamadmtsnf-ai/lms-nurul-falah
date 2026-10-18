@@ -1,4 +1,42 @@
 import Link from "next/link";
-import {AuthShell} from "@/components/auth-shell";
-import {AuthForm} from "@/components/auth-form";
-export default async function LoginPage({searchParams}:{searchParams:Promise<{selesai?:string}>}){const params=await searchParams;return <AuthShell title="Selamat datang kembali" description="Masuk menggunakan username dan password yang diberikan admin madrasah.">{params.selesai==="password"&&<p className="mt-5 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-900">Password berhasil diganti. Silakan login ulang menggunakan password baru.</p>}<AuthForm action="login" label="Masuk" fields={[{name:"username",label:"Username",autoComplete:"username"},{name:"password",label:"Password",type:"password",autoComplete:"current-password"}]}/><Link className="mt-5 block text-center text-sm text-emerald-800 underline" href="/lupa-password">Lupa password?</Link></AuthShell>;}
+import { AuthShell } from "@/components/auth-shell";
+import { AuthForm } from "@/components/auth-form";
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ selesai?: string }>;
+}) {
+  const params = await searchParams;
+  return (
+    <AuthShell
+      title="Selamat datang kembali"
+      description="Masuk menggunakan username dan password yang diberikan admin madrasah."
+    >
+      {params.selesai === "password" && (
+        <p className="mt-5 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-900">
+          Password berhasil diganti. Silakan login ulang menggunakan password
+          baru.
+        </p>
+      )}
+      <AuthForm
+        action="login"
+        label="Masuk"
+        fields={[
+          { name: "username", label: "Username", autoComplete: "username" },
+          {
+            name: "password",
+            label: "Password",
+            type: "password",
+            autoComplete: "current-password",
+          },
+        ]}
+      />
+      <Link
+        className="mt-5 block text-center text-sm text-emerald-800 underline"
+        href="/lupa-password"
+      >
+        Lupa password?
+      </Link>
+    </AuthShell>
+  );
+}

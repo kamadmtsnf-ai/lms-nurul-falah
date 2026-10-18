@@ -1,62 +1,978 @@
-'use client';
-import Link from 'next/link';
-import {useRef,useState} from 'react';
-import {BookOpen,CalendarDays,GraduationCap,School,Upload,Users,CheckCircle2,Search,Pencil,RefreshCw} from 'lucide-react';
-import {Button} from '@/components/ui/button';
-import {entities,rowsOf,rowLabel,statusLabels,weekdayLabels,type AcademicState,type DataRow,type Entity,type Field} from '@/lib/academic/config';
-import {importConfigs,importKinds,type ImportKind} from '@/lib/academic/import-config';
-const inputClass='mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100';
-const card='rounded-2xl border border-stone-200 bg-white p-5 sm:p-6';
-function entitySemester(state:AcademicState,entity:string,row:DataRow){if(entity==='semesters')return row.id;if(row.semester_id)return row.semester_id;const room=rowsOf(state,'classrooms').find(c=>c.id===row.classroom_id);return room?.semester_id;}
-function displayField(state:AcademicState,field:Field,value:unknown){
- if(field.type==='weekdays')return Array.isArray(value)?value.map(v=>weekdayLabels[Number(v)]??'—').join(', '):'—';
- if(field.source){const row=rowsOf(state,field.source).find(r=>r.id===value);return row?rowLabel(state,field.source,row):'—';}
- return statusLabels[String(value)]??String(value??'—');
+"use client";
+import Link from "next/link";
+import { useRef, useState } from "react";
+import {
+  BookOpen,
+  CalendarDays,
+  GraduationCap,
+  School,
+  Upload,
+  Users,
+  CheckCircle2,
+  Search,
+  Pencil,
+  RefreshCw,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  entities,
+  rowsOf,
+  rowLabel,
+  statusLabels,
+  weekdayLabels,
+  type AcademicState,
+  type DataRow,
+  type Entity,
+  type Field,
+} from "@/lib/academic/config";
+import {
+  importConfigs,
+  importKinds,
+  type ImportKind,
+} from "@/lib/academic/import-config";
+const inputClass =
+  "mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100";
+const card = "rounded-2xl border border-stone-200 bg-white p-5 sm:p-6";
+function entitySemester(state: AcademicState, entity: string, row: DataRow) {
+  if (entity === "semesters") return row.id;
+  if (row.semester_id) return row.semester_id;
+  const room = rowsOf(state, "classrooms").find(
+    (c) => c.id === row.classroom_id,
+  );
+  return room?.semester_id;
 }
-export function AcademicManager({initial,school}:{initial:AcademicState;school:string}){
- const [state,setState]=useState(initial),[section,setSection]=useState('school'),[editing,setEditing]=useState<DataRow|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState(false),[search,setSearch]=useState('');
- const [semester,setSemester]=useState('');const formRef=useRef<HTMLDivElement>(null);
- async function request(action:string,body:Record<string,unknown>){const res=await fetch(`/api/akademik/${action}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({school,...body})});const data=await res.json();if(!res.ok)throw new Error(data.message??'Permintaan gagal.');return data;}
- async function reload(){const data=await request('state',{});setState(data.state);}
- async function save(action:string,body:Record<string,unknown>){setBusy(true);setMessage('');try{const data=await request(action,body);await reload();setEditing(null);setError(false);setMessage(data.message??'Data berhasil disimpan.');return true;}catch(e){setError(true);setMessage(e instanceof Error?e.message:'Penyimpanan gagal.');return false;}finally{setBusy(false);}}
- function change(key:string){setSection(key);setEditing(null);setMessage('');setSearch('');}
- const entity=entities.find(e=>e.key===section);const activeSemester=rowsOf(state,'semesters').find(s=>s.status==='active');
- const students=state.users.filter(u=>(u.roles as string[]|null)?.includes('student')).length;const teachers=state.users.filter(u=>(u.roles as string[]|null)?.includes('teacher')).length;
- const filtered=entity?rowsOf(state,entity.key).filter(r=>(!semester || !['classrooms','semesters','student_enrollments','teaching_classes','homeroom_assignments','duty_assignments'].includes(section) || entitySemester(state,section,r)===semester) && (!search || entity.fields.map(f=>displayField(state,f,r[f.key])).join(' ').toLowerCase().includes(search.toLowerCase()))):[];
- return <div><div className="mb-6 flex items-center gap-4 rounded-2xl bg-emerald-900 p-5 text-white">{typeof state.school.logo_url==='string'&&state.school.logo_url&&<img src={state.school.logo_url} width={48} height={48} referrerPolicy="no-referrer" alt={`Logo ${String(state.school.name)}`} className="h-12 w-12 rounded-xl bg-white object-contain p-1"/>}<div><p className="text-lg font-semibold">{String(state.school.name)}</p><p className="mt-1 text-xs text-emerald-100">{String(state.school.education_level)} · Tahun dan semester terpisah</p></div></div><section className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">{[{icon:CalendarDays,label:'Semester aktif',value:activeSemester?rowLabel(state,'semesters',activeSemester):'Belum diatur'},{icon:School,label:'Rombel semester aktif',value:rowsOf(state,'classrooms').filter(c=>c.semester_id===activeSemester?.id).length},{icon:GraduationCap,label:'Akun guru',value:teachers},{icon:Users,label:'Akun siswa',value:students}].map(c=><div key={c.label} className="rounded-2xl border border-emerald-100 bg-white p-4"><c.icon size={18} className="mb-3 text-emerald-700"/><p className="text-xs text-stone-500">{c.label}</p><p className="mt-2 text-sm font-semibold leading-6 text-emerald-950">{c.value}</p></div>)}</section>
- <div className="grid items-start gap-6 lg:grid-cols-[230px_minmax(0,1fr)]"><aside className="lg:sticky lg:top-5"><nav aria-label="Menu akademik" className="flex gap-2 overflow-x-auto rounded-2xl border border-stone-200 bg-white p-2 lg:flex-col">{[{key:'school',label:'Pengaturan sekolah'},...entities.map(e=>({key:e.key,label:e.label})),{key:'import',label:'Template & impor Excel'}].map(item=><button type="button" key={item.key} disabled={busy} aria-current={section===item.key?'page':undefined} onClick={()=>change(item.key)} className={`shrink-0 rounded-xl px-4 py-2.5 text-left text-sm transition-colors ${section===item.key?'bg-emerald-800 font-semibold text-white':'text-stone-600 hover:bg-stone-100'}`}>{item.label}</button>)}</nav><Link className="mt-4 block text-sm text-emerald-800 underline" href="/admin/pengguna">Kelola akun & peran →</Link></aside>
- <div className="min-w-0 space-y-5">{message&&<div role={error?'alert':'status'} className={`rounded-xl border p-4 text-sm ${error?'border-red-200 bg-red-50 text-red-800':'border-emerald-200 bg-emerald-50 text-emerald-900'}`}>{message}</div>}
- {section==='school'&&<section className={card}><h2 className="text-xl font-semibold">Identitas madrasah</h2><p className="mt-2 text-sm leading-6 text-stone-500">Nama dan jenjang dipakai pada tampilan akademik. Zona waktu sekolah: Asia/Jakarta.</p><SchoolForm key={String(state.school.updated_at)} row={state.school} busy={busy} onSave={data=>save('school',{data})}/><div className="mt-8 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900"><strong>Urutan penyiapan</strong><p className="mt-1">1. Buat akun dan peran → 2. Tahun ajaran dan semester → 3. Kurikulum, tingkat, mapel → 4. Rombel → 5. Identitas dan anggota kelas → 6. Pengampu, wali kelas, piket dan tautan orang tua.</p></div></section>}
- {section==='import'&&<ImportPanel school={school} onComplete={reload}/>}
- {entity&&<><section className={card} ref={formRef}><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">{editing?'Ubah data':'Tambah data'}</p><h2 className="mt-2 text-xl font-semibold">{editing?'Ubah':'Tambah'} {entity.singular}</h2></div>{editing&&<Button type="button" variant="outline" disabled={busy} onClick={()=>setEditing(null)}>Batal mengubah</Button>}</div><p className="mt-3 text-sm leading-6 text-stone-500">{entity.description}</p><EntityForm key={`${section}:${editing?.id??'new'}:${editing?.updated_at??''}`} entity={entity} state={state} row={editing} semester={semester||String(activeSemester?.id??'')} busy={busy} onSave={data=>save('save',{entity:entity.key,data})}/></section>
- <section className={card}><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-lg font-semibold">Daftar {entity.label.toLowerCase()} <span className="ml-1 text-sm font-normal text-stone-500">({filtered.length})</span></h2><Button type="button" variant="outline" disabled={busy} onClick={()=>{setBusy(true);void reload().catch(()=>{setError(true);setMessage('Data belum dapat dimuat ulang.');}).finally(()=>setBusy(false));}}><RefreshCw size={15}/> Muat ulang</Button></div><div className="mt-5 grid gap-3 sm:grid-cols-2"><label className="text-xs text-stone-600"><span className="flex items-center gap-1"><Search size={13}/> Cari data</span><input className={inputClass} value={search} onChange={e=>setSearch(e.target.value)} placeholder={`Cari ${entity.singular}…`}/></label>{['classrooms','semesters','student_enrollments','teaching_classes','homeroom_assignments','duty_assignments'].includes(section)&&<label className="text-xs text-stone-600">Filter semester<select className={inputClass} value={semester} onChange={e=>setSemester(e.target.value)}><option value="">Semua semester, termasuk arsip</option>{rowsOf(state,'semesters').map(s=><option key={s.id} value={s.id}>{rowLabel(state,'semesters',s)}</option>)}</select></label>}</div>
- <div className="mt-5 overflow-x-auto"><table className="w-full text-left text-sm"><caption className="sr-only">Daftar {entity.label}</caption><thead className="border-b border-stone-200 text-xs text-stone-500"><tr>{entity.fields.filter(f=>f.key!=='description').map(f=><th key={f.key} className="whitespace-nowrap px-3 py-3 font-medium">{f.label}</th>)}<th className="px-3 py-3">Tindakan</th></tr></thead><tbody>{filtered.map(row=>{const archived=rowsOf(state,'semesters').some(s=>s.id===entitySemester(state,section,row)&&s.status==='archived');return <tr key={row.id} className="border-b border-stone-100 align-top">{entity.fields.filter(f=>f.key!=='description').map(f=><td key={f.key} className="min-w-28 px-3 py-4 leading-6">{displayField(state,f,row[f.key])}</td>)}<td className="px-3 py-4">{archived&&section!=='semesters'?<span className="whitespace-nowrap rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-500">Arsip · baca saja</span>:<button type="button" disabled={busy} onClick={()=>{setEditing(row);setMessage('');formRef.current?.scrollIntoView({behavior:'smooth',block:'start'});}} className="flex items-center gap-1 rounded-lg px-2 py-1 font-medium text-emerald-800 hover:bg-emerald-50"><Pencil size={14}/> Ubah</button>}</td></tr>;})}</tbody></table>{!filtered.length&&<div className="py-12 text-center"><BookOpen size={28} className="mx-auto text-stone-300"/><p className="mt-3 text-sm text-stone-500">Belum ada data yang sesuai.</p><p className="mt-1 text-xs text-stone-400">Tambahkan melalui form di atas atau gunakan impor Excel.</p></div>}</div></section></>}
- </div></div></div>;
+function displayField(state: AcademicState, field: Field, value: unknown) {
+  if (field.type === "weekdays")
+    return Array.isArray(value)
+      ? value.map((v) => weekdayLabels[Number(v)] ?? "—").join(", ")
+      : "—";
+  if (field.source) {
+    const row = rowsOf(state, field.source).find((r) => r.id === value);
+    return row ? rowLabel(state, field.source, row) : "—";
+  }
+  return statusLabels[String(value)] ?? String(value ?? "—");
 }
-function SchoolForm({row,busy,onSave}:{row:DataRow;busy:boolean;onSave:(data:Record<string,unknown>)=>Promise<boolean>}){
- return <form className="mt-6 space-y-5" onSubmit={e=>{e.preventDefault();const data=new FormData(e.currentTarget);void onSave({name:data.get('name'),education_level:data.get('education_level'),logo_url:data.get('logo_url'),expected_updated_at:row.updated_at});}}><label className="block text-sm">Nama sekolah<input required name="name" maxLength={150} defaultValue={String(row.name)} className={inputClass}/></label><label className="block text-sm">Jenjang<select name="education_level" className={inputClass} defaultValue={String(row.education_level)}>{['MI/SD','MTs/SMP','MA/SMA','Beberapa jenjang'].map(s=><option key={s}>{s}</option>)}</select></label><label className="block text-sm">Tautan logo (HTTPS, opsional)<input name="logo_url" type="url" maxLength={1000} placeholder="https://…" defaultValue={String(row.logo_url??'')} className={inputClass}/></label><Button type="submit" disabled={busy}>{busy?'Menyimpan…':'Simpan pengaturan'}</Button></form>;
+export function AcademicManager({
+  initial,
+  school,
+}: {
+  initial: AcademicState;
+  school: string;
+}) {
+  const [state, setState] = useState(initial),
+    [section, setSection] = useState("school"),
+    [editing, setEditing] = useState<DataRow | null>(null),
+    [busy, setBusy] = useState(false),
+    [message, setMessage] = useState(""),
+    [error, setError] = useState(false),
+    [search, setSearch] = useState("");
+  const [semester, setSemester] = useState("");
+  const formRef = useRef<HTMLDivElement>(null);
+  async function request(action: string, body: Record<string, unknown>) {
+    const res = await fetch(`/api/akademik/${action}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ school, ...body }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message ?? "Permintaan gagal.");
+    return data;
+  }
+  async function reload() {
+    const data = await request("state", {});
+    setState(data.state);
+  }
+  async function save(action: string, body: Record<string, unknown>) {
+    setBusy(true);
+    setMessage("");
+    try {
+      const data = await request(action, body);
+      await reload();
+      setEditing(null);
+      setError(false);
+      setMessage(data.message ?? "Data berhasil disimpan.");
+      return true;
+    } catch (e) {
+      setError(true);
+      setMessage(e instanceof Error ? e.message : "Penyimpanan gagal.");
+      return false;
+    } finally {
+      setBusy(false);
+    }
+  }
+  function change(key: string) {
+    setSection(key);
+    setEditing(null);
+    setMessage("");
+    setSearch("");
+  }
+  const entity = entities.find((e) => e.key === section);
+  const activeSemester = rowsOf(state, "semesters").find(
+    (s) => s.status === "active",
+  );
+  const students = state.users.filter((u) =>
+    (u.roles as string[] | null)?.includes("student"),
+  ).length;
+  const teachers = state.users.filter((u) =>
+    (u.roles as string[] | null)?.includes("teacher"),
+  ).length;
+  const filtered = entity
+    ? rowsOf(state, entity.key).filter(
+        (r) =>
+          (!semester ||
+            ![
+              "classrooms",
+              "semesters",
+              "student_enrollments",
+              "teaching_classes",
+              "homeroom_assignments",
+              "duty_assignments",
+            ].includes(section) ||
+            entitySemester(state, section, r) === semester) &&
+          (!search ||
+            entity.fields
+              .map((f) => displayField(state, f, r[f.key]))
+              .join(" ")
+              .toLowerCase()
+              .includes(search.toLowerCase())),
+      )
+    : [];
+  return (
+    <div>
+      <div className="mb-6 flex items-center gap-4 rounded-2xl bg-emerald-900 p-5 text-white">
+        {typeof state.school.logo_url === "string" && state.school.logo_url && (
+          <img
+            src={state.school.logo_url}
+            width={48}
+            height={48}
+            referrerPolicy="no-referrer"
+            alt={`Logo ${String(state.school.name)}`}
+            className="h-12 w-12 rounded-xl bg-white object-contain p-1"
+          />
+        )}
+        <div>
+          <p className="text-lg font-semibold">{String(state.school.name)}</p>
+          <p className="mt-1 text-xs text-emerald-100">
+            {String(state.school.education_level)} · Tahun dan semester terpisah
+          </p>
+        </div>
+      </div>
+      <section className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {[
+          {
+            icon: CalendarDays,
+            label: "Semester aktif",
+            value: activeSemester
+              ? rowLabel(state, "semesters", activeSemester)
+              : "Belum diatur",
+          },
+          {
+            icon: School,
+            label: "Rombel semester aktif",
+            value: rowsOf(state, "classrooms").filter(
+              (c) => c.semester_id === activeSemester?.id,
+            ).length,
+          },
+          { icon: GraduationCap, label: "Akun guru", value: teachers },
+          { icon: Users, label: "Akun siswa", value: students },
+        ].map((c) => (
+          <div
+            key={c.label}
+            className="rounded-2xl border border-emerald-100 bg-white p-4"
+          >
+            <c.icon size={18} className="mb-3 text-emerald-700" />
+            <p className="text-xs text-stone-500">{c.label}</p>
+            <p className="mt-2 text-sm font-semibold leading-6 text-emerald-950">
+              {c.value}
+            </p>
+          </div>
+        ))}
+      </section>
+      <div className="grid items-start gap-6 lg:grid-cols-[230px_minmax(0,1fr)]">
+        <aside className="lg:sticky lg:top-5">
+          <nav
+            aria-label="Menu akademik"
+            className="flex gap-2 overflow-x-auto rounded-2xl border border-stone-200 bg-white p-2 lg:flex-col"
+          >
+            {[
+              { key: "school", label: "Pengaturan sekolah" },
+              ...entities.map((e) => ({ key: e.key, label: e.label })),
+              { key: "import", label: "Template & impor Excel" },
+            ].map((item) => (
+              <button
+                type="button"
+                key={item.key}
+                disabled={busy}
+                aria-current={section === item.key ? "page" : undefined}
+                onClick={() => change(item.key)}
+                className={`shrink-0 rounded-xl px-4 py-2.5 text-left text-sm transition-colors ${section === item.key ? "bg-emerald-800 font-semibold text-white" : "text-stone-600 hover:bg-stone-100"}`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+          <Link
+            className="mt-4 block text-sm text-emerald-800 underline"
+            href="/admin/pengguna"
+          >
+            Kelola akun & peran →
+          </Link>
+        </aside>
+        <div className="min-w-0 space-y-5">
+          {message && (
+            <div
+              role={error ? "alert" : "status"}
+              className={`rounded-xl border p-4 text-sm ${error ? "border-red-200 bg-red-50 text-red-800" : "border-emerald-200 bg-emerald-50 text-emerald-900"}`}
+            >
+              {message}
+            </div>
+          )}
+          {section === "school" && (
+            <section className={card}>
+              <h2 className="text-xl font-semibold">Identitas madrasah</h2>
+              <p className="mt-2 text-sm leading-6 text-stone-500">
+                Nama dan jenjang dipakai pada tampilan akademik. Zona waktu
+                sekolah: Asia/Jakarta.
+              </p>
+              <SchoolForm
+                key={String(state.school.updated_at)}
+                row={state.school}
+                busy={busy}
+                onSave={(data) => save("school", { data })}
+              />
+              <div className="mt-8 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                <strong>Urutan penyiapan</strong>
+                <p className="mt-1">
+                  1. Buat akun dan peran → 2. Tahun ajaran dan semester → 3.
+                  Kurikulum, tingkat, mapel → 4. Rombel → 5. Identitas dan
+                  anggota kelas → 6. Pengampu, wali kelas, piket dan tautan
+                  orang tua.
+                </p>
+              </div>
+            </section>
+          )}
+          {section === "import" && (
+            <ImportPanel school={school} onComplete={reload} />
+          )}
+          {entity && (
+            <>
+              <section className={card} ref={formRef}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700">
+                      {editing ? "Ubah data" : "Tambah data"}
+                    </p>
+                    <h2 className="mt-2 text-xl font-semibold">
+                      {editing ? "Ubah" : "Tambah"} {entity.singular}
+                    </h2>
+                  </div>
+                  {editing && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() => setEditing(null)}
+                    >
+                      Batal mengubah
+                    </Button>
+                  )}
+                </div>
+                <p className="mt-3 text-sm leading-6 text-stone-500">
+                  {entity.description}
+                </p>
+                <EntityForm
+                  key={`${section}:${editing?.id ?? "new"}:${editing?.updated_at ?? ""}`}
+                  entity={entity}
+                  state={state}
+                  row={editing}
+                  semester={semester || String(activeSemester?.id ?? "")}
+                  busy={busy}
+                  onSave={(data) => save("save", { entity: entity.key, data })}
+                />
+              </section>
+              <section className={card}>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="text-lg font-semibold">
+                    Daftar {entity.label.toLowerCase()}{" "}
+                    <span className="ml-1 text-sm font-normal text-stone-500">
+                      ({filtered.length})
+                    </span>
+                  </h2>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={busy}
+                    onClick={() => {
+                      setBusy(true);
+                      void reload()
+                        .catch(() => {
+                          setError(true);
+                          setMessage("Data belum dapat dimuat ulang.");
+                        })
+                        .finally(() => setBusy(false));
+                    }}
+                  >
+                    <RefreshCw size={15} /> Muat ulang
+                  </Button>
+                </div>
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <label className="text-xs text-stone-600">
+                    <span className="flex items-center gap-1">
+                      <Search size={13} /> Cari data
+                    </span>
+                    <input
+                      className={inputClass}
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      placeholder={`Cari ${entity.singular}…`}
+                    />
+                  </label>
+                  {[
+                    "classrooms",
+                    "semesters",
+                    "student_enrollments",
+                    "teaching_classes",
+                    "homeroom_assignments",
+                    "duty_assignments",
+                  ].includes(section) && (
+                    <label className="text-xs text-stone-600">
+                      Filter semester
+                      <select
+                        className={inputClass}
+                        value={semester}
+                        onChange={(e) => setSemester(e.target.value)}
+                      >
+                        <option value="">Semua semester, termasuk arsip</option>
+                        {rowsOf(state, "semesters").map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {rowLabel(state, "semesters", s)}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                </div>
+                <div className="mt-5 overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <caption className="sr-only">Daftar {entity.label}</caption>
+                    <thead className="border-b border-stone-200 text-xs text-stone-500">
+                      <tr>
+                        {entity.fields
+                          .filter((f) => f.key !== "description")
+                          .map((f) => (
+                            <th
+                              key={f.key}
+                              className="whitespace-nowrap px-3 py-3 font-medium"
+                            >
+                              {f.label}
+                            </th>
+                          ))}
+                        <th className="px-3 py-3">Tindakan</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((row) => {
+                        const archived = rowsOf(state, "semesters").some(
+                          (s) =>
+                            s.id === entitySemester(state, section, row) &&
+                            s.status === "archived",
+                        );
+                        return (
+                          <tr
+                            key={row.id}
+                            className="border-b border-stone-100 align-top"
+                          >
+                            {entity.fields
+                              .filter((f) => f.key !== "description")
+                              .map((f) => (
+                                <td
+                                  key={f.key}
+                                  className="min-w-28 px-3 py-4 leading-6"
+                                >
+                                  {displayField(state, f, row[f.key])}
+                                </td>
+                              ))}
+                            <td className="px-3 py-4">
+                              {archived && section !== "semesters" ? (
+                                <span className="whitespace-nowrap rounded-full bg-stone-100 px-3 py-1 text-xs text-stone-500">
+                                  Arsip · baca saja
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={busy}
+                                  onClick={() => {
+                                    setEditing(row);
+                                    setMessage("");
+                                    formRef.current?.scrollIntoView({
+                                      behavior: "smooth",
+                                      block: "start",
+                                    });
+                                  }}
+                                  className="flex items-center gap-1 rounded-lg px-2 py-1 font-medium text-emerald-800 hover:bg-emerald-50"
+                                >
+                                  <Pencil size={14} /> Ubah
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  {!filtered.length && (
+                    <div className="py-12 text-center">
+                      <BookOpen size={28} className="mx-auto text-stone-300" />
+                      <p className="mt-3 text-sm text-stone-500">
+                        Belum ada data yang sesuai.
+                      </p>
+                      <p className="mt-1 text-xs text-stone-400">
+                        Tambahkan melalui form di atas atau gunakan impor Excel.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </section>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
-function EntityForm({entity,state,row,semester,busy,onSave}:{entity:Entity;state:AcademicState;row:DataRow|null;semester:string;busy:boolean;onSave:(data:Record<string,unknown>)=>Promise<boolean>}){
- const defaults=()=>Object.fromEntries(entity.fields.map(f=>[f.key,String(row?.[f.key]??(f.key==='semester_id'?semester:f.key==='status'?(['academic_years','semesters'].includes(entity.key)?'draft':'active'):f.key==='active'?'true':''))]));
- const [days,setDays]=useState<number[]>(()=>Array.isArray(row?.weekdays)?row.weekdays.map(Number):[]);
- const [values,setValues]=useState<Record<string,string>>(defaults);const [reason,setReason]=useState('');
- const controls=entity.fields.map(f=>{
-  let options=f.source?rowsOf(state,f.source).filter(r=>!f.role||((r.roles as string[]|null)?.includes(f.role)&&r.status==='active')):[];
-  if(f.key==='classroom_id'&&values.semester_id)options=options.filter(r=>r.semester_id===values.semester_id);
-  const immutable=!!row&&((entity.key==='classrooms'&&['semester_id','grade_level_id'].includes(f.key))||(entity.key==='semesters'&&f.key==='academic_year_id')||(entity.key==='duty_assignments'&&f.key==='semester_id')||(entity.key==='student_enrollments'&&['semester_id','student_id'].includes(f.key)));
-  if(f.type==='weekdays')return <fieldset key={f.key} className="sm:col-span-2"><legend className="text-sm">{f.label} (pilih satu atau lebih)</legend><div className="mt-3 flex flex-wrap gap-3">{Object.entries(weekdayLabels).map(([key,label])=><label key={key} className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${days.includes(Number(key))?'border-emerald-600 bg-emerald-50 text-emerald-900':'border-stone-200'}`}><input type="checkbox" checked={days.includes(Number(key))} disabled={busy} onChange={e=>setDays(v=>e.target.checked?[...v,Number(key)].sort((a,b)=>a-b):v.filter(d=>d!==Number(key)))}/>{label}</label>)}</div><p className="mt-2 text-xs text-stone-500">Contoh: Senin dan Kamis, berulang setiap pekan pada semester yang dipilih.</p></fieldset>;
-  return <label className={`block text-sm ${f.key==='description'?'sm:col-span-2':''}`} key={f.key}>{f.label}{f.optional?' (opsional)':''}{f.type==='select'?<select className={inputClass} required={!f.optional} disabled={busy||immutable} value={values[f.key]} onChange={e=>setValues(v=>({...v,[f.key]:e.target.value,...(f.key==='semester_id'&&entity.key==='student_enrollments'?{classroom_id:''}:{})}))}><option value="">Pilih {f.label.toLowerCase()}</option>{f.source?options.map(r=><option key={r.id} value={r.id}>{rowLabel(state,f.source!,r)}</option>):f.choices?.map(v=><option key={v} value={v}>{statusLabels[v]??(f.key==='number'?(v==='1'?'1 — Ganjil':'2 — Genap'):v)}</option>)}</select>:<input className={inputClass} type={f.type??'text'} value={values[f.key]} disabled={busy||immutable} required={!f.optional} min={f.type==='number'?1:undefined} max={f.type==='number'?12:undefined} maxLength={f.max??(f.key==='version'?40:100)} onChange={e=>setValues(v=>({...v,[f.key]:e.target.value}))}/>}</label>;
- });
- return <form className="mt-6" onSubmit={e=>{e.preventDefault();const data:Record<string,unknown>={...values};if(entity.key==='duty_assignments')data.weekdays=days;if('active' in data)data.active=data.active==='true';if(row){data.id=row.id;data.expected_updated_at=row.updated_at;}if(reason)data.reason=reason;void onSave(data).then(ok=>{if(ok&&!row){setValues(defaults());setDays([]);}});}}><fieldset disabled={busy}><legend className="sr-only">Isian {entity.singular}</legend><div className="grid gap-5 sm:grid-cols-2">{controls}{row?.status==='archived'&&<label className="text-sm sm:col-span-2">Alasan membuka arsip kembali (minimal 5 karakter)<input className={inputClass} required minLength={5} maxLength={500} value={reason} onChange={e=>setReason(e.target.value)}/><span className="mt-2 block text-xs leading-5 text-amber-800">Pilih status Draf untuk membuka arsip. Perubahan dicatat dalam audit.</span></label>}</div></fieldset><Button disabled={busy||(entity.key==='duty_assignments'&&!days.length)} type="submit" className="mt-6">{busy?'Menyimpan…':row?'Simpan perubahan':`Tambah ${entity.singular}`}</Button><p className="mt-3 text-xs leading-5 text-stone-500">Perubahan dicatat. Data lama tidak dihapus saat pergantian semester.</p></form>;
+function SchoolForm({
+  row,
+  busy,
+  onSave,
+}: {
+  row: DataRow;
+  busy: boolean;
+  onSave: (data: Record<string, unknown>) => Promise<boolean>;
+}) {
+  return (
+    <form
+      className="mt-6 space-y-5"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const data = new FormData(e.currentTarget);
+        void onSave({
+          name: data.get("name"),
+          education_level: data.get("education_level"),
+          logo_url: data.get("logo_url"),
+          expected_updated_at: row.updated_at,
+        });
+      }}
+    >
+      <label className="block text-sm">
+        Nama sekolah
+        <input
+          required
+          name="name"
+          maxLength={150}
+          defaultValue={String(row.name)}
+          className={inputClass}
+        />
+      </label>
+      <label className="block text-sm">
+        Jenjang
+        <select
+          name="education_level"
+          className={inputClass}
+          defaultValue={String(row.education_level)}
+        >
+          {["MI/SD", "MTs/SMP", "MA/SMA", "Beberapa jenjang"].map((s) => (
+            <option key={s}>{s}</option>
+          ))}
+        </select>
+      </label>
+      <label className="block text-sm">
+        Tautan logo (HTTPS, opsional)
+        <input
+          name="logo_url"
+          type="url"
+          maxLength={1000}
+          placeholder="https://…"
+          defaultValue={String(row.logo_url ?? "")}
+          className={inputClass}
+        />
+      </label>
+      <Button type="submit" disabled={busy}>
+        {busy ? "Menyimpan…" : "Simpan pengaturan"}
+      </Button>
+    </form>
+  );
 }
-function ImportPanel({school,onComplete}:{school:string;onComplete:()=>Promise<void>}){
- const [kind,setKind]=useState<ImportKind>('users'),[file,setFile]=useState<File|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[preview,setPreview]=useState<{ticket?:string;count:number;errors:{row:number;message:string}[];display:Record<string,string>[];expires_at?:string}|null>(null),[confirmed,setConfirmed]=useState(false);
- const config=importConfigs[kind];
- async function runPreview(){if(!file)return;setBusy(true);setMessage('');setPreview(null);setConfirmed(false);try{const form=new FormData();form.set('school',school);form.set('kind',kind);form.set('file',file);const res=await fetch('/api/akademik/preview',{method:'POST',body:form});const data=await res.json();if(!res.ok)throw new Error(data.message);setPreview(data);}catch(e){setMessage(e instanceof Error?e.message:'Berkas gagal diperiksa.');}finally{setBusy(false);}}
- async function commit(){if(!preview?.ticket||!confirmed)return;setBusy(true);setMessage('');try{const res=await fetch(`/api/akademik/${kind==='users'?'import-users':'import'}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({school,ticket:preview.ticket})});const data=await res.json();if(!res.ok)throw new Error(data.message);setPreview(null);setConfirmed(false);setMessage(`${data.message} ${data.count} baris tersimpan.`);await onComplete();}catch(e){setMessage(e instanceof Error?e.message:'Impor gagal.');}finally{setBusy(false);}}
- function downloadErrors(){if(!preview)return;const csv='\uFEFFBaris,Kesalahan\r\n'+preview.errors.map(e=>[e.row,e.message].map(v=>'"'+String(v).replace(/^[=+@\-\t\r]/,"'$&").replaceAll('"','""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=`kesalahan-impor-${kind}.csv`;a.click();URL.revokeObjectURL(url);}
- return <section className={card}><div className="flex items-center gap-3"><Upload className="text-emerald-700" size={24}/><h2 className="text-xl font-semibold">Template & impor Excel</h2></div><p className="mt-3 text-sm leading-6 text-stone-500">Unduh template, isi data, lalu periksa pratinjau sebelum menyimpan. Impor hanya menambah data baru; pembaruan memakai form.</p><ol className="mt-5 flex flex-wrap gap-3 text-xs font-medium text-emerald-800"><li>1. Pilih & unduh template</li><li>→ 2. Unggah & periksa</li><li>→ 3. Konfirmasi simpan</li></ol><label className="mt-6 block text-sm">Jenis data<select disabled={busy} value={kind} onChange={e=>{setKind(e.target.value as ImportKind);setPreview(null);setConfirmed(false);setMessage('');}} className={inputClass}>{importKinds.map(k=><option key={k} value={k}>{importConfigs[k].label}</option>)}</select></label><p className="mt-3 rounded-xl bg-stone-50 p-4 text-sm leading-6 text-stone-600">{config.instructions}</p><a className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-emerald-800 underline" href={`/api/akademik/template?school=${school}&kind=${kind}`}>Unduh template {config.label.toLowerCase()} (.xlsx)</a><div className="mt-6 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end"><label className="block text-sm">Berkas Excel (.xlsx, maksimal 2 MB)<input disabled={busy} type="file" accept=".xlsx" className={inputClass} onChange={e=>{setFile(e.target.files?.[0]??null);setPreview(null);setConfirmed(false);setMessage('');}}/></label><Button type="button" disabled={busy||!file} onClick={()=>void runPreview()}>{busy?'Memproses…':'Periksa pratinjau'}</Button></div><p className="mt-3 text-xs text-stone-500">Maksimal {kind==='users'?25:250} baris per berkas. Akun baru wajib mengganti password dan memverifikasi email.</p>{message&&<p role="status" className="mt-5 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">{message}</p>}
- {preview&&<div className="mt-7 border-t border-stone-200 pt-6"><h3 className="flex items-center gap-2 font-semibold">{!preview.errors.length&&<CheckCircle2 className="text-emerald-600" size={18}/>}Pratinjau: {preview.count} baris · {preview.errors.length} kesalahan</h3>{preview.errors.length>0?<div className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-900"><p role="alert">Belum ada data yang disimpan. Perbaiki semua kesalahan, lalu unggah kembali.</p><ul className="mt-3 max-h-52 list-inside list-disc overflow-auto space-y-2">{preview.errors.map((e,i)=><li key={`${e.row}:${i}`}>Baris {e.row}: {e.message}</li>)}</ul><button type="button" className="mt-4 font-semibold underline" onClick={downloadErrors}>Unduh laporan kesalahan (.csv)</button></div>:<p className="mt-2 text-xs leading-5 text-stone-500">Semua referensi valid saat pemeriksaan. Pratinjau berlaku 30 menit dan diperiksa kembali saat disimpan.</p>}
- <div className="mt-4 max-h-80 overflow-auto rounded-xl border border-stone-200"><table className="w-full text-left text-xs"><thead className="sticky top-0 bg-stone-100"><tr>{config.columns.map(c=><th key={c} className="px-3 py-3">{c}</th>)}</tr></thead><tbody>{preview.display.map((r,i)=><tr key={i} className="border-t border-stone-100">{config.columns.map(c=><td key={c} className="whitespace-nowrap px-3 py-3">{r[c]}</td>)}</tr>)}</tbody></table></div>{preview.ticket&&!preview.errors.length&&<div className="mt-5"><label className="flex items-start gap-3 text-sm leading-6"><input type="checkbox" disabled={busy} checked={confirmed} onChange={e=>setConfirmed(e.target.checked)} className="mt-1"/>Saya telah memeriksa data di atas dan menyetujui penambahannya.</label><Button type="button" className="mt-4" disabled={busy||!confirmed} onClick={()=>void commit()}>{busy?'Menyimpan impor…':`Simpan ${preview.count} baris`}</Button></div>}</div>}
- </section>;
+function EntityForm({
+  entity,
+  state,
+  row,
+  semester,
+  busy,
+  onSave,
+}: {
+  entity: Entity;
+  state: AcademicState;
+  row: DataRow | null;
+  semester: string;
+  busy: boolean;
+  onSave: (data: Record<string, unknown>) => Promise<boolean>;
+}) {
+  const defaults = () =>
+    Object.fromEntries(
+      entity.fields.map((f) => [
+        f.key,
+        String(
+          row?.[f.key] ??
+            (f.key === "semester_id"
+              ? semester
+              : f.key === "status"
+                ? ["academic_years", "semesters"].includes(entity.key)
+                  ? "draft"
+                  : "active"
+                : f.key === "active"
+                  ? "true"
+                  : ""),
+        ),
+      ]),
+    );
+  const [days, setDays] = useState<number[]>(() =>
+    Array.isArray(row?.weekdays) ? row.weekdays.map(Number) : [],
+  );
+  const [values, setValues] = useState<Record<string, string>>(defaults);
+  const [reason, setReason] = useState("");
+  const controls = entity.fields.map((f) => {
+    let options = f.source
+      ? rowsOf(state, f.source).filter(
+          (r) =>
+            !f.role ||
+            ((r.roles as string[] | null)?.includes(f.role) &&
+              r.status === "active"),
+        )
+      : [];
+    if (f.key === "classroom_id" && values.semester_id)
+      options = options.filter((r) => r.semester_id === values.semester_id);
+    const immutable =
+      !!row &&
+      ((entity.key === "classrooms" &&
+        ["semester_id", "grade_level_id"].includes(f.key)) ||
+        (entity.key === "semesters" && f.key === "academic_year_id") ||
+        (entity.key === "duty_assignments" && f.key === "semester_id") ||
+        (entity.key === "student_enrollments" &&
+          ["semester_id", "student_id"].includes(f.key)));
+    if (f.type === "weekdays")
+      return (
+        <fieldset key={f.key} className="sm:col-span-2">
+          <legend className="text-sm">{f.label} (pilih satu atau lebih)</legend>
+          <div className="mt-3 flex flex-wrap gap-3">
+            {Object.entries(weekdayLabels).map(([key, label]) => (
+              <label
+                key={key}
+                className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-sm ${days.includes(Number(key)) ? "border-emerald-600 bg-emerald-50 text-emerald-900" : "border-stone-200"}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={days.includes(Number(key))}
+                  disabled={busy}
+                  onChange={(e) =>
+                    setDays((v) =>
+                      e.target.checked
+                        ? [...v, Number(key)].sort((a, b) => a - b)
+                        : v.filter((d) => d !== Number(key)),
+                    )
+                  }
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-stone-500">
+            Contoh: Senin dan Kamis, berulang setiap pekan pada semester yang
+            dipilih.
+          </p>
+        </fieldset>
+      );
+    return (
+      <label
+        className={`block text-sm ${f.key === "description" ? "sm:col-span-2" : ""}`}
+        key={f.key}
+      >
+        {f.label}
+        {f.optional ? " (opsional)" : ""}
+        {f.type === "select" ? (
+          <select
+            className={inputClass}
+            required={!f.optional}
+            disabled={busy || immutable}
+            value={values[f.key]}
+            onChange={(e) =>
+              setValues((v) => ({
+                ...v,
+                [f.key]: e.target.value,
+                ...(f.key === "semester_id" &&
+                entity.key === "student_enrollments"
+                  ? { classroom_id: "" }
+                  : {}),
+              }))
+            }
+          >
+            <option value="">Pilih {f.label.toLowerCase()}</option>
+            {f.source
+              ? options.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {rowLabel(state, f.source!, r)}
+                  </option>
+                ))
+              : f.choices?.map((v) => (
+                  <option key={v} value={v}>
+                    {statusLabels[v] ??
+                      (f.key === "number"
+                        ? v === "1"
+                          ? "1 — Ganjil"
+                          : "2 — Genap"
+                        : v)}
+                  </option>
+                ))}
+          </select>
+        ) : (
+          <input
+            className={inputClass}
+            type={f.type ?? "text"}
+            value={values[f.key]}
+            disabled={busy || immutable}
+            required={!f.optional}
+            min={f.type === "number" ? 1 : undefined}
+            max={f.type === "number" ? 12 : undefined}
+            maxLength={f.max ?? (f.key === "version" ? 40 : 100)}
+            onChange={(e) =>
+              setValues((v) => ({ ...v, [f.key]: e.target.value }))
+            }
+          />
+        )}
+      </label>
+    );
+  });
+  return (
+    <form
+      className="mt-6"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const data: Record<string, unknown> = { ...values };
+        if (entity.key === "duty_assignments") data.weekdays = days;
+        if ("active" in data) data.active = data.active === "true";
+        if (row) {
+          data.id = row.id;
+          data.expected_updated_at = row.updated_at;
+        }
+        if (reason) data.reason = reason;
+        void onSave(data).then((ok) => {
+          if (ok && !row) {
+            setValues(defaults());
+            setDays([]);
+          }
+        });
+      }}
+    >
+      <fieldset disabled={busy}>
+        <legend className="sr-only">Isian {entity.singular}</legend>
+        <div className="grid gap-5 sm:grid-cols-2">
+          {controls}
+          {row?.status === "archived" && (
+            <label className="text-sm sm:col-span-2">
+              Alasan membuka arsip kembali (minimal 5 karakter)
+              <input
+                className={inputClass}
+                required
+                minLength={5}
+                maxLength={500}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+              <span className="mt-2 block text-xs leading-5 text-amber-800">
+                Pilih status Draf untuk membuka arsip. Perubahan dicatat dalam
+                audit.
+              </span>
+            </label>
+          )}
+        </div>
+      </fieldset>
+      <Button
+        disabled={busy || (entity.key === "duty_assignments" && !days.length)}
+        type="submit"
+        className="mt-6"
+      >
+        {busy
+          ? "Menyimpan…"
+          : row
+            ? "Simpan perubahan"
+            : `Tambah ${entity.singular}`}
+      </Button>
+      <p className="mt-3 text-xs leading-5 text-stone-500">
+        Perubahan dicatat. Data lama tidak dihapus saat pergantian semester.
+      </p>
+    </form>
+  );
+}
+function ImportPanel({
+  school,
+  onComplete,
+}: {
+  school: string;
+  onComplete: () => Promise<void>;
+}) {
+  const [kind, setKind] = useState<ImportKind>("users"),
+    [file, setFile] = useState<File | null>(null),
+    [busy, setBusy] = useState(false),
+    [message, setMessage] = useState(""),
+    [preview, setPreview] = useState<{
+      ticket?: string;
+      count: number;
+      errors: { row: number; message: string }[];
+      display: Record<string, string>[];
+      expires_at?: string;
+    } | null>(null),
+    [confirmed, setConfirmed] = useState(false);
+  const config = importConfigs[kind];
+  async function runPreview() {
+    if (!file) return;
+    setBusy(true);
+    setMessage("");
+    setPreview(null);
+    setConfirmed(false);
+    try {
+      const form = new FormData();
+      form.set("school", school);
+      form.set("kind", kind);
+      form.set("file", file);
+      const res = await fetch("/api/akademik/preview", {
+        method: "POST",
+        body: form,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setPreview(data);
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "Berkas gagal diperiksa.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function commit() {
+    if (!preview?.ticket || !confirmed) return;
+    setBusy(true);
+    setMessage("");
+    try {
+      const res = await fetch(
+        `/api/akademik/${kind === "users" ? "import-users" : "import"}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ school, ticket: preview.ticket }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      setPreview(null);
+      setConfirmed(false);
+      setMessage(`${data.message} ${data.count} baris tersimpan.`);
+      await onComplete();
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "Impor gagal.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  function downloadErrors() {
+    if (!preview) return;
+    const csv =
+      "\uFEFFBaris,Kesalahan\r\n" +
+      preview.errors
+        .map((e) =>
+          [e.row, e.message]
+            .map(
+              (v) =>
+                '"' +
+                String(v)
+                  .replace(/^[=+@\-\t\r]/, "'$&")
+                  .replaceAll('"', '""') +
+                '"',
+            )
+            .join(","),
+        )
+        .join("\r\n");
+    const url = URL.createObjectURL(
+      new Blob([csv], { type: "text/csv;charset=utf-8" }),
+    );
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kesalahan-impor-${kind}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+  return (
+    <section className={card}>
+      <div className="flex items-center gap-3">
+        <Upload className="text-emerald-700" size={24} />
+        <h2 className="text-xl font-semibold">Template & impor Excel</h2>
+      </div>
+      <p className="mt-3 text-sm leading-6 text-stone-500">
+        Unduh template, isi data, lalu periksa pratinjau sebelum menyimpan.
+        Impor hanya menambah data baru; pembaruan memakai form.
+      </p>
+      <ol className="mt-5 flex flex-wrap gap-3 text-xs font-medium text-emerald-800">
+        <li>1. Pilih & unduh template</li>
+        <li>→ 2. Unggah & periksa</li>
+        <li>→ 3. Konfirmasi simpan</li>
+      </ol>
+      <label className="mt-6 block text-sm">
+        Jenis data
+        <select
+          disabled={busy}
+          value={kind}
+          onChange={(e) => {
+            setKind(e.target.value as ImportKind);
+            setFile(null);
+            setPreview(null);
+            setConfirmed(false);
+            setMessage("");
+          }}
+          className={inputClass}
+        >
+          {importKinds.map((k) => (
+            <option key={k} value={k}>
+              {importConfigs[k].label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <p className="mt-3 rounded-xl bg-stone-50 p-4 text-sm leading-6 text-stone-600">
+        {config.instructions}
+      </p>
+      <a
+        className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-emerald-800 underline"
+        href={`/api/akademik/template?school=${school}&kind=${kind}`}
+      >
+        Unduh template {config.label.toLowerCase()} (.xlsx)
+      </a>
+      <div className="mt-6 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+        <label className="block text-sm">
+          Berkas Excel (.xlsx, maksimal 2 MB)
+          <input
+            key={kind}
+            disabled={busy}
+            type="file"
+            accept=".xlsx"
+            className={inputClass}
+            onChange={(e) => {
+              setFile(e.target.files?.[0] ?? null);
+              setPreview(null);
+              setConfirmed(false);
+              setMessage("");
+            }}
+          />
+        </label>
+        <Button
+          type="button"
+          disabled={busy || !file}
+          onClick={() => void runPreview()}
+        >
+          {busy ? "Memproses…" : "Periksa pratinjau"}
+        </Button>
+      </div>
+      <p className="mt-3 text-xs text-stone-500">
+        Maksimal {kind === "users" ? 25 : 250} baris per berkas. Akun baru wajib
+        mengganti password dan memverifikasi email.
+      </p>
+      {message && (
+        <p
+          role="status"
+          className="mt-5 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900"
+        >
+          {message}
+        </p>
+      )}
+      {preview && (
+        <div className="mt-7 border-t border-stone-200 pt-6">
+          <h3 className="flex items-center gap-2 font-semibold">
+            {!preview.errors.length && (
+              <CheckCircle2 className="text-emerald-600" size={18} />
+            )}
+            Pratinjau: {preview.count} baris · {preview.errors.length} kesalahan
+          </h3>
+          {preview.errors.length > 0 ? (
+            <div className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-900">
+              <p role="alert">
+                Belum ada data yang disimpan. Perbaiki semua kesalahan, lalu
+                unggah kembali.
+              </p>
+              <ul className="mt-3 max-h-52 list-inside list-disc overflow-auto space-y-2">
+                {preview.errors.map((e, i) => (
+                  <li key={`${e.row}:${i}`}>
+                    Baris {e.row}: {e.message}
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                className="mt-4 font-semibold underline"
+                onClick={downloadErrors}
+              >
+                Unduh laporan kesalahan (.csv)
+              </button>
+            </div>
+          ) : (
+            <p className="mt-2 text-xs leading-5 text-stone-500">
+              Semua referensi valid saat pemeriksaan. Pratinjau berlaku 30 menit
+              dan diperiksa kembali saat disimpan.
+            </p>
+          )}
+          <div className="mt-4 max-h-80 overflow-auto rounded-xl border border-stone-200">
+            <table className="w-full text-left text-xs">
+              <thead className="sticky top-0 bg-stone-100">
+                <tr>
+                  {config.columns.map((c) => (
+                    <th key={c} className="px-3 py-3">
+                      {c}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {preview.display.map((r, i) => (
+                  <tr key={i} className="border-t border-stone-100">
+                    {config.columns.map((c) => (
+                      <td key={c} className="whitespace-nowrap px-3 py-3">
+                        {r[c]}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {preview.ticket && !preview.errors.length && (
+            <div className="mt-5">
+              <label className="flex items-start gap-3 text-sm leading-6">
+                <input
+                  type="checkbox"
+                  disabled={busy}
+                  checked={confirmed}
+                  onChange={(e) => setConfirmed(e.target.checked)}
+                  className="mt-1"
+                />
+                Saya telah memeriksa data di atas dan menyetujui penambahannya.
+              </label>
+              <Button
+                type="button"
+                className="mt-4"
+                disabled={busy || !confirmed}
+                onClick={() => void commit()}
+              >
+                {busy ? "Menyimpan impor…" : `Simpan ${preview.count} baris`}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
 }

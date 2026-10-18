@@ -1,4 +1,38 @@
-import {AuthShell} from "@/components/auth-shell";
-import {AuthForm} from "@/components/auth-form";
-export const dynamic="force-dynamic";
-export default function Setup(){return <AuthShell title="Penyiapan admin pertama" description="Hanya untuk pengelola madrasah sebelum akun admin tersedia. Penyiapan dikunci setelah admin pertama berhasil dibuat.">{process.env.LMS_SETUP_TOKEN?<AuthForm action="bootstrap" label="Buat admin pertama" fields={[{name:"code",label:"Kode penyiapan",type:"password",autoComplete:"off"},{name:"school",label:"ID sekolah"},{name:"name",label:"Nama admin",autoComplete:"name"},{name:"username",label:"Username admin",autoComplete:"username"}]}/>:<p className="mt-6 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">Penyiapan melalui web tidak diaktifkan. Pengelola dapat menggunakan skrip bootstrap yang tersedia.</p>}</AuthShell>;}
+import { AuthShell } from "@/components/auth-shell";
+import { AuthForm } from "@/components/auth-form";
+export const dynamic = "force-dynamic";
+export default function Setup() {
+  return (
+    <AuthShell
+      title="Penyiapan admin pertama"
+      description="Hanya untuk pengelola madrasah sebelum akun admin tersedia. Penyiapan dikunci setelah admin pertama berhasil dibuat."
+    >
+      {process.env.LMS_SETUP_TOKEN ? (
+        <AuthForm
+          action="bootstrap"
+          label="Buat admin pertama"
+          fields={[
+            {
+              name: "code",
+              label: "Kode penyiapan",
+              type: "password",
+              autoComplete: "off",
+            },
+            { name: "school", label: "ID sekolah" },
+            { name: "name", label: "Nama admin", autoComplete: "name" },
+            {
+              name: "username",
+              label: "Username admin",
+              autoComplete: "username",
+            },
+          ]}
+        />
+      ) : (
+        <p className="mt-6 rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
+          Penyiapan melalui web tidak diaktifkan. Pengelola dapat menggunakan
+          skrip bootstrap yang tersedia.
+        </p>
+      )}
+    </AuthShell>
+  );
+}

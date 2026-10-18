@@ -1,2 +1,42 @@
-import Link from 'next/link';import {requireAccount} from '@/lib/auth/page-context';import {developmentCommand} from '@/lib/development/server';import {selectedMembership} from '@/lib/development/school';import {DevelopmentSettings,SchoolSwitcher} from '@/components/development-panel';import type {SchoolList} from '@/lib/development/client';
-export const dynamic='force-dynamic';export default async function Page(){const ctx=await requireAccount(true);let state:SchoolList;try{state=await developmentCommand<SchoolList>(ctx,'schools');}catch{return <main className="p-8">Pengaturan belum dapat dimuat. Muat ulang beberapa saat lagi.</main>;}const current=await selectedMembership(state.schools.map(s=>({school_id:s.id})));return <main className="mx-auto max-w-4xl px-5 py-10"><Link className="text-sm text-emerald-800 underline" href="/ruang-belajar">← Ruang akun</Link><h1 className="mt-7 text-3xl font-semibold">Pengembangan & sekolah</h1><SchoolSwitcher selected={current?.school_id}/><DevelopmentSettings school={current?.school_id} central={state.central}/></main>;}
+import Link from "next/link";
+import { requireAccount } from "@/lib/auth/page-context";
+import { developmentCommand } from "@/lib/development/server";
+import { selectedMembership } from "@/lib/development/school";
+import {
+  DevelopmentSettings,
+  SchoolSwitcher,
+} from "@/components/development-panel";
+import type { SchoolList } from "@/lib/development/client";
+export const dynamic = "force-dynamic";
+export default async function Page() {
+  const ctx = await requireAccount(true);
+  let state: SchoolList;
+  try {
+    state = await developmentCommand<SchoolList>(ctx, "schools");
+  } catch {
+    return (
+      <main className="p-8">
+        Pengaturan belum dapat dimuat. Muat ulang beberapa saat lagi.
+      </main>
+    );
+  }
+  const current = await selectedMembership(
+    state.schools.map((s) => ({ school_id: s.id })),
+  );
+  return (
+    <main className="mx-auto max-w-4xl px-5 py-10">
+      <Link
+        className="text-sm text-emerald-800 underline"
+        href="/ruang-belajar"
+      >
+        ← Ruang akun
+      </Link>
+      <h1 className="mt-7 text-3xl font-semibold">Pengembangan & sekolah</h1>
+      <SchoolSwitcher selected={current?.school_id} />
+      <DevelopmentSettings
+        school={current?.school_id}
+        central={state.central}
+      />
+    </main>
+  );
+}

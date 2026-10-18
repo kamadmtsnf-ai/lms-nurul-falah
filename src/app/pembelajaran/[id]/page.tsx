@@ -1,3 +1,47 @@
-import Link from 'next/link';import {notFound} from 'next/navigation';import {z} from 'zod';import {requireAccount} from '@/lib/auth/page-context';import {learningCommand} from '@/lib/learning/server';import {CourseWorkspace} from '@/components/course-workspace';import {LogoutButton} from '@/components/auth-form';import type {CourseState} from '@/lib/learning/types';
-export const dynamic='force-dynamic';
-export default async function CoursePage({params}:{params:Promise<{id:string}>}){const {id}=await params;if(!z.uuid().safeParse(id).success)notFound();const ctx=await requireAccount(true);let state:CourseState;try{state=await learningCommand<CourseState>(ctx,'course',{course:id});}catch{return <main className="mx-auto max-w-3xl p-8"><Link className="text-emerald-800 underline" href="/akademik">Kembali ke daftar kelas</Link><h1 className="mt-8 text-2xl font-semibold">Pembelajaran belum dapat dibuka</h1><p className="mt-3 text-sm text-stone-600">Periksa penugasan atau keanggotaan kelas Anda, lalu coba kembali.</p></main>;}return <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6"><header className="mb-7 flex items-center justify-between gap-4"><Link href="/akademik" className="text-sm text-emerald-800 underline">← Daftar kelas</Link><LogoutButton/></header><CourseWorkspace initial={state}/></main>;}
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { z } from "zod";
+import { requireAccount } from "@/lib/auth/page-context";
+import { learningCommand } from "@/lib/learning/server";
+import { CourseWorkspace } from "@/components/course-workspace";
+import { LogoutButton } from "@/components/auth-form";
+import type { CourseState } from "@/lib/learning/types";
+export const dynamic = "force-dynamic";
+export default async function CoursePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  if (!z.uuid().safeParse(id).success) notFound();
+  const ctx = await requireAccount(true);
+  let state: CourseState;
+  try {
+    state = await learningCommand<CourseState>(ctx, "course", { course: id });
+  } catch {
+    return (
+      <main className="mx-auto max-w-3xl p-8">
+        <Link className="text-emerald-800 underline" href="/akademik">
+          Kembali ke daftar kelas
+        </Link>
+        <h1 className="mt-8 text-2xl font-semibold">
+          Pembelajaran belum dapat dibuka
+        </h1>
+        <p className="mt-3 text-sm text-stone-600">
+          Periksa penugasan atau keanggotaan kelas Anda, lalu coba kembali.
+        </p>
+      </main>
+    );
+  }
+  return (
+    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+      <header className="mb-7 flex items-center justify-between gap-4">
+        <Link href="/akademik" className="text-sm text-emerald-800 underline">
+          ← Daftar kelas
+        </Link>
+        <LogoutButton />
+      </header>
+      <CourseWorkspace key={id} initial={state} />
+    </main>
+  );
+}

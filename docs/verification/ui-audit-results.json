@@ -1,0 +1,23 @@
+{
+  "checks": 138,
+  "viewports": [
+    {
+      "width": 320,
+      "status": "passed"
+    },
+    {
+      "width": 390,
+      "status": "passed"
+    },
+    {
+      "width": 768,
+      "status": "passed"
+    },
+    {
+      "width": 1440,
+      "status": "passed"
+    }
+  ],
+  "javascriptErrors": [],
+  "scope": "Real React components with synthetic data and mocked API; does not replace authenticated live acceptance tests."
+}
