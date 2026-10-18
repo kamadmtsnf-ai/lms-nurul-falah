@@ -1,7 +1,8 @@
+import { PageHeading } from "@/components/page-heading";
+import { AppShell } from "@/components/app-shell";
 import { selectedMembership } from "@/lib/development/school";
 import Link from "next/link";
 import { requireAccount } from "@/lib/auth/page-context";
-import { LogoutButton } from "@/components/auth-form";
 export const dynamic = "force-dynamic";
 export default async function MyAcademic() {
   const { client, actor } = await requireAccount(true);
@@ -25,26 +26,12 @@ export default async function MyAcademic() {
     (r) => r.error,
   );
   return (
-    <main className="mx-auto max-w-5xl px-5 py-10">
-      <header className="flex items-center justify-between">
-        <Link
-          className="text-sm text-emerald-800 underline"
-          href="/ruang-belajar"
-        >
-          ← Ruang akun
-        </Link>
-        <LogoutButton />
-      </header>
-      <p className="mt-10 text-xs font-bold uppercase tracking-widest text-emerald-700">
-        Akademik
-      </p>
-      <h1 className="mt-3 text-3xl font-semibold">
-        Kelas yang dapat Anda akses
-      </h1>
-      <p className="mt-3 text-sm leading-6 text-stone-600">
-        Daftar mengikuti penugasan dan keanggotaan Anda, termasuk arsip semester
-        sebelumnya. Orang tua hanya melihat kelas anak yang ditautkan admin.
-      </p>
+    <AppShell>
+      <PageHeading
+        eyebrow="Akademik"
+        title="Kelas yang dapat Anda akses"
+        description="Pilih kelas dan mata pelajaran untuk membuka kegiatan belajar. Daftar mengikuti penugasan, keanggotaan, serta arsip semester Anda."
+      />
       {error ? (
         <p role="alert" className="mt-8 rounded-xl bg-amber-50 p-5">
           Data akademik belum dapat dimuat. Silakan muat ulang.
@@ -61,7 +48,7 @@ export default async function MyAcademic() {
               return (
                 <section
                   key={c.id}
-                  className="rounded-2xl border border-stone-200 bg-white p-6"
+                  className="surface-card rounded-2xl border border-stone-200 bg-white p-6"
                 >
                   <span
                     className={`rounded-full px-3 py-1 text-xs ${s?.status === "active" ? "bg-emerald-50 text-emerald-800" : "bg-stone-100 text-stone-600"}`}
@@ -76,11 +63,11 @@ export default async function MyAcademic() {
                   <p className="mt-2 text-sm text-stone-500">
                     {y?.name} · {s?.number === 1 ? "Ganjil" : "Genap"}
                   </p>
-                  <ul className="mt-5 list-inside list-disc space-y-2 text-sm text-stone-600">
+                  <ul className="mt-5 space-y-2 text-sm text-stone-600">
                     {ts.map((t) => (
                       <li key={t.id}>
                         <Link
-                          className="font-medium text-emerald-800 underline"
+                          className="class-subject-link"
                           href={`/pembelajaran/${t.id}`}
                         >
                           {subjects.data?.find((s) => s.id === t.subject_id)
@@ -110,6 +97,6 @@ export default async function MyAcademic() {
         Pilih mata pelajaran untuk membuka materi, absensi pertemuan, tugas, dan
         nilai yang sudah dibuka.
       </p>
-    </main>
+    </AppShell>
   );
 }

@@ -1,4 +1,5 @@
 "use client";
+import { PageHeading } from "./page-heading";
 import { navigateTabs } from "@/lib/http/tab-navigation";
 import { DevelopmentCourse } from "./development-panel";
 import { AdvancedPanel } from "./advanced-panel";
@@ -59,25 +60,20 @@ export function CourseWorkspace({ initial }: { initial: CourseState }) {
   const manager = state.context.manager && state.context.writable;
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl bg-emerald-900 p-6 text-white">
-        <p className="text-xs uppercase tracking-widest text-emerald-100">
-          {state.course.classroom} ·{" "}
-          {state.context.semester_status === "archived"
-            ? "Arsip semester"
-            : "Ruang pembelajaran"}
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold">{state.course.subject}</h1>
-        <p className="mt-3 text-sm text-emerald-100">
-          Guru pengampu: {state.course.teacher}
-        </p>
-      </header>
+      <section className="workspace-hero rounded-2xl p-6 sm:p-8">
+        <PageHeading
+          eyebrow={`${state.course.classroom} · ${state.context.semester_status === "archived" ? "Arsip semester" : "Ruang pembelajaran"}`}
+          title={state.course.subject}
+          description={`Guru pengampu: ${state.course.teacher}`}
+        />
+      </section>
       <Notice message={message} error={error} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <nav
           role="tablist"
           onKeyDown={navigateTabs}
           aria-label="Kegiatan pembelajaran"
-          className="flex max-w-full gap-2 overflow-x-auto rounded-xl bg-stone-100 p-1"
+          className="section-tabs flex max-w-full gap-2 overflow-x-auto rounded-xl bg-stone-100 p-1"
         >
           {[
             { key: "materials", label: "Materi" },

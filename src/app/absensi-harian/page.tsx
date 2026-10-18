@@ -1,9 +1,8 @@
+import { AppShell } from "@/components/app-shell";
 import { selectedMembership } from "@/lib/development/school";
-import Link from "next/link";
 import { requireAccount } from "@/lib/auth/page-context";
 import { learningCommand } from "@/lib/learning/server";
 import { DailyAttendance, type DailyMeta } from "@/components/daily-attendance";
-import { LogoutButton } from "@/components/auth-form";
 export const dynamic = "force-dynamic";
 export default async function DailyPage() {
   const ctx = await requireAccount(true);
@@ -19,16 +18,7 @@ export default async function DailyPage() {
       meta = await learningCommand<DailyMeta>(ctx, "daily-meta", { school });
     } catch {}
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-      <header className="mb-7 flex items-center justify-between">
-        <Link
-          href="/ruang-belajar"
-          className="text-sm text-emerald-800 underline"
-        >
-          ← Ruang akun
-        </Link>
-        <LogoutButton />
-      </header>
+    <AppShell>
       {school && meta ? (
         <DailyAttendance school={school} meta={meta} />
       ) : (
@@ -37,6 +27,6 @@ export default async function DailyPage() {
           Anda.
         </p>
       )}
-    </main>
+    </AppShell>
   );
 }

@@ -1,9 +1,17 @@
 import { OfflineWorkspace } from "@/components/offline-workspace";
+import { Brand } from "@/components/brand";
+import { PageHeading } from "@/components/page-heading";
 export default function Page() {
   return (
-    <main className="mx-auto max-w-3xl px-5 py-10">
-      <p className="text-sm text-emerald-800">LMS Nurul Falah</p>
-      <h1 className="mb-5 mt-3 text-3xl font-semibold">Ruang offline</h1>
+    <main className="mx-auto min-h-screen max-w-3xl px-4 py-7 sm:px-6 sm:py-10">
+      <div className="mb-9">
+        <Brand />
+      </div>
+      <PageHeading
+        eyebrow="Belajar di perangkat Anda"
+        title="Ruang offline"
+        description="Buka materi tersimpan dan lanjutkan draf tugas. Kumpulkan draf ketika koneksi kembali tersedia."
+      />
       <OfflineWorkspace />
     </main>
   );

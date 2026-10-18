@@ -4,9 +4,9 @@ import {
   BookOpen,
   CalendarCheck,
   ClipboardList,
-  GraduationCap,
   ShieldCheck,
 } from "lucide-react";
+import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 const modules = [
   {
@@ -28,74 +28,109 @@ const modules = [
 export default function Home() {
   return (
     <main className="min-h-screen">
-      <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-7">
-        <Link href="/" className="flex items-center gap-3 font-bold">
-          <span className="rounded-xl bg-emerald-900 p-3 text-amber-200">
-            <GraduationCap aria-hidden size={25} />
-          </span>
-          <span>
-            LMS Nurul Falah
-            <span className="block text-xs font-normal text-stone-500">
-              Madrasah • Ruang belajar digital
-            </span>
-          </span>
-        </Link>
-        <span className="rounded-full border border-emerald-200 px-3 py-1 text-xs text-emerald-800">
-          Akun & akses
-        </span>
+      <header className="landing-header">
+        <Brand />
+        <Button asChild variant="outline">
+          <Link href="/masuk">
+            Masuk
+            <ArrowRight size={15} aria-hidden />
+          </Link>
+        </Button>
       </header>
-      <section className="mx-auto grid max-w-6xl gap-10 px-6 pb-16 pt-12 md:grid-cols-[1.3fr_1fr] md:pt-20">
+      <section className="landing-hero">
         <div>
-          <p className="mb-5 text-xs font-bold uppercase tracking-[.22em] text-emerald-700">
-            Belajar, bertumbuh, berakhlak
-          </p>
-          <h1 className="max-w-xl text-4xl font-semibold leading-tight tracking-tight md:text-6xl">
+          <p className="page-eyebrow mb-6">Belajar, bertumbuh, berakhlak</p>
+          <h1 className="landing-title">
             Satu ruang untuk setiap langkah belajar.
           </h1>
-          <p className="mt-6 max-w-lg text-lg leading-8 text-stone-600">
+          <p className="mt-6 max-w-lg text-base leading-8 text-stone-500">
             Pembelajaran yang terarah, pendampingan yang dekat, dan perkembangan
             siswa yang mudah dipahami.
           </p>
           <div className="mt-8">
-            <Button asChild>
+            <Button asChild className="px-6">
               <Link href="/masuk">
-                Masuk ke LMS <ArrowRight aria-hidden size={17} />
+                Masuk ke LMS
+                <ArrowRight size={17} aria-hidden />
               </Link>
             </Button>
           </div>
-        </div>
-        <aside className="self-center rounded-3xl bg-emerald-950 p-8 text-white md:p-10">
-          <ShieldCheck className="mb-8 text-amber-200" size={35} aria-hidden />
-          <h2 className="text-2xl font-semibold">Ruang belajar madrasah</h2>
-          <p className="mt-4 leading-7 text-emerald-100">
-            Masuk dengan akun madrasah Anda. Selesaikan aktivasi untuk mengakses
-            layanan yang tersedia sesuai peran.
+          <p className="mt-5 flex items-center gap-2 text-xs text-stone-500">
+            <ShieldCheck
+              size={15}
+              className="shrink-0 text-emerald-600"
+              aria-hidden
+            />
+            Gunakan akun yang diberikan admin madrasah.
           </p>
-          <div className="mt-8 border-t border-emerald-800 pt-5 text-sm text-emerald-200">
-            Akun akan diberikan oleh admin madrasah.
-          </div>
+        </div>
+        <aside className="landing-flow">
+          <p className="text-xs font-semibold uppercase tracking-[.17em] text-emerald-200">
+            Ruang belajar madrasah
+          </p>
+          <h2 className="mt-3 text-2xl font-semibold tracking-tight">
+            Belajar lebih teratur.
+            <br />
+            Bertumbuh bersama.
+          </h2>
+          {[
+            {
+              title: "Temukan kelas Anda",
+              text: "Materi dan pertemuan sesuai kelas serta semester.",
+            },
+            {
+              title: "Ikuti setiap kegiatan",
+              text: "Kerjakan tugas dan kuis, lalu terima umpan balik.",
+            },
+            {
+              title: "Lihat perkembangan",
+              text: "Pantau kehadiran, progres belajar, dan nilai yang dibuka guru.",
+            },
+          ].map((step, i) => (
+            <div className="landing-step" key={step.title}>
+              <span>{String(i + 1).padStart(2, "0")}</span>
+              <div>
+                <h3 className="text-sm font-semibold">{step.title}</h3>
+                <p className="mt-1.5 text-xs leading-6 text-emerald-100">
+                  {step.text}
+                </p>
+              </div>
+            </div>
+          ))}
+          <p className="mt-7 border-t border-white/15 pt-5 text-xs leading-6 text-emerald-200">
+            Satu tempat untuk siswa, guru, dan orang tua mendampingi proses
+            belajar.
+          </p>
         </aside>
       </section>
       <section
         aria-label="Layanan pembelajaran"
-        className="mx-auto grid max-w-6xl gap-5 px-6 pb-14 md:grid-cols-3"
+        className="mx-auto max-w-[1216px] px-5 pb-14"
       >
-        {modules.map(({ icon: Icon, title, text }) => (
-          <article
-            key={title}
-            className="rounded-2xl border border-stone-200 bg-white p-7"
-          >
-            <Icon aria-hidden className="mb-6 text-emerald-700" size={24} />
-            <h2 className="font-semibold">{title}</h2>
-            <p className="mt-3 text-sm leading-6 text-stone-600">{text}</p>
-            <p className="mt-5 text-xs text-stone-500">
-              Tersedia sesuai hak akses setelah masuk
-            </p>
-          </article>
-        ))}
+        <div className="section-heading">
+          <div>
+            <h2>Pembelajaran yang saling terhubung</h2>
+            <p>Dari pertemuan pertama hingga perkembangan setiap siswa.</p>
+          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {modules.map(({ icon: Icon, title, text }) => (
+            <article
+              key={title}
+              className="surface-card rounded-2xl border bg-white p-6"
+            >
+              <span className="icon-tile">
+                <Icon size={22} aria-hidden />
+              </span>
+              <h3 className="mt-5 font-semibold">{title}</h3>
+              <p className="mt-3 text-sm leading-7 text-stone-500">{text}</p>
+            </article>
+          ))}
+        </div>
       </section>
-      <footer className="mx-auto max-w-6xl border-t border-stone-200 px-6 py-6 text-xs text-stone-500">
-        LMS Nurul Falah · Ruang pembelajaran madrasah
+      <footer className="app-footer">
+        <span>LMS Nurul Falah</span>
+        <span>Ilmu, akhlak, dan langkah menuju masa depan.</span>
       </footer>
     </main>
   );

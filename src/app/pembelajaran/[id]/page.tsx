@@ -1,10 +1,10 @@
+import { AppShell } from "@/components/app-shell";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { requireAccount } from "@/lib/auth/page-context";
 import { learningCommand } from "@/lib/learning/server";
 import { CourseWorkspace } from "@/components/course-workspace";
-import { LogoutButton } from "@/components/auth-form";
 import type { CourseState } from "@/lib/learning/types";
 export const dynamic = "force-dynamic";
 export default async function CoursePage({
@@ -20,7 +20,7 @@ export default async function CoursePage({
     state = await learningCommand<CourseState>(ctx, "course", { course: id });
   } catch {
     return (
-      <main className="mx-auto max-w-3xl p-8">
+      <AppShell>
         <Link className="text-emerald-800 underline" href="/akademik">
           Kembali ke daftar kelas
         </Link>
@@ -30,18 +30,12 @@ export default async function CoursePage({
         <p className="mt-3 text-sm text-stone-600">
           Periksa penugasan atau keanggotaan kelas Anda, lalu coba kembali.
         </p>
-      </main>
+      </AppShell>
     );
   }
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-      <header className="mb-7 flex items-center justify-between gap-4">
-        <Link href="/akademik" className="text-sm text-emerald-800 underline">
-          ← Daftar kelas
-        </Link>
-        <LogoutButton />
-      </header>
+    <AppShell>
       <CourseWorkspace key={id} initial={state} />
-    </main>
+    </AppShell>
   );
 }

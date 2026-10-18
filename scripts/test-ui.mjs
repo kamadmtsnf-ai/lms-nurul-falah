@@ -17,13 +17,15 @@ await build({
     {
       name: "next-link-fixture",
       setup(b) {
-        b.onResolve({ filter: /^next\/link$/ }, () => ({
-          path: "link",
+        b.onResolve({ filter: /^next\/(link|navigation)$/ }, (args) => ({
+          path: args.path,
           namespace: "fixture",
         }));
-        b.onLoad({ filter: /.*/, namespace: "fixture" }, () => ({
+        b.onLoad({ filter: /.*/, namespace: "fixture" }, (args) => ({
           contents:
-            'import React from "react";export default function Link({children,...props}){return React.createElement("a",props,children)}',
+            args.path === "next/navigation"
+              ? 'export function usePathname(){const view=new URLSearchParams(location.search).get("view");return ({dashboard:"/ruang-belajar",academic:"/admin/akademik",users:"/admin/pengguna",monitoring:"/pemantauan",course:"/pembelajaran/fixture"})[view]||"/akademik"}'
+              : 'import React from "react";export default function Link({children,...props}){return React.createElement("a",props,children)}',
           resolveDir: process.cwd(),
           loader: "js",
         }));
@@ -97,6 +99,7 @@ try {
     page.on("pageerror", (e) => errors.push(e.message));
     for (const view of [
       "auth",
+      "dashboard",
       "academic",
       "users",
       "daily",
@@ -207,6 +210,45 @@ try {
     /respons yang valid/,
   );
   checks++;
+  await page.goto(`${base}/?view=auth`);
+  await page.locator("input[name=password]").fill("password-uji");
+  await page
+    .getByRole("button", { name: "Tampilkan password", exact: true })
+    .click();
+  assert.equal(
+    await page.locator("input[name=password]").getAttribute("type"),
+    "text",
+  );
+  await page
+    .getByRole("button", { name: "Sembunyikan password", exact: true })
+    .click();
+  assert.equal(
+    await page.locator("input[name=password]").getAttribute("type"),
+    "password",
+  );
+  checks++;
+  await page.goto(`${base}/?view=dashboard&student=1`);
+  assert.equal(
+    await page.getByLabel("Sekolah aktif", { exact: true }).count(),
+    0,
+  );
+  assert.equal(
+    await page
+      .getByRole("link", { name: "Manajemen pengguna", exact: false })
+      .count(),
+    0,
+  );
+  checks++;
+  await page.goto(`${base}/?view=dashboard`);
+  await page.getByLabel("Sekolah aktif", { exact: true }).waitFor();
+  assert.equal(
+    await page
+      .getByRole("navigation", { name: "Navigasi utama" })
+      .locator('a[aria-current="page"]')
+      .textContent(),
+    "Ruang akun",
+  );
+  checks++;
   await page.goto(`${base}/?view=monitoring`);
   await page
     .getByRole("button", { name: "Siswa berikutnya", exact: true })
@@ -238,28 +280,24 @@ try {
   await page.evaluate(() => {
     window.__validImport = true;
   });
-  await page
-    .locator("input[type=file]")
-    .setInputFiles({
-      name: "valid.xlsx",
-      mimeType:
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      buffer: Buffer.from("fixture"),
-    });
+  await page.locator("input[type=file]").setInputFiles({
+    name: "valid.xlsx",
+    mimeType:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    buffer: Buffer.from("fixture"),
+  });
   await page
     .getByRole("button", { name: "Konfirmasi simpan 1 soal" })
     .waitFor();
   await page.evaluate(() => {
     window.__validImport = false;
   });
-  await page
-    .locator("input[type=file]")
-    .setInputFiles({
-      name: "invalid.xlsx",
-      mimeType:
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      buffer: Buffer.from("invalid"),
-    });
+  await page.locator("input[type=file]").setInputFiles({
+    name: "invalid.xlsx",
+    mimeType:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    buffer: Buffer.from("invalid"),
+  });
   await page.getByText("Baris 2 tidak valid", { exact: true }).waitFor();
   assert.equal(
     await page
@@ -305,6 +343,19 @@ try {
     fullPage: true,
   });
   assert.deepEqual(errors, [], "Browser JavaScript errors");
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(`${base}/?view=dashboard&realistic=1`);
+    await page.screenshot({
+      path: join(output, `dashboard-${width}.png`),
+      fullPage: true,
+    });
+    await page.goto(`${base}/?view=auth&realistic=1`);
+    await page.screenshot({
+      path: join(output, `auth-${width}.png`),
+      fullPage: true,
+    });
+  }
   const data = {
     checks,
     viewports: results,

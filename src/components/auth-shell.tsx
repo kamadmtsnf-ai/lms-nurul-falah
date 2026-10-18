@@ -1,5 +1,10 @@
-import Link from "next/link";
-import { GraduationCap, ShieldCheck } from "lucide-react";
+import {
+  BookOpen,
+  CalendarCheck,
+  ShieldCheck,
+  ClipboardCheck,
+} from "lucide-react";
+import { Brand } from "./brand";
 export function AuthShell({
   title,
   description,
@@ -10,48 +15,58 @@ export function AuthShell({
   children: React.ReactNode;
 }) {
   return (
-    <main className="grid min-h-screen lg:grid-cols-[1fr_1.1fr]">
-      <aside className="hidden flex-col justify-between bg-emerald-950 p-14 text-white lg:flex">
-        <Link href="/" className="flex items-center gap-3 font-semibold">
-          <GraduationCap className="text-amber-200" />
-          LMS Nurul Falah
-        </Link>
+    <main className="auth-layout">
+      <aside className="auth-aside">
+        <Brand inverse />
         <div>
-          <p className="text-sm uppercase tracking-widest text-amber-200">
-            Ruang pembelajaran madrasah
+          <p className="mb-5 text-xs font-semibold uppercase tracking-[.2em] text-emerald-200">
+            Belajar, bertumbuh, berakhlak
           </p>
-          <h2 className="mt-5 max-w-md text-4xl font-semibold leading-tight">
+          <h2>
             Langkah kecil hari ini.
             <br />
             Bekal besar untuk esok.
           </h2>
-          <p className="mt-6 max-w-sm leading-7 text-emerald-100">
-            Belajar bersama, tumbuh dengan ilmu, dan membangun akhlak dalam
-            setiap pertemuan.
+          <p className="mt-6 max-w-md text-sm leading-7 text-emerald-100">
+            Ruang untuk belajar bersama, mendampingi setiap proses, dan melihat
+            perkembangan dengan lebih dekat.
           </p>
+          <div className="mt-9 border-t border-white/15 pt-4">
+            {[
+              { icon: BookOpen, text: "Materi dan kelas yang terstruktur" },
+              { icon: ClipboardCheck, text: "Tugas, kuis, dan umpan balik" },
+              {
+                icon: CalendarCheck,
+                text: "Kehadiran dan perkembangan belajar",
+              },
+            ].map(({ icon: Icon, text }) => (
+              <p className="auth-feature" key={text}>
+                <Icon size={17} aria-hidden />
+                {text}
+              </p>
+            ))}
+          </div>
         </div>
-        <p className="flex items-center gap-2 text-sm text-emerald-200">
-          <ShieldCheck size={18} />
+        <p className="flex items-center gap-2 text-xs text-emerald-200">
+          <ShieldCheck size={15} aria-hidden />
           Akses sesuai peran dan kelas Anda.
         </p>
       </aside>
-      <section className="flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md">
-          <Link
-            href="/"
-            className="text-sm font-semibold text-emerald-800 lg:hidden"
-          >
-            LMS Nurul Falah
-          </Link>
-          <h1 className="mt-6 text-3xl font-semibold tracking-tight">
-            {title}
-          </h1>
-          <p className="mt-3 text-sm leading-6 text-stone-600">{description}</p>
-          {children}
-          <p className="mt-8 text-center text-xs text-stone-500">
-            Hubungi admin madrasah jika memerlukan bantuan akun.
-          </p>
+      <section className="auth-content">
+        <div className="auth-mobile-brand">
+          <Brand />
         </div>
+        <div className="auth-card">
+          <p className="page-eyebrow mb-5">Akun madrasah</p>
+          <h1>{title}</h1>
+          <p className="mt-3 text-sm leading-7 text-stone-500">{description}</p>
+          {children}
+        </div>
+        <p className="auth-support">
+          Butuh bantuan akun? Hubungi admin madrasah.
+          <br />
+          LMS Nurul Falah · Ruang pembelajaran digital
+        </p>
       </section>
     </main>
   );

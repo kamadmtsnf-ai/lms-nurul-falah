@@ -1,6 +1,7 @@
 "use client";
 import { postJson } from "@/lib/http/client";
 import { clearOffline } from "@/lib/offline/store";
+import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 export type Field = {
@@ -26,6 +27,7 @@ export function AuthForm({
   fragment?: boolean;
   extra?: Record<string, string>;
 }) {
+  const [visible, setVisible] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [token, setToken] = useState("");
@@ -82,21 +84,45 @@ export function AuthForm({
           <label htmlFor={f.name} className="mb-2 block text-sm font-semibold">
             {f.label}
           </label>
-          <input
-            id={f.name}
-            name={f.name}
-            type={f.type ?? "text"}
-            autoComplete={f.autoComplete}
-            defaultValue={f.value}
-            disabled={busy}
-            required={f.required !== false}
-            minLength={f.minLength}
-            maxLength={
-              f.type === "password" ? 128 : f.type === "email" ? 254 : 100
-            }
-            className="w-full rounded-xl border border-stone-300 bg-white px-4 py-3 outline-offset-4 focus:outline-emerald-700"
-            aria-describedby={f.hint ? `${f.name}-hint` : undefined}
-          />
+          <div className="relative">
+            <input
+              id={f.name}
+              name={f.name}
+              type={
+                f.type === "password" && visible[f.name]
+                  ? "text"
+                  : (f.type ?? "text")
+              }
+              autoComplete={f.autoComplete}
+              defaultValue={f.value}
+              disabled={busy}
+              required={f.required !== false}
+              minLength={f.minLength}
+              maxLength={
+                f.type === "password" ? 128 : f.type === "email" ? 254 : 100
+              }
+              className={`form-control w-full rounded-xl border border-stone-300 bg-white px-4 py-3 outline-offset-4 focus:outline-emerald-700 ${f.type === "password" ? "pr-14" : ""}`}
+              aria-describedby={f.hint ? `${f.name}-hint` : undefined}
+            />
+            {f.type === "password" && (
+              <button
+                type="button"
+                disabled={busy}
+                aria-label={`${visible[f.name] ? "Sembunyikan" : "Tampilkan"} ${f.label.toLowerCase()}`}
+                aria-pressed={!!visible[f.name]}
+                className="password-toggle"
+                onClick={() =>
+                  setVisible((v) => ({ ...v, [f.name]: !v[f.name] }))
+                }
+              >
+                {visible[f.name] ? (
+                  <EyeOff size={18} aria-hidden />
+                ) : (
+                  <Eye size={18} aria-hidden />
+                )}
+              </button>
+            )}
+          </div>
           {f.hint && (
             <p
               id={`${f.name}-hint`}
@@ -127,6 +153,7 @@ export function AuthForm({
         disabled={busy || (fragment && !token)}
         className="w-full"
       >
+        {busy && <span aria-hidden className="loading-spinner" />}
         {busy ? "Memproses…" : label}
       </Button>
     </form>

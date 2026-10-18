@@ -1,4 +1,5 @@
 "use client";
+import { PageHeading } from "./page-heading";
 import { navigateTabs } from "@/lib/http/tab-navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -121,24 +122,18 @@ export function DailyAttendance({
     : [];
   return (
     <div className="space-y-5">
-      <section className="rounded-2xl bg-emerald-900 p-6 text-white">
-        <p className="text-xs uppercase tracking-widest text-emerald-100">
-          Kehadiran sekolah
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold">Absensi harian</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-6 text-emerald-100">
-          Guru piket mencatat pada hari jadwalnya selama semester aktif. Wali
-          kelas dan guru melihat rekap sesuai penugasan. Catatan pertemuan mata
-          pelajaran tersedia di ruang pembelajaran.
-        </p>
-      </section>
+      <PageHeading
+        eyebrow="Kehadiran sekolah"
+        title="Absensi harian"
+        description="Catat kehadiran sesuai jadwal piket atau tinjau rekap kelas. Absensi pertemuan mata pelajaran tersedia terpisah di ruang pembelajaran."
+      />
       <Notice message={message} error={error} />
       <section className={panelClass}>
         <div
           role="tablist"
           onKeyDown={navigateTabs}
           aria-label="Absensi dan rekap"
-          className="mb-5 flex gap-2"
+          className="section-tabs mb-5 flex gap-2"
         >
           {[
             { key: "day", label: "Absensi harian" },

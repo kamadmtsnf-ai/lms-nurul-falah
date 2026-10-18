@@ -1,3 +1,5 @@
+import { PageHeading } from "@/components/page-heading";
+import { AppShell } from "@/components/app-shell";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -13,14 +15,19 @@ export default async function Page({
   const { id } = await params;
   if (!z.uuid().safeParse(id).success) notFound();
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
+    <AppShell>
       <Link
         className="mb-6 inline-block text-sm text-emerald-800 underline"
         href={`/pembelajaran/${id}`}
       >
         ← Pembelajaran
       </Link>
+      <PageHeading
+        eyebrow="Perkembangan belajar"
+        title="Laporan pembelajaran"
+        description="Tinjau kehadiran, tugas, dan hasil kuis. Ekspor laporan sesuai hak akses Anda."
+      />
       <ReportPanel course={id} />
-    </main>
+    </AppShell>
   );
 }

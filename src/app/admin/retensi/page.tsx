@@ -1,5 +1,6 @@
+import { PageHeading } from "@/components/page-heading";
+import { AppShell } from "@/components/app-shell";
 import { selectedMembership } from "@/lib/development/school";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAccount } from "@/lib/auth/page-context";
 import { RetentionManager } from "@/components/retention-manager";
@@ -18,15 +19,13 @@ export default async function Page() {
   );
   if (!membership) redirect("/ruang-belajar");
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-      <Link
-        href="/ruang-belajar"
-        className="text-sm text-emerald-800 underline"
-      >
-        ← Ruang akun
-      </Link>
-      <h1 className="mb-7 mt-7 text-3xl font-semibold">Retensi data alumni</h1>
+    <AppShell>
+      <PageHeading
+        eyebrow="Administrasi sekolah"
+        title="Retensi data alumni"
+        description="Tinjau masa simpan dan tahapan penghapusan data alumni dengan lebih terarah."
+      />
       <RetentionManager school={membership.school_id} />
-    </main>
+    </AppShell>
   );
 }

@@ -1,3 +1,5 @@
+import { AppShell } from "../../src/components/app-shell";
+import { WorkspaceDashboard } from "../../src/components/workspace-dashboard";
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AuthForm, LogoutButton } from "../../src/components/auth-form";
@@ -24,7 +26,9 @@ const params = new URLSearchParams(location.search),
 const id = "11111111-1111-4111-8111-111111111111",
   school = "22222222-2222-4222-8222-222222222222",
   student = "33333333-3333-4333-8333-333333333333";
-const long = "DataPanjangTanpaSpasi".repeat(15),
+const long = params.has("realistic")
+    ? "Ilmu Pengetahuan Sosial"
+    : "DataPanjangTanpaSpasi".repeat(15),
   now = "2026-10-18T03:00:00Z";
 const roster = empty
   ? []
@@ -143,18 +147,16 @@ const report = (offset = 0) => ({
   course: course.course,
   rows: empty
     ? []
-    : roster
-        .slice(0, 5)
-        .map((r) => ({
-          ...r,
-          present: 1,
-          attendance_recorded: 1,
-          overdue_missing: 0,
-          submissions: 1,
-          assignment_average: 80,
-          quiz_average: 70,
-          weighted_final: 75,
-        })),
+    : roster.slice(0, 5).map((r) => ({
+        ...r,
+        present: 1,
+        attendance_recorded: 1,
+        overdue_missing: 0,
+        submissions: 1,
+        assignment_average: 80,
+        quiz_average: 70,
+        weighted_final: 75,
+      })),
   quizzes: [],
   activity: { meetings: 1, materials: 1, assignments: 1, quizzes: 1 },
   weights: { assignment_weight: 50, quiz_weight: 50, visible: true },
@@ -240,17 +242,15 @@ window.fetch = async (url, options) => {
   if (path.includes("/identitas/")) {
     if (action === "admin-list")
       return Response.json({
-        users: roster
-          .slice(0, 3)
-          .map((r) => ({
-            ...r,
-            username_normalized: long,
-            contact_email: null,
-            email_verified_at: now,
-            must_change_password: false,
-            status: "active",
-            roles: ["teacher"],
-          })),
+        users: roster.slice(0, 3).map((r) => ({
+          ...r,
+          username_normalized: long,
+          contact_email: null,
+          email_verified_at: now,
+          must_change_password: false,
+          status: "active",
+          roles: ["teacher"],
+        })),
       });
     return Response.json({ message: "Tersimpan" });
   }
@@ -378,7 +378,14 @@ function Fixture() {
   const [mode] = useState(view);
   if (mode === "auth")
     return (
-      <AuthShell title="Masuk ke akun Anda" description={long}>
+      <AuthShell
+        title="Masuk ke akun Anda"
+        description={
+          params.has("realistic")
+            ? "Masuk menggunakan username dan password yang diberikan admin madrasah."
+            : long
+        }
+      >
         <AuthForm
           action="login"
           label="Masuk"
@@ -390,12 +397,22 @@ function Fixture() {
         <LogoutButton />
       </AuthShell>
     );
+  if (mode === "dashboard")
+    return (
+      <WorkspaceDashboard
+        name={params.has("realistic") ? "Ahmad Fadli" : long}
+        roles={isStudent ? ["student"] : ["admin", "teacher"]}
+        school={school}
+      />
+    );
+  if (mode === "quiz")
+    return (
+      <main className="mx-auto max-w-3xl px-4 py-8">
+        <QuizAttempt initial={attempt} course={id} />
+      </main>
+    );
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
-      <header className="mb-7 flex items-center justify-between">
-        <a href="#">Kembali ke ruang belajar</a>
-        <LogoutButton />
-      </header>
+    <AppShell>
       {mode === "course" ? (
         <CourseWorkspace initial={course} />
       ) : mode === "academic" ? (
@@ -435,7 +452,7 @@ function Fixture() {
       ) : (
         <OfflineWorkspace />
       )}
-    </main>
+    </AppShell>
   );
 }
 createRoot(document.getElementById("root")!).render(<Fixture />);

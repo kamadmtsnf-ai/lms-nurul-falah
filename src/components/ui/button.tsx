@@ -23,5 +23,11 @@ export function Button({
 }: React.ComponentProps<"button"> &
   VariantProps<typeof variants> & { asChild?: boolean }) {
   const Comp = asChild ? Slot : "button";
-  return <Comp className={cn(variants({ variant }), className)} {...props} />;
+  return (
+    <Comp
+      data-variant={variant ?? "default"}
+      className={cn(variants({ variant }), className)}
+      {...props}
+    />
+  );
 }

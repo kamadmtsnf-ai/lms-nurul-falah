@@ -285,9 +285,9 @@ export function QuizAttempt({
   const done = attempt.status !== "working";
   return (
     <div className="space-y-5">
-      <header className="sticky top-0 z-10 rounded-2xl bg-emerald-900 p-5 text-white shadow">
+      <header className="workspace-hero sticky top-0 z-10 rounded-2xl p-5 text-white shadow">
         <p className="text-xs uppercase tracking-wider">
-          Kuis · percobaan {attempt.attempt_no ?? 1}
+          LMS Nurul Falah · Percobaan {attempt.attempt_no ?? 1}
         </p>
         <h1
           title={attempt.title}
@@ -295,7 +295,7 @@ export function QuizAttempt({
         >
           {attempt.title}
         </h1>
-        <p role="timer" className="mt-3 font-semibold">
+        <p role="timer" className="quiz-timer mt-3 font-semibold">
           {done
             ? "Kuis selesai"
             : !attempt.can_answer
@@ -505,7 +505,7 @@ function AnswerInput({
       {q.options.map((option, n) => (
         <label
           key={n}
-          className="flex items-start gap-3 rounded-xl border border-stone-200 p-4 text-sm"
+          className="answer-option flex items-start gap-3 rounded-xl border border-stone-200 p-4 text-sm"
         >
           <input
             type={q.kind === "complex" ? "checkbox" : "radio"}

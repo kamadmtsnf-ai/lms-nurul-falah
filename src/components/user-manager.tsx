@@ -13,7 +13,7 @@ type User = {
   roles: string[];
 };
 const inputClass =
-  "w-full rounded-xl border border-stone-300 bg-white px-4 py-3";
+  "form-control w-full rounded-xl border border-stone-300 bg-white px-4 py-3";
 export function UserManager({ school }: { school: string }) {
   const readId = useRef(0);
   const [loading, setLoading] = useState(true);
@@ -81,7 +81,7 @@ export function UserManager({ school }: { school: string }) {
   }
   return (
     <div className="space-y-8">
-      <section className="rounded-2xl border border-stone-200 bg-white p-6">
+      <section className="surface-card rounded-2xl border border-stone-200 bg-white p-6">
         <h2 className="text-xl font-semibold">Tambah pengguna</h2>
         <p className="mt-2 text-sm text-stone-600">
           Akun baru memakai password awal yang disepakati madrasah dan wajib
@@ -157,7 +157,7 @@ export function UserManager({ school }: { school: string }) {
           {users.map((u) => (
             <form
               key={`${u.id}:${u.status}:${(u.roles ?? []).join(",")}`}
-              className="rounded-2xl border border-stone-200 bg-white p-6"
+              className="surface-card rounded-2xl border border-stone-200 bg-white p-6"
               onSubmit={(e) => {
                 e.preventDefault();
                 void save(e.currentTarget, "admin-update", u.id);

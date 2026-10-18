@@ -109,7 +109,7 @@ export function ReportPanel({ course }: { course: string }) {
             className={panelClass}
           >
             {tab === "summary" && (
-              <div className="overflow-auto">
+              <div className="section-tabs overflow-auto">
                 <table className="w-full text-left text-sm">
                   <caption className="sr-only">
                     Ringkasan absensi, tugas dan nilai siswa

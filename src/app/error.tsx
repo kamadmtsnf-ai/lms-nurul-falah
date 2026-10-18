@@ -1,17 +1,13 @@
 "use client";
+import { StatePage } from "@/components/state-page";
+import { Button } from "@/components/ui/button";
 export default function ErrorPage({ reset }: { reset: () => void }) {
   return (
-    <main className="mx-auto max-w-xl px-6 py-24">
-      <h1 className="text-2xl font-semibold">Halaman belum dapat dibuka</h1>
-      <p className="mt-4">
-        Silakan coba kembali. Jika tetap terjadi, hubungi admin madrasah.
-      </p>
-      <button
-        className="mt-6 rounded-xl bg-emerald-800 px-5 py-3 text-white"
-        onClick={reset}
-      >
-        Coba lagi
-      </button>
-    </main>
+    <StatePage
+      title="Halaman belum dapat dibuka"
+      description="Silakan coba kembali. Jika kendala berlanjut, hubungi admin madrasah."
+    >
+      <Button onClick={reset}>Coba lagi</Button>
+    </StatePage>
   );
 }

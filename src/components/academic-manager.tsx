@@ -31,8 +31,9 @@ import {
   type ImportKind,
 } from "@/lib/academic/import-config";
 const inputClass =
-  "mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100";
-const card = "rounded-2xl border border-stone-200 bg-white p-5 sm:p-6";
+  "mt-2 form-control w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-100";
+const card =
+  "surface-card rounded-2xl border border-stone-200 bg-white p-5 sm:p-6";
 function entitySemester(state: AcademicState, entity: string, row: DataRow) {
   if (entity === "semesters") return row.id;
   if (row.semester_id) return row.semester_id;
@@ -192,7 +193,7 @@ export function AcademicManager({
         <aside className="lg:sticky lg:top-5">
           <nav
             aria-label="Menu akademik"
-            className="flex gap-2 overflow-x-auto rounded-2xl border border-stone-200 bg-white p-2 lg:flex-col"
+            className="flex gap-2 overflow-x-auto surface-card rounded-2xl border border-stone-200 bg-white p-2 lg:flex-col"
           >
             {[
               { key: "school", label: "Pengaturan sekolah" },

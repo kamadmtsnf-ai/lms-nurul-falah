@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { learningRequest } from "@/lib/learning/types";
 import { fileKind, mimeForName } from "@/lib/learning/file-validation";
 export const fieldClass =
-  "mt-2 w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-200";
+  "mt-2 form-control w-full rounded-xl border border-stone-300 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-200";
 export const panelClass =
-  "rounded-2xl border border-stone-200 bg-white p-5 sm:p-6";
+  "surface-card rounded-2xl border border-stone-200 bg-white p-5 sm:p-6";
 export function Links({ links }: { links: string[] }) {
   return links.length ? (
     <ul className="mt-4 space-y-2 text-sm">
