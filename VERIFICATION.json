@@ -6,15 +6,15 @@
   "production_build": "passed",
   "typecheck": "passed",
   "automated_tests": {
-    "passed": 154,
+    "passed": 169,
     "failed": 0
   },
   "http_scenarios": {
-    "passed": 21,
+    "passed": 23,
     "failed": 0,
     "scope": "local_no_database_config"
   },
-  "cloud_database": "23_migrations_applied_account_security_hardening_verified",
+  "cloud_database": "25_migrations_applied_academic_flow_verified",
   "migration_versions": [
     "20261017152937",
     "20261017152957",
@@ -38,7 +38,9 @@
     "20261018002715",
     "20261018002920",
     "20261018104028",
-    "20261018113505"
+    "20261018113505",
+    "20261018144212",
+    "20261018144324"
   ],
   "external_email": "user_confirmed_activation_success_not_retested_in_stage_3",
   "deployment": "inspect_current_commit_in_vercel",
@@ -445,5 +447,27 @@
     "scope": "real_local_database_all_migrations_and_synthetic_browser_mock_api; cloud_schema_and_permissions_checked; no_real_account_mfa_enrolled_or_sensitive_profile_mutation; authenticated_production_MFA_acceptance_not_run",
     "operator_recovery": "script_provided_not_executed",
     "report": "docs/23-Penguatan-Keamanan-Akun.md"
+  },
+  "academic_flow": {
+    "status": "implemented",
+    "migration": "20261018144212",
+    "index_migration": "20261018144324",
+    "cloud_migrations_applied": true,
+    "automated_tests_passed": 169,
+    "ui_checks_passed": 379,
+    "http_scenarios_passed": 23,
+    "build": "passed",
+    "typecheck": "passed",
+    "viewports": [
+      320,
+      390,
+      768,
+      1440
+    ],
+    "javascript_errors": [],
+    "visual_review": "TP_desktop_mobile_long_unbroken_strings",
+    "cloud_permissions": "nine_private_tables_RLS_direct_anon_authenticated_reads_denied; RPC_authenticated_only_identity_and_MFA_checked",
+    "scope": "real_local_database_all_migrations; synthetic_browser_mock_API; cloud_schema_permissions; real_school_grade_and_enrollment_test_mutations_not_performed",
+    "report": "docs/24-Penyempurnaan-Alur-Akademik.md"
   }
 }

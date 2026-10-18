@@ -428,6 +428,132 @@ try {
   for (const width of [320, 390, 768, 1440]) {
     const p = await browser.newPage({ viewport: { width, height: 900 } });
     p.on("pageerror", (e) => errors.push(e.message));
+    for (const role of ["manager", "student"]) {
+      await p.goto(
+        `${base}/?view=flow${role === "student" ? "&student=1&flowClosed=1" : ""}`,
+      );
+      await p
+        .getByRole("heading", { name: "Tujuan pembelajaran (TP)", exact: true })
+        .waitFor();
+      for (const name of [
+        "Tujuan pembelajaran",
+        "Ketercapaian",
+        "Remedial & pengayaan",
+        "Riwayat & finalisasi",
+      ]) {
+        await p.getByRole("button", { name, exact: true }).click();
+        await check(p, `academic-flow/${role}/${name}/${width}`);
+      }
+      if (role === "student") {
+        assert.equal(
+          await p
+            .getByRole("button", { name: "Kunci nilai final", exact: true })
+            .count(),
+          0,
+        );
+        await p
+          .getByRole("button", { name: "Remedial & pengayaan", exact: true })
+          .click();
+        assert.equal(
+          await p
+            .getByRole("button", { name: "Tinjau & simpan hasil", exact: true })
+            .count(),
+          0,
+        );
+      }
+    }
+    await p.goto(`${base}/?view=flow`);
+    await p
+      .getByRole("button", { name: "Remedial & pengayaan", exact: true })
+      .click();
+    await p.getByLabel("Hasil tindak lanjut (%)", { exact: true }).fill("85");
+    await p
+      .getByLabel("Catatan hasil / bukti penilaian", { exact: true })
+      .fill("Bukti penilaian terverifikasi");
+    await p
+      .getByRole("button", { name: "Tinjau & simpan hasil", exact: true })
+      .click();
+    await p.getByRole("dialog").waitFor();
+    await check(p, `academic-flow/followup-confirm/${width}`);
+    await p.keyboard.press("Escape");
+    assert.equal(
+      await p.evaluate(() =>
+        window.__requests.some(
+          (r) => r.path === "/api/alur-akademik/followup-complete",
+        ),
+      ),
+      false,
+    );
+    await p
+      .getByRole("button", { name: "Riwayat & finalisasi", exact: true })
+      .click();
+    await p
+      .getByRole("button", { name: "Kunci nilai final", exact: true })
+      .click();
+    await p.getByRole("dialog").waitFor();
+    await p
+      .getByLabel("Alasan (minimal 5 karakter)", { exact: true })
+      .fill("Seluruh nilai diperiksa");
+    await check(p, `academic-flow/finalization-confirm/${width}`);
+    await p.getByRole("button", { name: "Ya, lanjutkan", exact: true }).click();
+    await p.getByRole("dialog").waitFor({ state: "hidden" });
+    await p
+      .getByRole("button", { name: "Buka kembali dengan alasan", exact: true })
+      .waitFor();
+    assert.equal(
+      await p
+        .getByRole("button", {
+          name: "Buka kembali dengan alasan",
+          exact: true,
+        })
+        .count(),
+      1,
+    );
+    await p.goto(`${base}/?view=rollover`);
+    await p
+      .getByLabel("Rombel asal", { exact: true })
+      .selectOption("11111111-1111-4111-8111-111111111111");
+    await p
+      .getByLabel("Rombel tujuan (semester Draf)", { exact: true })
+      .selectOption("dest-room");
+    await check(p, `academic-rollover/select/${width}`);
+    await p
+      .getByRole("button", { name: "Buat pratinjau perpindahan", exact: true })
+      .click();
+    await p
+      .getByRole("button", {
+        name: "Konfirmasi perpindahan peserta",
+        exact: true,
+      })
+      .waitFor();
+    await check(p, `academic-rollover/preview/${width}`);
+    await p
+      .getByRole("button", {
+        name: "Konfirmasi perpindahan peserta",
+        exact: true,
+      })
+      .click();
+    await p.getByRole("dialog").waitFor();
+    await check(p, `academic-rollover/confirm/${width}`);
+    await p
+      .getByLabel("Ketik PINDAHKAN PESERTA", { exact: true })
+      .fill("PINDAHKAN PESERTA");
+    await p
+      .getByRole("button", { name: "Ya, simpan perpindahan", exact: true })
+      .click();
+    await p.getByRole("dialog").waitFor({ state: "hidden" });
+    await p
+      .getByRole("heading", {
+        name: "2. Rekonsiliasi perpindahan",
+        exact: true,
+      })
+      .waitFor();
+    await check(p, `academic-rollover/reconciled/${width}`);
+    await p.close();
+  }
+  for (const width of [320, 390, 768, 1440]) {
+    const p = await browser.newPage({ viewport: { width, height: 900 } });
+    p.on("pageerror", (e) => errors.push(e.message));
     await p.goto(`${base}/?view=security`);
     await p.getByText("Status: Belum aktif", { exact: true }).waitFor();
     await check(p, `security/disabled/${width}`);
@@ -520,7 +646,9 @@ try {
       1,
     );
     await p.getByRole("tab", { name: "Akun & keamanan", exact: true }).click();
-    await p.getByText("0012345678901234", { exact: true }).waitFor({state:"detached"});
+    await p
+      .getByText("0012345678901234", { exact: true })
+      .waitFor({ state: "detached" });
     assert.equal(
       await p.getByText("0012345678901234", { exact: true }).count(),
       0,

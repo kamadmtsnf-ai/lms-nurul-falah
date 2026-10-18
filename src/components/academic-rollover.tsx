@@ -8,6 +8,8 @@ import { flowRequest } from "@/lib/academic-flow/client";
 import { rowsOf, rowLabel, type AcademicState } from "@/lib/academic/config";
 import { dateLabel } from "@/lib/learning/types";
 type Run = {
+  source_id?: string;
+  destination_id?: string;
   id: string;
   mode: string;
   status: string;
@@ -53,6 +55,17 @@ export function AcademicRollover({
     [open, setOpen] = useState(false),
     [confirmation, setConfirmation] = useState(""),
     [allowCommit, setAllowCommit] = useState(false);
+  const activeSchool = useRef(school);
+  activeSchool.current = school;
+  useEffect(() => {
+    setPreview(null);
+    setAllowCommit(false);
+    setSource("");
+    setDestination("");
+    setSelected([]);
+    setOpen(false);
+    setConfirmation("");
+  }, [school]);
   const acting = useRef(false),
     reads = useRef(0);
   const load = useCallback(async () => {
@@ -110,6 +123,7 @@ export function AcademicRollover({
     setMessage("");
     try {
       const r = await flowRequest<Preview>(action, { school, ...body });
+      if (activeSchool.current !== school) return;
       setPreview(r);
       setAllowCommit(action === "rollover-preview");
       if (action === "rollover-commit") {
@@ -174,6 +188,7 @@ export function AcademicRollover({
             <label className="text-sm">
               Rombel asal
               <select
+                aria-label="Rombel asal"
                 className={fieldClass}
                 value={source}
                 onChange={(e) => {
@@ -219,6 +234,7 @@ export function AcademicRollover({
             <label className="text-sm">
               Rombel tujuan (semester Draf)
               <select
+                aria-label="Rombel tujuan (semester Draf)"
                 className={fieldClass}
                 value={destination}
                 onChange={(e) => {
@@ -337,6 +353,24 @@ export function AcademicRollover({
               ? "Rekonsiliasi perpindahan"
               : "Periksa pratinjau"}
           </h3>
+          <p className="mt-3 text-sm">
+            Asal:{" "}
+            {rooms.find((c) => c.id === preview.run.source_id)
+              ? rowLabel(
+                  state,
+                  "classrooms",
+                  rooms.find((c) => c.id === preview.run.source_id)!,
+                )
+              : "Rombel asal"}{" "}
+            → Tujuan:{" "}
+            {rooms.find((c) => c.id === preview.run.destination_id)
+              ? rowLabel(
+                  state,
+                  "classrooms",
+                  rooms.find((c) => c.id === preview.run.destination_id)!,
+                )
+              : "Rombel tujuan"}
+          </p>
           <p className="mt-2 break-all text-xs text-stone-500">
             Referensi: {preview.run.id}
           </p>
@@ -427,8 +461,24 @@ export function AcademicRollover({
             <tbody>
               {runs.slice(0, 25).map((r) => (
                 <tr key={r.id}>
-                  <th scope="row">{r.source}</th>
-                  <td>{r.destination}</td>
+                  <th scope="row">
+                    {rooms.find((c) => c.id === r.source_id)
+                      ? rowLabel(
+                          state,
+                          "classrooms",
+                          rooms.find((c) => c.id === r.source_id)!,
+                        )
+                      : r.source}
+                  </th>
+                  <td>
+                    {rooms.find((c) => c.id === r.destination_id)
+                      ? rowLabel(
+                          state,
+                          "classrooms",
+                          rooms.find((c) => c.id === r.destination_id)!,
+                        )
+                      : r.destination}
+                  </td>
                   <td>{r.participant_count}</td>
                   <td>
                     {r.status === "committed" ? "Tersimpan" : "Pratinjau"}

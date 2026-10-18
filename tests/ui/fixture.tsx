@@ -1,3 +1,7 @@
+import { AcademicFlowPanel } from "../../src/components/academic-flow-panel";
+import { AcademicRollover } from "../../src/components/academic-rollover";
+import type { FlowState } from "../../src/lib/academic-flow/client";
+import type { AcademicState } from "../../src/lib/academic/config";
 import {
   SecurityWorkspace,
   MfaChallenge,
@@ -405,6 +409,66 @@ if (params.has("profilePhoto")) profileData.has_photo = true;
 if (params.has("profileLocked"))
   for (const key of Object.keys(profileData.next))
     profileData.next[key as keyof ProfileData["next"]] = "2030-12-31T00:00:00Z";
+const flowGoalId = "44444444-4444-4444-8444-444444444444";
+const flowFixture: FlowState = {
+  context: {
+    manager: !isStudent,
+    reviewer: !isStudent,
+    admin: !isStudent,
+    writable: !params.has("flowReadOnly"),
+  },
+  can_unlock: !isStudent,
+  locked: params.has("flowLocked"),
+  revision: 0,
+  goals: empty
+    ? []
+    : [
+        {
+          id: flowGoalId,
+          code: "TP-01",
+          title: long,
+          threshold: 75,
+          active: true,
+          revision: 0,
+        },
+      ],
+  links: empty
+    ? []
+    : [{ goal_id: flowGoalId, kind: "assignment", activity_id: id }],
+  activities: empty
+    ? []
+    : [
+        { id, title: long, kind: "assignment" },
+        { id: "quiz-flow", title: "Kuis konsep", kind: "quiz" },
+      ],
+  rows: [],
+  has_more: false,
+  followups: empty
+    ? []
+    : [
+        {
+          id: "followup-flow",
+          student_id: student,
+          full_name: long,
+          kind: "remedial",
+          activity_kind: "assignment",
+          activity_id: id,
+          plan: long,
+          due_on: "2026-12-01",
+          policy: "highest",
+          cap: 75,
+          status: "planned",
+          result_score: null,
+          note: "",
+          revision: 0,
+          baseline_changed: false,
+        },
+      ],
+  finalizations: params.has("flowLocked")
+    ? [{ id: "finalized", reason: long, created_at: now }]
+    : [],
+};
+let rolloverCommitted = false;
 const requests: Record<string, unknown>[] = [];
 (window as any).__requests = requests;
 (window as any).__fail = false;
@@ -430,6 +494,156 @@ window.fetch = async (url, options) => {
   if ((window as any).__fail)
     return new Response("<html>Upstream unavailable</html>", { status: 502 });
   await new Promise((r) => setTimeout(r, 30));
+  if (path.startsWith("/api/alur-akademik/")) {
+    if (action === "state") {
+      const rows = (
+        isStudent
+          ? roster.slice(0, 1)
+          : roster.slice(
+              Number(body.offset || 0),
+              Number(body.offset || 0) + 100,
+            )
+      ).map((r, i) => ({
+        ...r,
+        assignment_average: params.has("flowClosed") ? null : 80,
+        quiz_average: params.has("flowClosed") ? null : 90,
+        weighted_final: params.has("flowClosed") ? null : 85,
+        goals: [
+          {
+            goal_id: flowGoalId,
+            score: params.has("flowClosed") ? null : 80,
+            assessed: params.has("flowClosed") ? 0 : 1,
+            required: 1,
+            mastered: params.has("flowClosed") ? null : i % 2 === 0,
+            materials_completed: 1,
+          },
+        ],
+      }));
+      return Response.json({
+        ok: true,
+        result: {
+          ...flowFixture,
+          rows,
+          has_more:
+            !isStudent && Number(body.offset || 0) === 0 && roster.length > 100,
+        },
+      });
+    }
+    if (action === "snapshot")
+      return Response.json({
+        ok: true,
+        result: { rows: roster.slice(0, 3).map((r) => ({ ...r, score: 80 })) },
+      });
+    if (action === "history")
+      return Response.json({
+        ok: true,
+        result: {
+          rows:
+            empty || params.has("flowClosed")
+              ? []
+              : Array.from({ length: body.offset ? 2 : 26 }, (_, i) => ({
+                  id: "history-" + String(body.offset || 0) + i,
+                  student_id: student,
+                  full_name: long,
+                  kind: "assignment",
+                  title: long,
+                  position: null,
+                  old_score: 50,
+                  new_score: 80,
+                  reason: long,
+                  created_at: now,
+                })),
+        },
+      });
+    if (action === "goal-save") {
+      const d = body.data;
+      const existing = flowFixture.goals.find((g) => g.id === body.target);
+      if (existing)
+        Object.assign(existing, d, { revision: existing.revision + 1 });
+      else flowFixture.goals.push({ id: "new-goal", ...d });
+    }
+    if (action === "goal-link") {
+      const d = body.data;
+      if (d.linked)
+        flowFixture.links.push({
+          goal_id: d.goal_id,
+          kind: d.kind,
+          activity_id: d.activity_id,
+        });
+      else
+        flowFixture.links = flowFixture.links.filter(
+          (l) => l.activity_id !== d.activity_id || l.goal_id !== d.goal_id,
+        );
+    }
+    if (action === "lock" || action === "unlock") {
+      flowFixture.locked = action === "lock";
+      flowFixture.revision++;
+    }
+    if (action === "followup-complete" || action === "followup-withdraw") {
+      const f = flowFixture.followups.find((f) => f.id === body.target);
+      if (f)
+        Object.assign(f, body.data, {
+          status: action === "followup-complete" ? "completed" : "withdrawn",
+          revision: f.revision + 1,
+        });
+    }
+    if (action === "rollover-list")
+      return Response.json({
+        ok: true,
+        result: {
+          runs: [
+            {
+              id: "run-flow",
+              source: long,
+              destination: long,
+              status: rolloverCommitted ? "committed" : "preview",
+              mode: "semester",
+              participant_count: 3,
+              created_at: now,
+              committed_at: null,
+            },
+          ],
+        },
+      });
+    if (
+      action === "rollover-commit" &&
+      body.data.confirmation !== "PINDAHKAN PESERTA"
+    )
+      return Response.json(
+        { ok: false, message: "Ketik konfirmasi yang diminta." },
+        { status: 409 },
+      );
+    if (action === "rollover-commit") rolloverCommitted = true;
+    if (action?.startsWith("rollover-"))
+      return Response.json({
+        ok: true,
+        result: {
+          run: {
+            id: "run-flow",
+            source_id: id,
+            destination_id: "dest-room",
+            status: rolloverCommitted ? "committed" : "preview",
+            mode: "semester",
+            participant_count: 3,
+            created_at: now,
+            committed_at: rolloverCommitted ? now : null,
+            expires_at: "2030-12-01T00:00:00Z",
+          },
+          readiness: { unfinalized_courses: 2, working_quizzes: 0 },
+          rows: roster.slice(0, 3).map((r, i) => ({
+            ...r,
+            student_id: r.id,
+            source_enrollment_id: "source-enrollment-" + i,
+            source_exists: true,
+            destination_enrollment_id: rolloverCommitted
+              ? "destination-enrollment-" + i
+              : null,
+            destination_status: rolloverCommitted ? "active" : null,
+          })),
+        },
+      });
+    return Response.json({ ok: true, result: { id: "new-flow-record" } });
+  }
   if (path.startsWith("/api/keamanan/")) {
     if (action === "state")
       return Response.json({
@@ -758,6 +972,36 @@ const academic = {
       }))
     : [],
 };
+const rolloverState: AcademicState = {
+  ...academic,
+  academic_years: [{ id, name: "2026/2027" }],
+  semesters: [
+    { id, academic_year_id: id, number: 1, status: "active" },
+    { id: "dest-semester", academic_year_id: id, number: 2, status: "draft" },
+  ],
+  classrooms: [
+    { id, semester_id: id, name: "7A", grade_level_id: id },
+    {
+      id: "dest-room",
+      semester_id: "dest-semester",
+      name: "7A",
+      grade_level_id: id,
+    },
+  ],
+  users: roster.map((r) => ({
+    ...r,
+    username_normalized: r.id,
+    status: "active",
+    roles: ["student"],
+  })),
+  student_enrollments: roster.map((r) => ({
+    id: "enroll-" + r.id,
+    classroom_id: id,
+    semester_id: id,
+    student_id: r.id,
+    status: "active",
+  })),
+};
 function Fixture() {
   const [mode] = useState(view);
   if (mode === "auth")
@@ -799,6 +1043,14 @@ function Fixture() {
     <AppShell>
       {mode === "course" ? (
         <CourseWorkspace initial={studentView(course)} />
+      ) : mode === "flow" ? (
+        <AcademicFlowPanel course={id} />
+      ) : mode === "rollover" ? (
+        <AcademicRollover
+          school={school}
+          state={rolloverState}
+          onComplete={async () => {}}
+        />
       ) : mode === "security" ? (
         <SecurityWorkspace admin />
       ) : mode === "mfa" ? (

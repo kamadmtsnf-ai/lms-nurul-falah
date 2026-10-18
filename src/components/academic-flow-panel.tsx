@@ -73,13 +73,58 @@ export function AcademicFlowPanel({ course }: { course: string }) {
     [history, setHistory] = useState<HistoryRow[]>([]),
     [historyOffset, setHistoryOffset] = useState(0),
     [historyStudent, setHistoryStudent] = useState("");
+  const [followupOffset, setFollowupOffset] = useState(0);
+  const [snapshotId, setSnapshotId] = useState(""),
+    [snapshotOffset, setSnapshotOffset] = useState(0),
+    [snapshotRows, setSnapshotRows] = useState<
+      { id: string; full_name: string; score: number }[]
+    >([]),
+    [snapshotLoading, setSnapshotLoading] = useState(false);
+  useEffect(() => {
+    if (!snapshotId) return;
+    let active = true;
+    setSnapshotLoading(true);
+    flowRequest<{ rows: { id: string; full_name: string; score: number }[] }>(
+      "snapshot",
+      { course, target: snapshotId, offset: snapshotOffset },
+    )
+      .then((r) => {
+        if (active) setSnapshotRows(r.rows);
+      })
+      .catch((e) => {
+        if (active) setError(e.message);
+      })
+      .finally(() => {
+        if (active) setSnapshotLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [course, snapshotId, snapshotOffset]);
+  const activeCourse = useRef(course);
+  activeCourse.current = course;
+  useEffect(() => {
+    setSnapshotId("");
+    setSnapshotRows([]);
+    setSnapshotOffset(0);
+    setHistoryStudent("");
+    setHistoryOffset(0);
+    setEditing(null);
+    setPending(null);
+    setOffset(0);
+    setFollowupOffset(0);
+  }, [course]);
   const reads = useRef(0),
     acting = useRef(false);
   const load = useCallback(async () => {
     const id = ++reads.current;
     setLoading(true);
     try {
-      const r = await flowRequest<FlowState>("state", { course, offset });
+      const r = await flowRequest<FlowState>("state", {
+        course,
+        offset,
+        followup_offset: followupOffset,
+      });
       if (id === reads.current) {
         setState(r);
         setError("");
@@ -90,7 +135,7 @@ export function AcademicFlowPanel({ course }: { course: string }) {
     } finally {
       if (id === reads.current) setLoading(false);
     }
-  }, [course, offset]);
+  }, [course, offset, followupOffset]);
   useEffect(() => {
     setState(null);
     void load();
@@ -127,17 +172,20 @@ export function AcademicFlowPanel({ course }: { course: string }) {
     setBusy(true);
     setError("");
     setMessage("");
-    reads.current++;
+    const operation = ++reads.current;
     try {
       await flowRequest(action, {
         course,
         data,
         ...(target ? { target } : {}),
       });
+      if (operation !== reads.current || activeCourse.current !== course)
+        return false;
       setPending(null);
       setEditing(null);
       setReason("");
       await load();
+      if (activeCourse.current !== course) return false;
       setMessage("Perubahan alur akademik berhasil disimpan.");
       return true;
     } catch (e) {
@@ -549,7 +597,7 @@ export function AcademicFlowPanel({ course }: { course: string }) {
               lama tidak diterapkan otomatis.
             </p>
             <div className="mt-5 space-y-4">
-              {state.followups.map((f) => (
+              {state.followups.slice(0, 50).map((f) => (
                 <article
                   key={f.id}
                   className="rounded-xl border border-stone-200 p-4"
@@ -650,6 +698,22 @@ export function AcademicFlowPanel({ course }: { course: string }) {
                 </p>
               )}
             </div>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Button
+                variant="outline"
+                disabled={busy || !followupOffset}
+                onClick={() => setFollowupOffset((v) => Math.max(0, v - 50))}
+              >
+                Tindak lanjut sebelumnya
+              </Button>
+              <Button
+                variant="outline"
+                disabled={busy || state.followups.length <= 50}
+                onClick={() => setFollowupOffset((v) => v + 50)}
+              >
+                Tindak lanjut berikutnya
+              </Button>
+            </div>
           </section>
           {canManage && (
             <FollowupForm
@@ -709,9 +773,88 @@ export function AcademicFlowPanel({ course }: { course: string }) {
                 <li key={f.id} className="rounded-xl bg-stone-50 p-3 text-sm">
                   <p>{dateLabel(f.created_at)}</p>
                   <p className="mt-1 break-words">{f.reason}</p>
+                  <Button
+                    className="mt-3"
+                    variant="outline"
+                    disabled={busy || snapshotLoading}
+                    onClick={() => {
+                      setSnapshotRows([]);
+                      setSnapshotOffset(0);
+                      setSnapshotId(f.id);
+                    }}
+                  >
+                    Lihat snapshot nilai
+                  </Button>
                 </li>
               ))}
             </ol>
+            {state.finalizations.length > 0 && (
+              <p className="mt-3 text-xs text-stone-500">
+                10 finalisasi terakhir. Snapshot hanya menampilkan akun siswa
+                yang masih aktif.
+              </p>
+            )}
+            {snapshotId && (
+              <div className="mt-5 rounded-xl bg-stone-50 p-4">
+                <h4 className="font-semibold">
+                  Snapshot nilai final sebelumnya
+                </h4>
+                <p className="mt-2 break-all text-xs text-stone-500">
+                  Referensi: {snapshotId}
+                </p>
+                {snapshotLoading && (
+                  <p role="status" className="mt-3 text-sm">
+                    Memuat snapshot…
+                  </p>
+                )}
+                <DataTableViewport label="Tabel snapshot nilai final">
+                  <table className="w-full min-w-[400px]">
+                    <thead>
+                      <tr>
+                        <th scope="col">Siswa</th>
+                        <th scope="col">Nilai final (%)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {snapshotRows.slice(0, 100).map((r) => (
+                        <tr key={r.id}>
+                          <th scope="row">{r.full_name}</th>
+                          <td>{num(r.score)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </DataTableViewport>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Button
+                    variant="outline"
+                    disabled={snapshotLoading || !snapshotOffset}
+                    onClick={() =>
+                      setSnapshotOffset((v) => Math.max(0, v - 100))
+                    }
+                  >
+                    Snapshot sebelumnya
+                  </Button>
+                  <Button
+                    variant="outline"
+                    disabled={snapshotLoading || snapshotRows.length <= 100}
+                    onClick={() => setSnapshotOffset((v) => v + 100)}
+                  >
+                    Snapshot berikutnya
+                  </Button>
+                  <Button
+                    variant="outline"
+                    disabled={snapshotLoading}
+                    onClick={() => {
+                      setSnapshotId("");
+                      setSnapshotRows([]);
+                    }}
+                  >
+                    Tutup snapshot
+                  </Button>
+                </div>
+              </div>
+            )}
           </section>
           <section className={panelClass}>
             <h3 className="font-semibold">Riwayat penilaian</h3>
@@ -795,7 +938,10 @@ export function AcademicFlowPanel({ course }: { course: string }) {
           <Button
             variant="outline"
             disabled={busy || loading || offset === 0}
-            onClick={() => setOffset((v) => Math.max(0, v - 100))}
+            onClick={() => {
+              setFollowupOffset(0);
+              setOffset((v) => Math.max(0, v - 100));
+            }}
           >
             Peserta sebelumnya
           </Button>
@@ -803,7 +949,10 @@ export function AcademicFlowPanel({ course }: { course: string }) {
           <Button
             variant="outline"
             disabled={busy || loading || !state.has_more}
-            onClick={() => setOffset((v) => v + 100)}
+            onClick={() => {
+              setFollowupOffset(0);
+              setOffset((v) => v + 100);
+            }}
           >
             Peserta berikutnya
           </Button>

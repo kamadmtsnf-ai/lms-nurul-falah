@@ -4,6 +4,7 @@ const id = z.uuid(),
   reason = z.string().trim().min(5, "Alasan minimal 5 karakter.").max(1000);
 export const flowActions: Record<string, z.ZodType> = {
   state: z.object({}).strict(),
+  snapshot: z.object({}).strict(),
   history: z.object({ student_id: id.optional() }).strict(),
   lock: z.object({ revision, reason }).strict(),
   unlock: z.object({ revision, reason }).strict(),
@@ -77,5 +78,6 @@ export const flowEnvelope = z
     target: id.optional(),
     offset: z.number().int().min(0).max(100000).default(0),
     data: z.unknown().optional(),
+    followup_offset: z.number().int().min(0).max(100000).default(0),
   })
   .strict();

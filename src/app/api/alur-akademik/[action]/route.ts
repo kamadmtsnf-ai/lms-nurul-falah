@@ -62,6 +62,7 @@ export async function POST(
     else z.uuid().parse(p.course);
     if (
       [
+        "snapshot",
         "followup-complete",
         "followup-withdraw",
         "rollover-commit",
@@ -73,7 +74,13 @@ export async function POST(
     await limit(
       "academic-flow." + action,
       ctx.actor,
-      ["state", "history", "rollover-list", "rollover-detail"].includes(action)
+      [
+        "state",
+        "history",
+        "snapshot",
+        "rollover-list",
+        "rollover-detail",
+      ].includes(action)
         ? 120
         : 30,
       900,
