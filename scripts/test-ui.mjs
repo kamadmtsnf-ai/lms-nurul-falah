@@ -382,6 +382,178 @@ try {
     await inspectTable("Tabel hasil kuis");
     await tablePage.close();
   }
+  for (const width of [320, 390, 768, 1440]) {
+    const userPage = await browser.newPage({
+      viewport: { width, height: 900 },
+    });
+    userPage.on("pageerror", (e) => errors.push(e.message));
+    await userPage.goto(`${base}/?view=users&userfilters=1`);
+    const toggle = userPage.getByRole("button", {
+      name: "Tambah pengguna",
+      exact: true,
+    });
+    assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+    assert.equal(
+      await userPage.getByLabel("Nama lengkap", { exact: true }).isVisible(),
+      false,
+    );
+    await toggle.click();
+    await userPage
+      .getByLabel("Nama lengkap", { exact: true })
+      .fill("Draf Pengguna");
+    await userPage
+      .getByRole("button", { name: "Tutup form", exact: true })
+      .click();
+    assert.equal(
+      await userPage.getByLabel("Nama lengkap", { exact: true }).isVisible(),
+      false,
+    );
+    await toggle.click();
+    assert.equal(
+      await userPage.getByLabel("Nama lengkap", { exact: true }).inputValue(),
+      "Draf Pengguna",
+    );
+    await userPage
+      .getByRole("button", { name: "Tutup form", exact: true })
+      .click();
+    const search = userPage.getByRole("searchbox", {
+        name: "Cari username atau nama",
+        exact: true,
+      }),
+      account = userPage.getByLabel("Filter status akun", { exact: true }),
+      activation = userPage.getByLabel("Filter status pengguna", {
+        exact: true,
+      }),
+      sort = userPage.getByLabel("Urutkan username", { exact: true });
+    const cards = userPage.locator("form").filter({
+      has: userPage.getByRole("button", {
+        name: "Simpan hak akses",
+        exact: true,
+      }),
+    });
+    assert.equal(await cards.count(), 50);
+    assert.equal(
+      await userPage
+        .getByRole("button", { name: "Berikutnya", exact: true })
+        .isDisabled(),
+      false,
+    );
+    await userPage
+      .getByRole("button", { name: "Berikutnya", exact: true })
+      .click();
+    assert.equal(await cards.count(), 12);
+    await search.fill("HANA");
+    assert.equal(await cards.count(), 1);
+    await userPage
+      .getByRole("heading", { name: "Hana Terakhir", exact: true })
+      .waitFor();
+    assert.equal(
+      await userPage
+        .getByRole("button", { name: "Sebelumnya", exact: true })
+        .isDisabled(),
+      true,
+    );
+    await account.selectOption("active");
+    assert.equal(await cards.count(), 0);
+    await userPage
+      .getByText(
+        "Tidak ada pengguna yang cocok. Ubah pencarian atau reset filter.",
+        { exact: true },
+      )
+      .waitFor();
+    await account.selectOption("disabled");
+    await activation.selectOption("email");
+    assert.equal(await cards.count(), 1);
+    await userPage
+      .getByRole("button", { name: "Reset filter", exact: true })
+      .click();
+    await search.fill("guru");
+    assert.equal(await cards.count(), 2);
+    assert.equal(
+      await cards.first().getByRole("heading").textContent(),
+      "Nama guru2",
+    );
+    await sort.selectOption("desc");
+    assert.equal(
+      await cards.first().getByRole("heading").textContent(),
+      "Nama guru10",
+    );
+    await activation.selectOption("password");
+    assert.equal(await cards.count(), 1);
+    await check(userPage, `user-filters/${width}`);
+    assert.equal(
+      await userPage.evaluate(
+        () =>
+          window.__requests.filter((r) =>
+            String(r.path).endsWith("/admin-list"),
+          ).length,
+      ),
+      1,
+    );
+    assert.equal(
+      await userPage.evaluate(
+        () =>
+          window.__requests.find((r) => String(r.path).endsWith("/admin-list"))
+            .all,
+      ),
+      true,
+    );
+    if (width === 390) {
+      await userPage
+        .getByRole("button", { name: "Reset filter", exact: true })
+        .click();
+      await toggle.click();
+      await userPage
+        .getByLabel("Nama lengkap", { exact: true })
+        .fill("Pengguna Baru");
+      await userPage.getByLabel("Username", { exact: true }).fill("tesbaru");
+      await userPage
+        .locator('#create-user-form input[value="student"]')
+        .check();
+      await userPage
+        .getByRole("button", { name: "Buat akun", exact: true })
+        .click();
+      await userPage
+        .getByRole("button", { name: "Tambah pengguna", exact: true })
+        .waitFor();
+      await userPage.waitForFunction(
+        () =>
+          document.activeElement?.getAttribute("aria-controls") ===
+          "create-user-form",
+      );
+      assert.equal(
+        await userPage.getByLabel("Nama lengkap", { exact: true }).isVisible(),
+        false,
+      );
+      await search.fill("tesbaru");
+      assert.equal(await cards.count(), 1);
+      await cards
+        .getByText("tesbaru · Wajib ganti password", { exact: true })
+        .waitFor();
+      await cards
+        .getByLabel("Status Pengguna Baru", { exact: true })
+        .selectOption("disabled");
+      await cards
+        .getByRole("button", { name: "Simpan hak akses", exact: true })
+        .click();
+      await userPage.waitForFunction(
+        () =>
+          window.__requests.filter((r) =>
+            String(r.path).endsWith("/admin-list"),
+          ).length === 3,
+      );
+      await userPage
+        .getByText("Memuat pengguna…", { exact: true })
+        .waitFor({ state: "hidden" });
+      assert.equal(
+        await cards
+          .getByLabel("Status Pengguna Baru", { exact: true })
+          .inputValue(),
+        "disabled",
+      );
+    }
+    await userPage.close();
+  }
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(`${base}/?view=course&preview=1`);

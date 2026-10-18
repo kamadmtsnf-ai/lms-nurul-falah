@@ -203,23 +203,21 @@ const report = (offset = 0) => ({
         weighted_final: 75,
       })),
   quizzes: params.has("tables")
-    ? roster
-        .slice(0, 60)
-        .map((r, i) => ({
-          quiz_id: id,
-          title: "Kuis pembelajaran " + (i + 1),
-          student_name: r.full_name,
-          student_id: r.id,
-          attempt_id: "attempt-" + i,
-          status: "submitted",
-          started_at: now,
-          deadline: now,
-          finished_at: now,
-          score: 80,
-          max_score: 100,
-          grades_visible: true,
-          can_open: false,
-        }))
+    ? roster.slice(0, 60).map((r, i) => ({
+        quiz_id: id,
+        title: "Kuis pembelajaran " + (i + 1),
+        student_name: r.full_name,
+        student_id: r.id,
+        attempt_id: "attempt-" + i,
+        status: "submitted",
+        started_at: now,
+        deadline: now,
+        finished_at: now,
+        score: 80,
+        max_score: 100,
+        grades_visible: true,
+        can_open: false,
+      }))
     : [],
   activity: { meetings: 1, materials: 1, assignments: 1, quizzes: 1 },
   weights: { assignment_weight: 50, quiz_weight: 50, visible: true },
@@ -299,6 +297,40 @@ let channelJobs: {
   accepted: number;
   uncertain: number;
 }[] = [];
+let managedUsers = params.has("userfilters")
+  ? [
+      ...["alpha", "beta", "guru2", "guru10", "2", "10"].map((name, i) => ({
+        id: "managed-" + i,
+        username_normalized: name,
+        full_name: "Nama " + name,
+        contact_email: null,
+        email_verified_at: i % 3 === 1 ? null : now,
+        must_change_password: i % 3 === 0,
+        status: i % 2 === 0 ? "active" : "disabled",
+        roles: ["student"],
+      })),
+      ...Array.from({ length: 55 }, (_, i) => ({
+        id: "extra-" + i,
+        username_normalized: "user" + i,
+        full_name: "Pengguna " + i,
+        contact_email: null,
+        email_verified_at: now,
+        must_change_password: false,
+        status: "active",
+        roles: ["student"],
+      })),
+      {
+        id: "last-user",
+        username_normalized: "999",
+        full_name: "Hana Terakhir",
+        contact_email: null,
+        email_verified_at: null,
+        must_change_password: false,
+        status: "disabled",
+        roles: ["student"],
+      },
+    ]
+  : null;
 const requests: Record<string, unknown>[] = [];
 (window as any).__requests = requests;
 (window as any).__fail = false;
@@ -314,16 +346,36 @@ window.fetch = async (url, options) => {
   if (path.includes("/identitas/")) {
     if (action === "admin-list")
       return Response.json({
-        users: roster.slice(0, 3).map((r) => ({
-          ...r,
-          username_normalized: long,
-          contact_email: null,
-          email_verified_at: now,
-          must_change_password: false,
-          status: "active",
-          roles: ["teacher"],
-        })),
+        users:
+          managedUsers ??
+          roster.slice(0, 3).map((r) => ({
+            ...r,
+            username_normalized: long,
+            contact_email: null,
+            email_verified_at: now,
+            must_change_password: false,
+            status: "active",
+            roles: ["teacher"],
+          })),
       });
+    if (managedUsers && action === "admin-create")
+      managedUsers.push({
+        id: "new-user",
+        username_normalized: body.username,
+        full_name: body.name,
+        contact_email: body.email || null,
+        email_verified_at: null,
+        must_change_password: true,
+        status: "active",
+        roles: body.roles,
+      });
+    if (managedUsers && action === "admin-update") {
+      const user = managedUsers.find((u) => u.id === body.target);
+      if (user) {
+        user.status = body.status;
+        user.roles = body.roles;
+      }
+    }
     return Response.json({ message: "Tersimpan" });
   }
   switch (action) {
