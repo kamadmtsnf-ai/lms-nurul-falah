@@ -37,7 +37,13 @@ export function Files({
   onRemove,
 }: {
   course: string;
-  assets: { id: string; name: string; bytes?: number; mime?: string }[];
+  assets: {
+    id: string;
+    name: string;
+    bytes?: number;
+    mime?: string;
+    retention_deleted_at?: string | null;
+  }[];
   onRemove?: (id: string) => Promise<void>;
 }) {
   const [message, setMessage] = useState(""),
@@ -67,59 +73,77 @@ export function Files({
   }
   return (
     <div className="mt-3 space-y-2">
-      {assets.map((a) => (
-        <div
-          key={a.id}
-          className="flex min-w-0 items-center gap-2 rounded-xl border border-stone-200 bg-stone-50/70 p-3"
-        >
-          <FileText
-            aria-hidden
-            size={20}
-            className="shrink-0 text-emerald-700"
-          />
-          <button
-            type="button"
-            disabled={!!busy}
-            onClick={() => void download(a)}
-            className="min-h-11 min-w-0 flex-1 text-left text-sm font-medium text-emerald-900 hover:underline focus-visible:outline-2 focus-visible:outline-emerald-700"
+      {assets.map((a) =>
+        a.retention_deleted_at ? (
+          <div
+            key={a.id}
+            className="rounded-xl border border-stone-200 bg-stone-50 p-3 text-sm"
           >
-            <span className="block break-words [overflow-wrap:anywhere]">
-              {busy === a.id ? "Menyiapkan unduhan…" : a.name}
-            </span>
-            {a.bytes !== undefined && (
-              <span className="mt-1 block text-xs font-normal text-stone-500">
-                {(a.bytes / 1000000).toFixed(2)} MB · Unduh berkas
+            <p className="break-words font-medium [overflow-wrap:anywhere]">
+              {a.name}
+            </p>
+            <p className="mt-1 text-xs text-stone-500">
+              Lampiran telah dihapus sesuai kebijakan penyimpanan.
+            </p>
+          </div>
+        ) : (
+          <div
+            key={a.id}
+            className="flex min-w-0 items-center gap-2 rounded-xl border border-stone-200 bg-stone-50/70 p-3"
+          >
+            <FileText
+              aria-hidden
+              size={20}
+              className="shrink-0 text-emerald-700"
+            />
+            <button
+              type="button"
+              disabled={!!busy}
+              onClick={() => void download(a)}
+              className="min-h-11 min-w-0 flex-1 text-left text-sm font-medium text-emerald-900 hover:underline focus-visible:outline-2 focus-visible:outline-emerald-700"
+            >
+              <span className="block break-words [overflow-wrap:anywhere]">
+                {busy === a.id ? "Menyiapkan unduhan…" : a.name}
               </span>
+              {a.bytes !== undefined && (
+                <span className="mt-1 block text-xs font-normal text-stone-500">
+                  {(a.bytes / 1000000).toFixed(2)} MB · Unduh berkas
+                </span>
+              )}
+            </button>
+            <Download
+              aria-hidden
+              size={16}
+              className="shrink-0 text-stone-400"
+            />
+            {previewKind(a.mime ?? mimeForName(a.name)) && (
+              <button
+                type="button"
+                aria-label={`Lihat lampiran ${a.name}`}
+                disabled={!!busy}
+                onClick={() => setPreview(a)}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-emerald-800 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-emerald-700"
+              >
+                <Eye size={19} />
+              </button>
             )}
-          </button>
-          <Download aria-hidden size={16} className="shrink-0 text-stone-400" />
-          {previewKind(a.mime ?? mimeForName(a.name)) && (
-            <button
-              type="button"
-              aria-label={`Lihat lampiran ${a.name}`}
-              disabled={!!busy}
-              onClick={() => setPreview(a)}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-emerald-800 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-emerald-700"
-            >
-              <Eye size={19} />
-            </button>
-          )}
-          {onRemove && (
-            <button
-              type="button"
-              aria-label={`Hapus lampiran ${a.name}`}
-              disabled={!!busy}
-              onClick={() => {
-                setMessage("");
-                setRemoving(a);
-              }}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-700"
-            >
-              <Trash2 size={18} />
-            </button>
-          )}
-        </div>
-      ))}
+            {onRemove && (
+              <button
+                type="button"
+                aria-label={`Hapus lampiran ${a.name}`}
+                disabled={!!busy}
+                onClick={() => {
+                  setMessage("");
+                  setRemoving(a);
+                }}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-700"
+              >
+                <Trash2 size={18} />
+              </button>
+            )}
+          </div>
+        ),
+      )}
       {preview && (
         <FilePreview
           key={preview.id}

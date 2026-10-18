@@ -35,6 +35,7 @@ export async function proxy(request: NextRequest) {
 }
 export const config = {
   matcher: [
+    "/api/retensi-lampiran/:path*",
     "/api/alur-akademik/:path*",
     "/profil",
     "/api/profil/:path*",

@@ -170,16 +170,6 @@ export async function POST(
       }
       await limit("learning-upload", ctx.actor, 40, 900);
       const admin = createSupabaseAdminClient();
-      const expired = await learningCommand<string[]>(ctx, "asset-cleanup", {
-        course: input.course,
-      });
-      if (expired.length) {
-        const cleanup = await admin.storage.from("lms-private").remove(expired);
-        if (cleanup.error)
-          console.error(
-            "Pembersihan unggahan kedaluwarsa perlu pemeriksaan operator.",
-          );
-      }
       const ticket = await learningCommand<{ id: string; path: string }>(
         ctx,
         "asset-reserve",
@@ -329,6 +319,14 @@ export async function POST(
             .eq("status", file.status)
             .select("id")
             .maybeSingle();
+          if (
+            error?.code === "P0001" &&
+            error.message.includes("dipertahankan")
+          )
+            throw new IdentityError(
+              "Lampiran sedang dipertahankan admin. Hubungi admin sebelum menghapus.",
+              409,
+            );
           if (error || !data)
             throw new IdentityError(
               "Status lampiran berubah atau belum dapat disimpan. Coba hapus kembali.",

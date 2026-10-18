@@ -5,5 +5,11 @@
   "buildCommand": "npm run build",
   "regions": [
     "sin1"
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/retensi-lampiran",
+      "schedule": "23 19 * * *"
+    }
   ]
 }

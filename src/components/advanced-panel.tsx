@@ -600,6 +600,7 @@ function GroupSubmission({
   const [files, setFiles] = useState(
     state.assets.filter(
       (a) =>
+        a.status === "ready" &&
         a.target_type === "submission" &&
         a.target_id === assignment &&
         a.owner_id === state.context.actor,
@@ -654,6 +655,7 @@ function GroupSubmission({
               setFiles(
                 r.result.assets.filter(
                   (a: CourseState["assets"][number]) =>
+                    a.status === "ready" &&
                     a.target_type === "submission" &&
                     a.target_id === assignment &&
                     a.owner_id === state.context.actor,

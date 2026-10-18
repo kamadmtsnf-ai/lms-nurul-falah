@@ -1,0 +1,23 @@
+{
+  "checks": 28,
+  "viewports": [
+    {
+      "width": 320,
+      "status": "passed"
+    },
+    {
+      "width": 390,
+      "status": "passed"
+    },
+    {
+      "width": 768,
+      "status": "passed"
+    },
+    {
+      "width": 1440,
+      "status": "passed"
+    }
+  ],
+  "javascriptErrors": [],
+  "scope": "Real React components, synthetic API; database lifecycle tested separately"
+}

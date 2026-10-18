@@ -20,7 +20,8 @@
     "test:browser:hosted": "node scripts/testing/browser-hosted.mjs",
     "diagnose:hosted": "node scripts/testing/diagnose-hosted.mjs",
     "test:offline:browser": "node scripts/test-offline-browser.mjs",
-    "test:quiz:reliability": "node scripts/test-quiz-reliability.mjs"
+    "test:quiz:reliability": "node scripts/test-quiz-reliability.mjs",
+    "test:retention:ui": "node scripts/test-attachment-retention-ui.mjs"
   },
   "keywords": [],
   "author": "",

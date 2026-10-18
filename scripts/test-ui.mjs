@@ -1297,7 +1297,7 @@ try {
   checks++;
   await page.goto(`${base}/?view=dashboard&student=1`);
   assert.equal(
-    await page.getByLabel("Sekolah aktif", { exact: true }).count(),
+    await page.getByRole("combobox", { name: /^Sekolah aktif/ }).count(),
     0,
   );
   assert.equal(
@@ -1314,7 +1314,7 @@ try {
       .getAttribute("href"),
     "/ganti-password?from=ruang-belajar",
   );
-  await page.getByLabel("Sekolah aktif", { exact: true }).waitFor();
+  await page.getByRole("combobox", { name: /^Sekolah aktif/ }).waitFor();
   assert.equal(
     await page
       .getByRole("navigation", { name: "Navigasi utama" })

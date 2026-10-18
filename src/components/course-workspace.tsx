@@ -1022,10 +1022,15 @@ function SubmissionForm({
   );
   const [body, setBody] = useState(previous?.body ?? ""),
     [links, setLinks] = useState(previous?.links.join("\n") ?? ""),
-    [assets, setAssets] = useState<string[]>(previous?.asset_ids ?? []),
+    [assets, setAssets] = useState<string[]>(
+      (previous?.asset_ids ?? []).filter((id) =>
+        state.assets.some((a) => a.id === id && a.status === "ready"),
+      ),
+    ),
     [requestId, setRequestId] = useState(() => crypto.randomUUID());
   const own = state.assets.filter(
     (a) =>
+      a.status === "ready" &&
       a.target_type === "submission" &&
       a.target_id === task.id &&
       a.owner_id === state.context.actor,
@@ -1177,6 +1182,7 @@ function History({
           body: string;
           links: string[];
           asset_ids: string[];
+          retention_deleted_asset_ids?: string[];
           submitted_at: string;
         }[]
       | null
@@ -1239,6 +1245,11 @@ function History({
                 assets={v.asset_ids.map((id, i) => ({
                   id,
                   name: `Lampiran ${i + 1} · versi ${v.version}`,
+                  retention_deleted_at: v.retention_deleted_asset_ids?.includes(
+                    id,
+                  )
+                    ? "deleted"
+                    : undefined,
                 }))}
               />
             </li>

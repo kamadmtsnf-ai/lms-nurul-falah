@@ -1,3 +1,9 @@
+import { AttachmentRetention } from "../../src/components/attachment-retention";
+import { Files } from "../../src/components/learning-shared";
+import type {
+  RetentionState,
+  RetentionAsset,
+} from "../../src/lib/attachment-retention/types";
 import { AcademicFlowPanel } from "../../src/components/academic-flow-panel";
 import { AcademicRollover } from "../../src/components/academic-rollover";
 import type { FlowState } from "../../src/lib/academic-flow/client";
@@ -489,6 +495,58 @@ const flowFixture: FlowState = {
     : [],
 };
 let rolloverCommitted = false;
+const attachmentState: RetentionState = {
+  policy: {
+    enabled: false,
+    pending_days: 2,
+    material_days: 365,
+    submission_days: 365,
+    grace_days: 14,
+    backup_required: true,
+    revision: 0,
+  },
+  offset: 0,
+  has_more: true,
+  scheduler_configured: true,
+  summary: {
+    queued: 2,
+    processing: 1,
+    failed: 1,
+    deleted: 1,
+    estimated_queued_bytes: 2000000,
+  },
+  rows: Array.from(
+    { length: 7 },
+    (_, i): RetentionAsset => ({
+      id: "retention-" + i,
+      name: long + ".pdf",
+      bytes: 1000000,
+      target_type: i === 0 ? "material" : "submission",
+      status: i > 2 ? "removed" : "ready",
+      retention_hold: i === 6,
+      retention_deleted_at: i === 5 ? now : null,
+      eligible_category: i === 0 ? null : "submission",
+      category: i === 0 ? null : "submission",
+      state: (
+        [
+          null,
+          "queued",
+          "queued",
+          "processing",
+          "failed",
+          "deleted",
+          "cancelled",
+        ] as RetentionAsset["state"][]
+      )[i],
+      queued_at: now,
+      delete_after: now,
+      backup_reference: "",
+      backup_verified_at: null,
+      attempts: 1,
+      error_code: null,
+    }),
+  ),
+};
 const requests: Record<string, unknown>[] = [];
 (window as any).__requests = requests;
 (window as any).__fail = false;
@@ -552,6 +610,45 @@ window.fetch = async (url, options) => {
               compact: true,
             }
           : structuredClone(reliableAttempt),
+    });
+  }
+  if (path.startsWith("/api/retensi-lampiran/")) {
+    if (action === "settings")
+      attachmentState.policy = {
+        ...body.data,
+        revision: attachmentState.policy.revision + 1,
+      };
+    const a = attachmentState.rows.find((a) => a.id === body.target);
+    if (a && action === "hold") {
+      a.retention_hold = body.data.hold;
+      if (a.retention_hold && a.state === "queued") a.state = "cancelled";
+    }
+    if (a && action === "cancel") a.state = "cancelled";
+    if (a && action === "requeue") a.state = "queued";
+    if (a && action === "backup") {
+      a.backup_reference = body.data.reference;
+      a.backup_verified_at = now;
+    }
+    if (action === "run")
+      for (const a of attachmentState.rows)
+        if (a.state === "queued" && a.backup_verified_at) {
+          a.state = "deleted";
+          a.retention_deleted_at = now;
+        }
+    attachmentState.summary.queued = attachmentState.rows.filter(
+      (a) => a.state === "queued",
+    ).length;
+    attachmentState.summary.deleted = attachmentState.rows.filter(
+      (a) => a.state === "deleted",
+    ).length;
+    return Response.json({
+      ok: true,
+      result: {
+        ...structuredClone(attachmentState),
+        offset: body.offset ?? 0,
+        has_more: !body.offset,
+        rows: body.offset ? [] : structuredClone(attachmentState.rows),
+      },
     });
   }
   if ((window as any).__fail)
@@ -1147,6 +1244,20 @@ function Fixture() {
         <QuizAttempt initial={attempt} course={id} />
       ) : mode === "monitoring" ? (
         <MonitoringDashboard school={school} />
+      ) : mode === "attachment-retention" ? (
+        <>
+          <AttachmentRetention school={school} />
+          <Files
+            course={id}
+            assets={[
+              {
+                id: "gone",
+                name: "Lampiran terhapus.pdf",
+                retention_deleted_at: now,
+              },
+            ]}
+          />
+        </>
       ) : mode === "retention" ? (
         <RetentionManager school={school} />
       ) : mode === "development" ? (

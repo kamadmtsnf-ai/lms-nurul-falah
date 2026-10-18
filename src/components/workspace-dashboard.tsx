@@ -74,8 +74,9 @@ export function WorkspaceDashboard({
     },
     {
       href: "/admin/retensi",
-      title: "Retensi alumni",
-      description: "Kelola masa simpan dan peninjauan data alumni.",
+      title: "Retensi data & lampiran",
+      description:
+        "Atur masa simpan lampiran, antrean penghapusan, dan arsip alumni.",
       icon: Archive,
     },
   ];

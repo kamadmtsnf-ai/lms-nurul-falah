@@ -3,7 +3,7 @@ import { AppShell } from "@/components/app-shell";
 import { selectedMembership } from "@/lib/development/school";
 import { redirect } from "next/navigation";
 import { requireAccount } from "@/lib/auth/page-context";
-import { RetentionManager } from "@/components/retention-manager";
+import { RetentionWorkspace } from "@/components/attachment-retention";
 export const dynamic = "force-dynamic";
 export default async function Page() {
   const { client, profile } = await requireAccount(true);
@@ -22,10 +22,10 @@ export default async function Page() {
     <AppShell>
       <PageHeading
         eyebrow="Administrasi sekolah"
-        title="Retensi data alumni"
-        description="Tinjau masa simpan dan tahapan penghapusan data alumni dengan lebih terarah."
+        title="Retensi data dan lampiran"
+        description="Kelola masa simpan lampiran, antrean penghapusan, dan retensi data alumni sesuai kebijakan sekolah."
       />
-      <RetentionManager school={membership.school_id} />
+      <RetentionWorkspace school={membership.school_id} />
     </AppShell>
   );
 }
