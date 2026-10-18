@@ -1,4 +1,5 @@
 "use client";
+import { DataTableViewport } from "./data-table-viewport";
 import { useEffect, useRef, useState } from "react";
 import { SubmissionPacket } from "@/lib/learning/submission-packet";
 import { Button } from "./ui/button";
@@ -835,7 +836,7 @@ export function WeightedPanel({
               ? `Bobot tugas ${report.weights.assignment_weight}% · kuis ${report.weights.quiz_weight}%`
               : "Bobot belum ditetapkan."}
           </p>
-          <div className="mt-4 overflow-auto">
+          <DataTableViewport label="Tabel nilai berbobot">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr>
@@ -870,7 +871,7 @@ export function WeightedPanel({
                   ))}
               </tbody>
             </table>
-          </div>
+          </DataTableViewport>
           <div className="mt-4 flex flex-wrap gap-3">
             <Button
               variant="outline"

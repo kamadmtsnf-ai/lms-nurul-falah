@@ -1,4 +1,5 @@
 "use client";
+import { DataTableViewport } from "./data-table-viewport";
 import { ClientReady } from "./client-ready";
 import { PageHeading } from "./page-heading";
 import { navigateTabs } from "@/lib/http/tab-navigation";
@@ -274,7 +275,7 @@ export function DailyAttendance({
             {from} sampai {to}. Hanya catatan tersimpan pada tanggal yang berhak
             Anda lihat yang dihitung; hari tanpa catatan tidak dianggap alpa.
           </p>
-          <div className="mt-5 overflow-auto">
+          <DataTableViewport label="Tabel rekap absensi harian">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr>
@@ -303,7 +304,7 @@ export function DailyAttendance({
                 ))}
               </tbody>
             </table>
-          </div>
+          </DataTableViewport>
           {!records.length && (
             <p className="mt-5 text-sm text-stone-500">
               Belum ada absensi tersimpan pada rentang tersebut.

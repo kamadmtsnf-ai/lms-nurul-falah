@@ -307,7 +307,7 @@ try {
     });
     tablePage.on("pageerror", (e) => errors.push(e.message));
     await tablePage.goto(`${base}/?view=course&tables=1&realistic=1`);
-    async function inspectTable(label) {
+    async function inspectTable(label, heading = "Siswa") {
       const region = tablePage.getByRole("region", {
         name: label,
         exact: true,
@@ -327,7 +327,7 @@ try {
         };
       });
       assert.equal(before.overflowY, true, `${label}: vertical scroll`);
-      assert.equal(before.head, "Siswa");
+      assert.equal(before.head, heading);
       assert.notEqual(before.stripeA, before.stripeB, `${label}: zebra`);
       if (width < 768)
         assert.equal(before.overflowX, true, `${label}: horizontal scroll`);
@@ -380,6 +380,48 @@ try {
     await inspectTable("Tabel hasil kuis");
     await tablePage.setViewportSize({ width: 740, height: 390 });
     await inspectTable("Tabel hasil kuis");
+    await tablePage.goto(`${base}/?view=daily&tables=1&realistic=1`);
+    await tablePage
+      .getByRole("button", { name: "Tampilkan absensi", exact: true })
+      .click();
+    await inspectTable("Tabel pencatatan absensi");
+    await tablePage
+      .getByRole("tab", { name: "Rekap harian", exact: true })
+      .click();
+    await tablePage
+      .getByRole("button", { name: "Tampilkan rekap", exact: true })
+      .click();
+    await inspectTable("Tabel rekap absensi harian");
+    await tablePage.goto(`${base}/?view=course&tables=1&realistic=1`);
+    await tablePage.getByRole("tab", { name: "Lanjutan", exact: true }).click();
+    await tablePage
+      .getByRole("button", { name: "Nilai akhir berbobot", exact: true })
+      .click();
+    await inspectTable("Tabel nilai berbobot");
+    await tablePage
+      .getByRole("button", { name: "Nilai Akhir Berbobot", exact: true })
+      .click();
+    await inspectTable("Tabel nilai berbobot");
+    await tablePage.goto(`${base}/?view=academic&tables=1&realistic=1`);
+    await tablePage
+      .getByRole("button", { name: "Mata pelajaran", exact: true })
+      .click();
+    await inspectTable("Tabel Mata pelajaran", "Kode mapel");
+    await tablePage
+      .getByRole("button", { name: "Template & impor Excel", exact: true })
+      .click();
+    await tablePage
+      .locator('input[type="file"]')
+      .setInputFiles({
+        name: "uji.xlsx",
+        mimeType:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        buffer: Buffer.from("synthetic preview fixture"),
+      });
+    await tablePage
+      .getByRole("button", { name: "Periksa pratinjau", exact: true })
+      .click();
+    await inspectTable("Tabel pratinjau impor Excel", "username");
     await tablePage.close();
   }
   for (const width of [320, 390, 768, 1440]) {

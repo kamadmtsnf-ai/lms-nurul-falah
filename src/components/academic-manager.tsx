@@ -1,4 +1,5 @@
 "use client";
+import { DataTableViewport } from "./data-table-viewport";
 import { ClientReady } from "./client-ready";
 import Link from "next/link";
 import { useRef, useState } from "react";
@@ -354,7 +355,7 @@ export function AcademicManager({
                     </label>
                   )}
                 </div>
-                <div className="mt-5 overflow-x-auto">
+                <DataTableViewport autoLayout label={`Tabel ${entity.label}`}>
                   <table className="w-full text-left text-sm">
                     <caption className="sr-only">Daftar {entity.label}</caption>
                     <thead className="border-b border-stone-200 text-xs text-stone-500">
@@ -364,7 +365,7 @@ export function AcademicManager({
                           .map((f) => (
                             <th
                               key={f.key}
-                              className="whitespace-nowrap px-3 py-3 font-medium"
+                              className="px-3 py-3 font-medium"
                             >
                               {f.label}
                             </th>
@@ -433,7 +434,7 @@ export function AcademicManager({
                       </p>
                     </div>
                   )}
-                </div>
+                </DataTableViewport>
               </section>
             </>
           )}
@@ -929,9 +930,9 @@ function ImportPanel({
               dan diperiksa kembali saat disimpan.
             </p>
           )}
-          <div className="mt-4 max-h-80 overflow-auto rounded-xl border border-stone-200">
-            <table className="w-full text-left text-xs">
-              <thead className="sticky top-0 bg-stone-100">
+          <DataTableViewport autoLayout label="Tabel pratinjau impor Excel">
+            <table className="w-full text-left text-sm">
+              <thead>
                 <tr>
                   {config.columns.map((c) => (
                     <th key={c} className="px-3 py-3">
@@ -944,7 +945,7 @@ function ImportPanel({
                 {preview.display.map((r, i) => (
                   <tr key={i} className="border-t border-stone-100">
                     {config.columns.map((c) => (
-                      <td key={c} className="whitespace-nowrap px-3 py-3">
+                      <td key={c} className="px-3 py-3">
                         {r[c]}
                       </td>
                     ))}
@@ -952,7 +953,7 @@ function ImportPanel({
                 ))}
               </tbody>
             </table>
-          </div>
+          </DataTableViewport>
           {preview.ticket && !preview.errors.length && (
             <div className="mt-5">
               <label className="flex items-start gap-3 text-sm leading-6">

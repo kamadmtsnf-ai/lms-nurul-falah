@@ -1,4 +1,5 @@
 "use client";
+import { DataTableViewport } from "./data-table-viewport";
 import { useRef, useState } from "react";
 import { FileText, UploadCloud, Trash2, Download, Eye } from "lucide-react";
 import { FilePreview } from "./file-preview";
@@ -373,9 +374,9 @@ export function AttendanceForm({
           </Button>
         </div>
       )}
-      <div className="max-h-96 overflow-auto">
+      <DataTableViewport label="Tabel pencatatan absensi">
         <table className="w-full text-left text-sm">
-          <thead className="sticky top-0 bg-stone-50">
+          <thead>
             <tr>
               <th className="px-3 py-3">Siswa</th>
               <th className="px-3 py-3">Kehadiran</th>
@@ -411,7 +412,7 @@ export function AttendanceForm({
             ))}
           </tbody>
         </table>
-      </div>
+      </DataTableViewport>
       {!students.length && (
         <p className="py-6 text-sm text-stone-500">
           Belum ada siswa pada daftar ini.

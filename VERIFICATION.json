@@ -354,5 +354,24 @@
     "javascript_errors": [],
     "scope": "synthetic_browser_and_local_database; production_authenticated_acceptance_not_run",
     "report": "docs/19-Filter-Manajemen-Pengguna.md"
+  },
+  "all_table_consistency": {
+    "status": "implemented",
+    "table_render_sites": 9,
+    "newly_unified_sites": 5,
+    "ui_checks_passed": 215,
+    "viewports": [
+      320,
+      390,
+      768,
+      1440
+    ],
+    "orientation": "landscape_740x390",
+    "production_build": "passed",
+    "typecheck": "passed",
+    "http_scenarios_passed": 17,
+    "javascript_errors": [],
+    "scope": "real_components_synthetic_data_mock_API; authenticated_production_acceptance_not_run",
+    "report": "docs/20-Konsistensi-Tabel.md"
   }
 }

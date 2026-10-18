@@ -337,7 +337,21 @@ const requests: Record<string, unknown>[] = [];
 window.fetch = async (url, options) => {
   const path = String(url),
     action = path.split("/").at(-1),
-    body = JSON.parse(String(options?.body ?? "{}"));
+    body =
+      options?.body instanceof FormData
+        ? {}
+        : JSON.parse(String(options?.body ?? "{}"));
+  if (path === "/api/akademik/preview")
+    return Response.json({
+      count: 25,
+      errors: [],
+      display: Array.from({ length: 25 }, (_, i) => ({
+        username: `siswa${i}`,
+        name: `Siswa ${i}`,
+        roles: "student",
+        email: "wali@example.com",
+      })),
+    });
   requests.push({ path, ...body });
   if ((window as any).__fail)
     return new Response("<html>Upstream unavailable</html>", { status: 502 });
@@ -538,7 +552,16 @@ window.fetch = async (url, options) => {
       result = { can_write: true, roster, attendance: [] };
       break;
     case "daily-report":
-      result = { records: [] };
+      result = {
+        records: params.has("tables")
+          ? roster.map((s) => ({
+              student_id: s.id,
+              full_name: s.full_name,
+              status: "present",
+              count: 3,
+            }))
+          : [],
+      };
       break;
     case "bank-import":
       if ((window as any).__validImport) {
@@ -560,6 +583,14 @@ const academic = {
   semesters: [],
   classrooms: [],
   academic_years: [],
+  subjects: params.has("tables")
+    ? Array.from({ length: 40 }, (_, i) => ({
+        id: `subject-${i}`,
+        code: `MAPEL${i}`,
+        name: long,
+        active: true,
+      }))
+    : [],
 };
 function Fixture() {
   const [mode] = useState(view);
