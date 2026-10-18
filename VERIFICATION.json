@@ -49,11 +49,11 @@
   "production_url": "https://lms-nurul-falah.vercel.app",
   "guide": "docs/12-Tahap-9-Pengembangan.md",
   "weekly_duty_schedule": "semester_and_one_or_more_weekdays",
-  "browser_teacher_student_flow": "not_automated",
+  "browser_teacher_student_flow": "hosted_stage6_11_scenarios_passed",
   "hosted_storage_roundtrip": "not_run",
   "pdf_render_qa": "first_and_last_pages_checked_132_row_fixture",
-  "quiz_browser_flow": "public_home_only_private_flow_pending_login",
-  "real_network_disconnection": "pending_browser_verification",
+  "quiz_browser_flow": "hosted_synthetic_flow_passed",
+  "real_network_disconnection": "browser_emulation_passed_physical_network_pending",
   "supabase_security_advisors": "no_errors_preexisting_leaked_password_warning_and_expected_rpc_table_infos",
   "supabase_performance_advisors": "unused_indexes_info_only",
   "client_latency_gate": "failed_target_p95_below_2000ms",
@@ -70,7 +70,7 @@
   "stage8_activity_email": "implemented_not_sent_to_real_recipients",
   "stage8_retention": "tested_synthetic_local_no_real_alumni_deleted",
   "stage9_features_default": "disabled_confirmed_in_database",
-  "offline_browser_acceptance": "pending_real_browser_and_devices",
+  "offline_browser_acceptance": "hosted_browser_passed_physical_devices_pending",
   "offline_store_tests": "fake_indexeddb_and_webcrypto_passed",
   "external_channels": "mock_HTTP_only_no_real_send",
   "platform_admin_provisioning": "operator_script_available_not_run_for_real_accounts",
@@ -156,5 +156,42 @@
     "visual_review": "dashboard_and_auth_desktop_and_mobile",
     "schema_or_api_changes": false,
     "report": "docs/14-Penyelarasan-UI-UX.md"
+  },
+  "stage6_continuation": {
+    "date": "2026-10-18",
+    "browser_tested_commit": "1831516665bcd09495aabbae726d9b699a19ffe5",
+    "hosted_browser": {
+      "passed": 11,
+      "failed": 0,
+      "javascript_errors": [],
+      "scope": "Real hosted API/Auth/Postgres; synthetic identities; desktop/mobile Chromium emulation"
+    },
+    "tests": {
+      "passed": 123,
+      "failed": 0
+    },
+    "typecheck": "passed",
+    "production_build": "passed",
+    "ui_checks": 145,
+    "http_groups": 17,
+    "local_132_clients_and_fixture_restore": "passed",
+    "cleanup": {
+      "verified_at": "2026-10-18T04:51:52.729904+00:00",
+      "scope": "Exact synthetic Stage6 school and seven synthetic actor IDs only",
+      "fixture_schools": 0,
+      "fixture_profiles": 0,
+      "fixture_auth_users": 0,
+      "sessions_remaining": 0,
+      "refresh_tokens_remaining": 0,
+      "real_school_present": true,
+      "storage_objects_uploaded": false
+    },
+    "remaining": [
+      "client_p95_under_2_seconds",
+      "physical_devices_and_school_network",
+      "production_database_and_storage_restore",
+      "hosted_private_storage_roundtrip"
+    ],
+    "report": "docs/15-Kelanjutan-Tahap-6.md"
   }
 }

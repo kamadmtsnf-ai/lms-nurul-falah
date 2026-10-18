@@ -14,7 +14,11 @@
     "verify:stage6": "node --import tsx scripts/verify-stage6.ts",
     "backup:db": "node scripts/backup-db.mjs",
     "restore:db:test": "node scripts/restore-db-test.mjs",
-    "test:ui": "node scripts/test-ui.mjs"
+    "test:ui": "node scripts/test-ui.mjs",
+    "backup:storage": "node scripts/backup-storage.mjs",
+    "restore:storage:test": "node scripts/restore-storage-test.mjs",
+    "test:browser:hosted": "node scripts/testing/browser-hosted.mjs",
+    "diagnose:hosted": "node scripts/testing/diagnose-hosted.mjs"
   },
   "keywords": [],
   "author": "",

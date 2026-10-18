@@ -1,9 +1,12 @@
 {
-  "assessed_at": "2026-10-17T21:42:13.804Z",
+  "assessed_at": "2026-10-18T04:51:19.570Z",
   "status": "not_approved_for_mass_rollout_pending_gates",
   "target": "https://lms-nurul-falah.vercel.app",
   "function_region": "sin1",
   "tested_commit": "f4b126d660e9f557522d178d48a15a06aeaa1c9b",
+  "browser_tested_commit": "1831516665bcd09495aabbae726d9b699a19ffe5",
+  "browser_results": "docs/verification/stage6-browser-results.json",
+  "latest_latency_control": "docs/verification/stage6-latency-control-latest.json",
   "table_metric": "Maximum of each answer-wave p95, including retry; not a pooled percentile",
   "rows": [
     {
@@ -49,8 +52,10 @@
     "acknowledged_answer_integrity_and_authorization": true,
     "real_deadline_and_release": true,
     "client_p95_answer_under_two_seconds": false,
-    "browser_and_real_device_acceptance": "pending_browser_unavailable",
-    "actual_network_disconnect_browser": "pending_browser_unavailable",
+    "browser_hosted_acceptance": true,
+    "browser_emulated_network_recovery": true,
+    "browser_and_real_device_acceptance": "hosted_browser_passed_physical_devices_pending",
+    "actual_network_disconnect_browser": "browser_emulation_passed_physical_network_pending",
     "production_backup_and_storage_restore": "pending_operator_credentials_and_tools"
   },
   "limits": [

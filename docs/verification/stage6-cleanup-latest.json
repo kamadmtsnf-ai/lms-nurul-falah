@@ -1,0 +1,11 @@
+{
+  "verified_at": "2026-10-18T04:51:52.729904+00:00",
+  "scope": "Exact synthetic Stage6 school and seven synthetic actor IDs only",
+  "fixture_schools": 0,
+  "fixture_profiles": 0,
+  "fixture_auth_users": 0,
+  "sessions_remaining": 0,
+  "refresh_tokens_remaining": 0,
+  "real_school_present": true,
+  "storage_objects_uploaded": false
+}

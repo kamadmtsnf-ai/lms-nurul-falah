@@ -4,7 +4,7 @@
 
 Tahap ini memisahkan empat bukti: tes otomatis, simulasi PostgreSQL lokal, beban API hosted dengan sesi Auth asli, dan uji manusia di browser/perangkat. Angka 132 pada simulasi lokal bukan bukti 132 koneksi PostgreSQL produksi. Hasil aktual disimpan pada `docs/verification/`.
 
-Keputusan kelayakan dicatat pada [hasil hosted](verification/10-Hasil-Uji-Hosted-Tahap-6.md) dan `verification/stage6-readiness.json`. Gate yang belum lulus tidak boleh ditafsirkan sebagai persetujuan penggunaan massal. Pengujian browser tidak dapat dijalankan karena layanan browser mengalami timeout dan kemudian tidak tersedia. Cadangan produksi lengkap serta pemulihan berkas Storage belum diklaim berhasil hanya karena pemulihan fixture lokal berhasil.
+Keputusan kelayakan dicatat pada [hasil hosted](verification/10-Hasil-Uji-Hosted-Tahap-6.md) dan `verification/stage6-readiness.json`. Gate yang belum lulus tidak boleh ditafsirkan sebagai persetujuan penggunaan massal. Pada run awal, browser tidak dapat dijalankan karena layanan mengalami timeout. Kelanjutan 18 Oktober beserta hasil browser hosted terbaru dicatat pada [Kelanjutan Tahap 6](15-Kelanjutan-Tahap-6.md) dan `verification/stage6-browser-results.json`. Cadangan produksi lengkap serta pemulihan berkas Storage belum diklaim berhasil hanya karena pemulihan fixture lokal berhasil.
 
 ## Perbaikan sinkronisasi
 
@@ -68,19 +68,19 @@ Skrip masih memerlukan akses database operator dan belum dijalankan untuk mengek
 6. Ukur RTO (waktu pulih) dan RPO (selisih cadangan terakhir). Tetapkan jadwal operator, misalnya sebelum kuis penting dan setiap akhir hari sekolah; jadwal ini belum diotomatisasi.
 7. Terima cadangan hanya setelah data dan alur aplikasi berhasil dipakai pada target uji. Pemulihan ke produksi memerlukan prosedur terpisah saat benar-benar diperlukan.
 
-## Checklist penerimaan browser dan perangkat — masih terbuka
+## Checklist penerimaan browser dan perangkat — diperbarui
 
 | Skenario | Bukti yang harus dicatat | Status |
 |---|---|---|
-| Guru membuat kuis, rilis nilai dan pembahasan | Alur nyata dan tidak ada error konsol | Belum diuji browser |
-| Siswa mulai, refresh dan melanjutkan | ID percobaan/jawaban tetap sama | Belum diuji browser |
-| Dua tab/perangkat | Konflik terlihat; tidak ada jawaban tertimpa diam-diam | Logika antrean diuji; browser belum |
-| Putus jaringan sebelum/selepas ACK | Status jujur; retry tidak menggandakan revisi | Logika retry diuji; jaringan nyata belum |
-| Waktu habis saat offline | Jawaban terlambat tidak dianggap tersimpan | Backend diuji; browser belum |
+| Guru membuat kuis, rilis nilai dan pembahasan | Alur nyata dan tidak ada error konsol | Lulus browser hosted |
+| Siswa mulai, refresh dan melanjutkan | ID percobaan/jawaban tetap sama | Lulus browser hosted |
+| Dua tab/perangkat | Konflik terlihat; tidak ada jawaban tertimpa diam-diam | Lulus konflik dua tab browser |
+| Putus jaringan sebelum/selepas ACK | Status jujur; retry tidak menggandakan revisi | Lulus emulasi browser; jaringan fisik belum |
+| Waktu habis saat offline | Jawaban terlambat tidak dianggap tersimpan | Lulus backend dan browser |
 | Ponsel dan laptop | Tidak terpotong; tab, radio, tombol dan tabel dapat digunakan | Belum diuji perangkat |
-| Password baru dan login ulang | Sesi lama ditolak | Tes otomatis; browser ulang belum |
-| Orang tua beberapa anak | Hanya anak tertaut; nilai tertutup tidak bocor | Tes database; browser belum |
-| Lampiran privat dan ekspor | File hanya untuk pihak berizin; nama dan tabel terbaca | Excel/PDF otomatis; Storage hosted belum |
+| Password baru dan login ulang | Sesi lama ditolak | Lulus browser; sesi lama ditolak |
+| Orang tua beberapa anak | Hanya anak tertaut; nilai tertutup tidak bocor | Lulus database dan browser |
+| Lampiran privat dan ekspor | File hanya untuk pihak berizin; nama dan tabel terbaca | XLSX/PDF hosted lulus; Storage hosted belum |
 | Cadangan produksi + Storage dipulihkan | Hash/jumlah dan penggunaan nyata sesuai | Fixture lokal lulus; produksi belum |
 
 Selesaikan checklist tersebut sebelum menyatakan aplikasi lolos seluruh gerbang penggunaan sekolah. Jangan menandai baris sebagai lulus hanya karena halaman berhasil mengembalikan HTTP 200.

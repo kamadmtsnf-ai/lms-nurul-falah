@@ -1,0 +1,240 @@
+{
+  "started_at": "2026-10-18T04:30:49.233Z",
+  "target": "https://lms-nurul-falah.vercel.app",
+  "scope": "Small control sample, not a 60/100/132-session capacity test",
+  "runtime": "v24.19.0",
+  "proxy_configured": true,
+  "samples": [
+    {
+      "kind": "health",
+      "mode": "sequential",
+      "index": 0,
+      "status": 200,
+      "client_ms": 8077.85,
+      "handler_ms": {},
+      "edge": "cle1"
+    },
+    {
+      "kind": "health",
+      "mode": "sequential",
+      "index": 1,
+      "status": 200,
+      "client_ms": 310.79,
+      "handler_ms": {},
+      "edge": "cle1"
+    },
+    {
+      "kind": "health",
+      "mode": "sequential",
+      "index": 2,
+      "status": 200,
+      "client_ms": 287.65,
+      "handler_ms": {},
+      "edge": "cle1"
+    },
+    {
+      "kind": "health",
+      "mode": "sequential",
+      "index": 3,
+      "status": 200,
+      "client_ms": 340.06,
+      "handler_ms": {},
+      "edge": "cle1"
+    },
+    {
+      "kind": "health",
+      "mode": "sequential",
+      "index": 4,
+      "status": 200,
+      "client_ms": 303.9,
+      "handler_ms": {},
+      "edge": "cle1"
+    },
+    {
+      "kind": "health",
+      "mode": "concurrent",
+      "index": 0,
+      "status": 200,
+      "client_ms": 299.43,
+      "handler_ms": {},
+      "edge": "cle1"
+    },
+    {
+      "kind": "health",
+      "mode": "concurrent",
+      "index": 4,
+      "status": 200,
+      "client_ms": 7382.16,
+      "handler_ms": {},
+      "edge": "cle1"
+    },
+    {
+      "kind": "health",
+      "mode": "concurrent",
+      "index": 2,
+      "status": 200,
+      "client_ms": 7397.92,
+      "handler_ms": {},
+      "edge": "cle1"
+    },
+    {
+      "kind": "health",
+      "mode": "concurrent",
+      "index": 3,
+      "status": 200,
+      "client_ms": 7740.34,
+      "handler_ms": {},
+      "edge": "cle1"
+    },
+    {
+      "kind": "health",
+      "mode": "concurrent",
+      "index": 1,
+      "status": 200,
+      "client_ms": 8269.38,
+      "handler_ms": {},
+      "edge": "cle1"
+    },
+    {
+      "kind": "authenticated_list",
+      "mode": "sequential",
+      "index": 0,
+      "status": 200,
+      "client_ms": 9363.34,
+      "handler_ms": {
+        "auth": 327.6,
+        "rate": 72.9,
+        "data": 120.1,
+        "total": 520.6
+      },
+      "edge": "cle1"
+    },
+    {
+      "kind": "authenticated_list",
+      "mode": "sequential",
+      "index": 1,
+      "status": 200,
+      "client_ms": 834.18,
+      "handler_ms": {
+        "auth": 171.8,
+        "rate": 110.3,
+        "data": 112.8,
+        "total": 394.8
+      },
+      "edge": "cle1"
+    },
+    {
+      "kind": "authenticated_list",
+      "mode": "sequential",
+      "index": 2,
+      "status": 200,
+      "client_ms": 809.15,
+      "handler_ms": {
+        "auth": 78.3,
+        "rate": 67.3,
+        "data": 110.7,
+        "total": 256.3
+      },
+      "edge": "cle1"
+    },
+    {
+      "kind": "authenticated_list",
+      "mode": "sequential",
+      "index": 3,
+      "status": 200,
+      "client_ms": 907.89,
+      "handler_ms": {
+        "auth": 99.6,
+        "rate": 55.4,
+        "data": 150.4,
+        "total": 305.4
+      },
+      "edge": "cle1"
+    },
+    {
+      "kind": "authenticated_list",
+      "mode": "sequential",
+      "index": 4,
+      "status": 200,
+      "client_ms": 579.99,
+      "handler_ms": {
+        "auth": 65.3,
+        "rate": 54.4,
+        "data": 110.2,
+        "total": 230
+      },
+      "edge": "cle1"
+    },
+    {
+      "kind": "authenticated_list",
+      "mode": "concurrent",
+      "index": 0,
+      "status": 200,
+      "client_ms": 754.67,
+      "handler_ms": {
+        "auth": 60.6,
+        "rate": 75,
+        "data": 61.3,
+        "total": 196.9
+      },
+      "edge": "cle1"
+    },
+    {
+      "kind": "authenticated_list",
+      "mode": "concurrent",
+      "index": 1,
+      "status": 200,
+      "client_ms": 9552.19,
+      "handler_ms": {
+        "auth": 95.5,
+        "rate": 77.8,
+        "data": 52,
+        "total": 225.2
+      },
+      "edge": "cle1"
+    },
+    {
+      "kind": "authenticated_list",
+      "mode": "concurrent",
+      "index": 2,
+      "status": 200,
+      "client_ms": 9982.36,
+      "handler_ms": {
+        "auth": 111.2,
+        "rate": 74.7,
+        "data": 82.2,
+        "total": 268.2
+      },
+      "edge": "cle1"
+    },
+    {
+      "kind": "authenticated_list",
+      "mode": "concurrent",
+      "index": 4,
+      "status": 200,
+      "client_ms": 10027.75,
+      "handler_ms": {
+        "auth": 104.4,
+        "rate": 60.2,
+        "data": 56.9,
+        "total": 221.5
+      },
+      "edge": "cle1"
+    },
+    {
+      "kind": "authenticated_list",
+      "mode": "concurrent",
+      "index": 3,
+      "status": 200,
+      "client_ms": 10284.09,
+      "handler_ms": {
+        "auth": 105.3,
+        "rate": 153.8,
+        "data": 44.7,
+        "total": 303.7
+      },
+      "edge": "cle1"
+    }
+  ],
+  "finished_at": "2026-10-18T04:31:29.604Z"
+}

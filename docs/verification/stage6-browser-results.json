@@ -1,0 +1,98 @@
+{
+  "started_at": "2026-10-18T04:38:39.246Z",
+  "finished_at": "2026-10-18T04:45:21.403Z",
+  "target": "https://lms-nurul-falah.vercel.app",
+  "tested_commit": "1831516665bcd09495aabbae726d9b699a19ffe5",
+  "scope": "Hosted Vercel + real Supabase Auth and PostgreSQL; operator-seeded synthetic school only; no mocked API responses",
+  "browser": "Chromium, emulated desktop/mobile viewports; not physical devices",
+  "network": "Browser emulation: offline before ACK and response loss after real server commit",
+  "cases": [
+    {
+      "name": "teacher_login_and_ui_create_quiz",
+      "status": "passed",
+      "duration_ms": 24087,
+      "quiz_created_through_ui": true
+    },
+    {
+      "name": "student_mobile_start_save_refresh_resume",
+      "status": "passed",
+      "duration_ms": 29863,
+      "same_attempt": true,
+      "answer_persisted": true,
+      "mobile_no_overflow": true
+    },
+    {
+      "name": "offline_before_ack_retry_preserves_answer",
+      "status": "passed",
+      "duration_ms": 17464,
+      "unsaved_feedback": true,
+      "recovered_answer": true
+    },
+    {
+      "name": "lost_response_after_ack_idempotent_retry",
+      "status": "passed",
+      "duration_ms": 32843,
+      "identical_retry_packet": true,
+      "single_revision_increment": true
+    },
+    {
+      "name": "two_tabs_revision_conflict_visible",
+      "status": "passed",
+      "duration_ms": 16493,
+      "conflict_shown": true,
+      "no_silent_overwrite": true
+    },
+    {
+      "name": "finish_hidden_grades_teacher_release_reclose",
+      "status": "passed",
+      "duration_ms": 26969,
+      "submitted_once": true,
+      "closed_results_hidden": true,
+      "teacher_release_and_reclose": true
+    },
+    {
+      "name": "offline_deadline_reconciles_to_server_answers",
+      "status": "passed",
+      "duration_ms": 139230,
+      "server_expired": true,
+      "only_acknowledged_answer_retained": true,
+      "late_local_answer_removed": true,
+      "review_released_after_close": true
+    },
+    {
+      "name": "guardian_multiple_children_and_scope_denial",
+      "status": "passed",
+      "duration_ms": 43331,
+      "two_linked_children_only": true,
+      "unlinked_class_denied": true,
+      "student_admin_page_denied": true
+    },
+    {
+      "name": "hosted_xlsx_pdf_downloads_authorized",
+      "status": "passed",
+      "duration_ms": 3857,
+      "xlsx_signature_valid": true,
+      "pdf_signature_valid": true
+    },
+    {
+      "name": "admin_only_school_switcher",
+      "status": "passed",
+      "duration_ms": 22552,
+      "admin_visible": true,
+      "student_guardian_hidden": true
+    },
+    {
+      "name": "forced_password_change_relogin_old_session_denied_email_gate",
+      "status": "passed",
+      "duration_ms": 45409,
+      "forced_change": true,
+      "relogin_required": true,
+      "old_session_denied": true,
+      "email_gate_blocks_private_pages": true,
+      "email_delivery_not_exercised": true
+    }
+  ],
+  "javascript_errors": [],
+  "email_delivery_tested": false,
+  "physical_devices_tested": false
+}

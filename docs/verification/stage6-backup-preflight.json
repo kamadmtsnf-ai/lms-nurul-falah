@@ -1,0 +1,17 @@
+{
+  "pg_dump_installed": false,
+  "pg_dump_version": null,
+  "database_environment_present": {
+    "PGHOST": false,
+    "PGDATABASE": false,
+    "PGUSER": false,
+    "LMS_BACKUP_DIR": false,
+    "LMS_BACKUP_KEY_BASE64": false
+  },
+  "storage_environment_present": {
+    "source_url": false,
+    "server_credential": false,
+    "ack": false
+  },
+  "note": "Only presence is reported. Configure secrets locally; do not paste them into chat or commit them."
+}
