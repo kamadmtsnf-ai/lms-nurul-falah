@@ -23,3 +23,4 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:quiz:reliability
       - run: npm run test:retention:ui
+      - run: npm run test:account:ui

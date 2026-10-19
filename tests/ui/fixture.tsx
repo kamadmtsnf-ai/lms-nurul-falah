@@ -898,6 +898,12 @@ window.fetch = async (url, options) => {
   }
   let result: unknown = {};
   if (path.includes("/identitas/")) {
+    if(action === "email") return params.has("mailfail") ? Response.json({message:"Email belum berhasil dikirim. Periksa alamat atau coba kirim ulang."},{status:503}) : Response.json({message:`Email verifikasi berhasil dikirim ke ${body.email}. Periksa kotak masuk dan folder spam.`});
+    if(action === "admin-reset-password") {
+      if(params.has("resetfail")) return Response.json({message:"Reset password belum berhasil. Coba kembali."},{status:503});
+      const user = managedUsers?.find(u=>u.id===body.target);if(user) user.must_change_password=true;
+      return Response.json({message:"Password pengguna berhasil direset menjadi 12345678. Pengguna wajib mengganti password saat login berikutnya."});
+    }
     if (action === "admin-list")
       return Response.json({
         users:
@@ -1164,6 +1170,7 @@ const rolloverState: AcademicState = {
 };
 function Fixture() {
   const [mode] = useState(view);
+  if (mode === "verify-feedback") return <AuthShell title="Verifikasi email Anda" description="Verifikasi email untuk melanjutkan."><AuthForm action="email" label="Kirim tautan verifikasi" fields={[{ name:"email", label:"Email pribadi atau wali", type:"email" }]} /></AuthShell>;
   if (mode === "auth")
     return (
       <AuthShell

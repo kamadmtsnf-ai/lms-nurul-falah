@@ -3,7 +3,7 @@ import { ConfirmDialog } from "./confirm-dialog";
 import { postJson } from "@/lib/http/client";
 import { clearOffline } from "@/lib/offline/store";
 import { Eye, EyeOff } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 export type Field = {
   name: string;
@@ -29,6 +29,7 @@ export function AuthForm({
   fragment?: boolean;
   extra?: Record<string, string>;
 }) {
+  const submitting = useRef(false);
   const [ready, setReady] = useState(false);
   useEffect(() => setReady(true), []);
   const [visible, setVisible] = useState<Record<string, boolean>>({});
@@ -49,8 +50,16 @@ export function AuthForm({
     <form
       method="post"
       className="mt-7 space-y-5"
+      aria-busy={busy}
+      onInvalidCapture={(e) => {
+        const input = e.target as HTMLInputElement;
+        setSuccess(false);
+        setMessage(input.validity.valueMissing ? `${input.labels?.[0]?.textContent ?? "Isian"} wajib diisi.` : input.type === "email" ? "Email yang Anda input tidak valid. Periksa kembali alamat email Anda." : "Periksa kembali isian formulir Anda.");
+      }}
       onSubmit={async (e) => {
         e.preventDefault();
+        if (submitting.current) return;
+        submitting.current = true;
         setBusy(true);
         setMessage("");
         setSuccess(false);
@@ -80,6 +89,7 @@ export function AuthForm({
         } catch {
           setMessage("Koneksi terputus. Periksa jaringan dan coba lagi.");
         } finally {
+          submitting.current = false;
           setBusy(false);
         }
       }}
@@ -148,6 +158,7 @@ export function AuthForm({
       <div aria-live="polite">
         {message && (
           <p
+            role={success ? "status" : "alert"}
             className={`rounded-xl p-4 text-sm ${success ? "bg-emerald-50 text-emerald-900" : "bg-red-50 text-red-800"}`}
           >
             {message}
@@ -160,7 +171,7 @@ export function AuthForm({
         className="w-full"
       >
         {busy && <span aria-hidden className="loading-spinner" />}
-        {busy ? "Memproses…" : label}
+        {busy ? action === "email" ? "Mengirim email verifikasi…" : "Memproses…" : label}
       </Button>
     </form>
   );

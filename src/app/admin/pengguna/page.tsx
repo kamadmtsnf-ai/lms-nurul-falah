@@ -34,7 +34,7 @@ export default async function ManageUsers() {
           Buka pusat akademik untuk template dan impor Excel →
         </Link>
       </p>
-      <UserManager school={membership.school_id} />
+      <UserManager key={membership.school_id} school={membership.school_id} actorId={profile.id} />
     </AppShell>
   );
 }

@@ -19,6 +19,7 @@ import {
 } from "@/lib/auth/identity";
 import {
   DEFAULT_PASSWORD,
+  adminResetSchema,
   usernameSchema,
   passwordPair,
   emailSchema,
@@ -85,6 +86,7 @@ export async function POST(
         "admin-list",
         "admin-create",
         "admin-update",
+        "admin-reset-password",
       ].includes(action)
     )
       throw new IdentityError("Fitur tidak ditemukan.", 404);
@@ -312,7 +314,7 @@ export async function POST(
       await deliverIdentityMail(ticket, token, "verify_email");
       return ok({
         message:
-          "Tautan verifikasi dikirim. Berlaku 15 menit. Buka tautan dengan akun ini tetap login.",
+          `Email verifikasi berhasil dikirim ke ${email}. Periksa kotak masuk dan folder spam. Tautan berlaku 15 menit; buka dengan akun ini tetap login.`,
       });
     }
     if (action === "confirm-email") {
@@ -386,6 +388,22 @@ export async function POST(
         message:
           "Pengguna dibuat dengan password awal dan wajib menyelesaikan aktivasi.",
       });
+    }
+    if (action === "admin-reset-password") {
+      const v = adminResetSchema.parse(input);
+      if (v.target === ctx.actor) throw new IdentityError("Gunakan fitur Ubah Password untuk akun Anda sendiri.", 403);
+      await limit("admin-reset-password", ctx.actor, 10, 900);
+      const operation = { ...actor, school: v.school, target: v.target };
+      const ticket = await identity<{ target: string; nonce: string }>("admin_reset_begin", operation);
+      const { error } = await createSupabaseAdminClient().auth.admin.updateUserById(ticket.target, { password: DEFAULT_PASSWORD });
+      if (error) throw new IdentityError("Reset password belum berhasil. Akses sesi lama telah diblokir. Coba reset kembali setelah lima menit atau hubungi pengelola.", 503);
+      try {
+        await revokeWithPassword(ticket.target, DEFAULT_PASSWORD);
+        await identity("admin_reset_finish", { ...operation, nonce: ticket.nonce });
+      } catch {
+        throw new IdentityError("Password telah direset, tetapi penyelesaian pemutusan sesi belum berhasil. Pengguna tetap wajib mengganti password. Coba reset kembali setelah lima menit.", 503);
+      }
+      return ok({ message: "Password pengguna berhasil direset menjadi 12345678. Sesi lama telah diputus dan pengguna wajib mengganti password saat login berikutnya." });
     }
     if (action === "admin-update") {
       const v = z

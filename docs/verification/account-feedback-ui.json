@@ -1,0 +1,23 @@
+{
+  "checks": 40,
+  "viewports": [
+    {
+      "width": 320,
+      "status": "passed"
+    },
+    {
+      "width": 390,
+      "status": "passed"
+    },
+    {
+      "width": 768,
+      "status": "passed"
+    },
+    {
+      "width": 1440,
+      "status": "passed"
+    }
+  ],
+  "javascriptErrors": [],
+  "scope": "Real components; synthetic API. Database authorization tested separately."
+}

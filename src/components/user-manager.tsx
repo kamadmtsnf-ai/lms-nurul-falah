@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ConfirmDialog } from "./confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { roleLabels, schoolRoles } from "@/lib/auth/validation";
 import {
@@ -11,7 +12,10 @@ import {
 import { postJson } from "@/lib/http/client";
 const inputClass =
   "form-control w-full rounded-xl border border-stone-300 bg-white px-4 py-3";
-export function UserManager({ school }: { school: string }) {
+export function UserManager({ school, actorId }: { school: string; actorId?: string }) {
+  const resetLock = useRef(false);
+  const [resetUser, setResetUser] = useState<ManagedUser | null>(null);
+  const [resetError, setResetError] = useState("");
   const readId = useRef(0),
     toggleRef = useRef<HTMLButtonElement>(null),
     returnFocus = useRef(false);
@@ -102,6 +106,25 @@ export function UserManager({ school }: { school: string }) {
       setBusy(false);
     }
   }
+  async function resetPassword() {
+    if (!resetUser || resetLock.current) return;
+    resetLock.current = true;
+    setBusy(true);
+    setResetError("");
+    try {
+      const result = await request("admin-reset-password", { target: resetUser.id, confirmation: "RESET PASSWORD" });
+      setResetUser(null);
+      setError(false);
+      setMessage(result.message);
+      await reload();
+    } catch (e) {
+      setResetError(e instanceof Error ? e.message : "Reset password belum berhasil. Coba kembali.");
+      await reload();
+    } finally {
+      resetLock.current = false;
+      setBusy(false);
+    }
+  }
   const filtered = useMemo(() => filterUsers(users, options), [users, options]);
   const pageOffset = Math.min(
     offset,
@@ -114,6 +137,16 @@ export function UserManager({ school }: { school: string }) {
   }
   return (
     <div className="space-y-8">
+      <ConfirmDialog
+        open={!!resetUser}
+        title="Reset password pengguna?"
+        description={`Password ${resetUser?.full_name ?? ""} (${resetUser?.username_normalized ?? ""}) akan menjadi 12345678. Sesi lama akan diputus. Pengguna wajib mengganti password setelah login; status akun dan verifikasi email tetap dipertahankan.`}
+        confirmLabel="Ya, reset password"
+        busy={busy}
+        error={resetError}
+        onCancel={() => { if (!busy) setResetUser(null); }}
+        onConfirm={() => void resetPassword()}
+      />
       <section className="surface-card rounded-2xl border border-stone-200 bg-white p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-semibold">Tambah pengguna</h2>
@@ -376,6 +409,13 @@ export function UserManager({ school }: { school: string }) {
                 >
                   Simpan hak akses
                 </Button>
+                {u.id !== actorId && <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-3 sm:ml-3"
+                  disabled={busy || loading}
+                  onClick={() => { setResetError(""); setResetUser(u); }}
+                >Reset password {u.username_normalized}</Button>}
               </form>
             ))}
         </div>

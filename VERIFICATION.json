@@ -1,20 +1,20 @@
 {
   "stage": 9,
   "status": "development_modules_implemented_default_disabled_acceptance_pending",
-  "date": "2026-10-18",
+  "date": "2026-10-19",
   "timezone": "Asia/Jakarta",
   "production_build": "passed",
   "typecheck": "passed",
   "automated_tests": {
-    "passed": 196,
+    "passed": 198,
     "failed": 0
   },
   "http_scenarios": {
-    "passed": 26,
+    "passed": 27,
     "failed": 0,
     "scope": "local_no_database_config"
   },
-  "cloud_database": "27_migrations_applied_attachment_retention_verified",
+  "cloud_database": "28_migrations_applied_admin_password_reset_verified",
   "migration_versions": [
     "20261017152937",
     "20261017152957",
@@ -42,7 +42,8 @@
     "20261018144212",
     "20261018144324",
     "20261018150842",
-    "20261018170222"
+    "20261018170222",
+    "20261019064726"
   ],
   "external_email": "user_confirmed_activation_success_not_retested_in_stage_3",
   "deployment": "inspect_current_commit_in_vercel",
@@ -525,7 +526,7 @@
   },
   "attachment_retention": {
     "implementation": "complete",
-    "production_status": "release_pending",
+    "production_status": "released_ab8f558_verified",
     "migration": "20261018170222_attachment_retention.sql",
     "migration_applied": true,
     "defaults": {
@@ -564,5 +565,19 @@
       "queue_rows": 0,
       "github_ci": "success_39147309291"
     }
+  },
+  "account_feedback_and_admin_reset": {
+    "implementation": "complete_migrated",
+    "migration": "20261019064726_admin_password_reset.sql",
+    "default_password": "12345678",
+    "mandatory_password_change": true,
+    "preserve_email_and_account_status": true,
+    "self_and_shared_account_reset_denied": true,
+    "mfa_and_school_authorization": true,
+    "rpc_service_only_verified": true,
+    "ui_checks": 40,
+    "ui_javascript_errors": 0,
+    "live_user_passwords_changed_for_testing": false,
+    "real_verification_emails_sent_for_testing": false
   }
 }

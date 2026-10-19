@@ -8,7 +8,8 @@ export async function deliverIdentityMail(ticket:{id:string;email:string},token:
  if(url.protocol!=="https:" && url.hostname!=="localhost")throw new IdentityError("Konfigurasi alamat aplikasi belum valid.",503);
  url.hash=`token=${token}`;const {from,transport}=createEmailTransport();
  try{
-  await transport.sendMail({from,to:ticket.email,subject:purpose==="verify_email"?"Verifikasi email LMS Nurul Falah":"Pemulihan password LMS Nurul Falah",text:`${purpose==="verify_email"?"Konfirmasi email akun":"Atur password baru akun"} Anda melalui tautan berikut. Tautan berlaku 15 menit dan hanya dapat dipakai sekali.\n\n${url.toString()}\n\nJika tidak meminta tindakan ini, abaikan email ini.`});
+  const sent = await transport.sendMail({from,to:ticket.email,subject:purpose==="verify_email"?"Verifikasi email LMS Nurul Falah":"Pemulihan password LMS Nurul Falah",text:`${purpose==="verify_email"?"Konfirmasi email akun":"Atur password baru akun"} Anda melalui tautan berikut. Tautan berlaku 15 menit dan hanya dapat dipakai sekali.\n\n${url.toString()}\n\nJika tidak meminta tindakan ini, abaikan email ini.`});
+  if (!sent.accepted?.some((recipient: string | { address: string }) => (typeof recipient === "string" ? recipient : recipient.address).toLowerCase() === ticket.email.toLowerCase())) throw new Error("Recipient rejected");
   await identity("mail_sent",{token_id:ticket.id});
  }catch{
   await identity("mail_failed",{token_id:ticket.id}).catch(()=>{});
