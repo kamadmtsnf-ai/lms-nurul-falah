@@ -1,0 +1,46 @@
+{
+  "checks": 8,
+  "results": [
+    {
+      "purpose": "verify_email",
+      "width": 320,
+      "status": "passed"
+    },
+    {
+      "purpose": "verify_email",
+      "width": 390,
+      "status": "passed"
+    },
+    {
+      "purpose": "verify_email",
+      "width": 600,
+      "status": "passed"
+    },
+    {
+      "purpose": "verify_email",
+      "width": 900,
+      "status": "passed"
+    },
+    {
+      "purpose": "reset_password",
+      "width": 320,
+      "status": "passed"
+    },
+    {
+      "purpose": "reset_password",
+      "width": 390,
+      "status": "passed"
+    },
+    {
+      "purpose": "reset_password",
+      "width": 600,
+      "status": "passed"
+    },
+    {
+      "purpose": "reset_password",
+      "width": 900,
+      "status": "passed"
+    }
+  ],
+  "scope": "HTML rendering in Chromium; multipart SMTP tested separately. Does not replace every native email-client rendering test."
+}

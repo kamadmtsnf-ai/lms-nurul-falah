@@ -13,9 +13,8 @@ export function createEmailTransport(source: NodeJS.ProcessEnv = process.env) {
   connectionTimeout: 10_000, greetingTimeout: 10_000, socketTimeout: 15_000,
  })};
 }
+// Compatibility for existing callers; both flows use the same template builder.
+import { identityMessage } from "./identity-template";
 export function verificationMessage(url: string) {
- const parsed = new URL(url);
- if (parsed.protocol !== "https:" && parsed.hostname !== "localhost") throw new Error("Tautan verifikasi harus HTTPS.");
- return { subject: "Verifikasi email LMS Nurul Falah", text: `Silakan verifikasi email akun Anda melalui tautan berikut:\n${url}\n\nJika Anda tidak meminta ini, abaikan email ini.` };
+ return identityMessage(url, "verify_email");
 }
-// Belum ada endpoint kirim email. Token, pembatasan dan outbox diimplementasikan pada Tahap 2.

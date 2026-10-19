@@ -22,7 +22,8 @@
     "test:offline:browser": "node scripts/test-offline-browser.mjs",
     "test:quiz:reliability": "node scripts/test-quiz-reliability.mjs",
     "test:retention:ui": "node scripts/test-attachment-retention-ui.mjs",
-    "test:account:ui": "node scripts/test-account-feedback-ui.mjs"
+    "test:account:ui": "node scripts/test-account-feedback-ui.mjs",
+    "test:email:ui": "node --import tsx scripts/test-identity-email-ui.mjs"
   },
   "keywords": [],
   "author": "",

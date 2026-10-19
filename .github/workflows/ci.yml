@@ -24,3 +24,4 @@ jobs:
       - run: npm run test:quiz:reliability
       - run: npm run test:retention:ui
       - run: npm run test:account:ui
+      - run: npm run test:email:ui
